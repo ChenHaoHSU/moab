@@ -1,0 +1,27 @@
+
+package(default_visibility = ["//visibility:public"])
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository", "new_git_repository")
+
+cc_library(
+    name = "point2",
+    hdrs = ["point2.h"],
+    deps = [
+        "@third_party_absl//absl/log:check",
+        "@third_party_absl//absl/log:log",
+        "@third_party_absl//absl/strings",
+        "@third_party_absl//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "point2_test",
+    size = "small",
+    srcs = ["point2_test.cc"],
+    deps = [
+        ":point2",
+        "@third_party_googletest//:gtest",
+        "@third_party_googletest//:gtest_main",
+    ],
+)
