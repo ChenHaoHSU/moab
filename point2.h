@@ -2,7 +2,6 @@
 #include <cstdint>
 #include <ostream>
 #include <string>
-#include <type_traits>
 #include <utility>
 
 #include "absl/hash/hash.h"
@@ -13,6 +12,7 @@
 #include "boost/geometry/core/coordinate_dimension.hpp"
 #include "boost/geometry/core/coordinate_system.hpp"
 #include "boost/geometry/core/cs.hpp"
+#include "boost/geometry/core/tag.hpp"
 #include "boost/polygon/point_concept.hpp"
 
 namespace moab {
@@ -31,8 +31,8 @@ class Point2 {
   // Accessors.
   T x() const { return d_[0]; }
   T y() const { return d_[1]; }
-  std::array<T, 2>& data() { return d_; }
-  const std::array<T, 2>& data() const { return d_; }
+  T* data() { return d_.data(); }
+  const T* data() const { return d_.data(); }
 
   constexpr std::size_t Size() const { return d_.size(); }
 
@@ -151,7 +151,7 @@ class Point2 {
 
  private:
   std::array<T, 2> d_;  // <x, y>
-};
+};  // class Point2
 
 // Aliases.
 using Point2_i = Point2<int>;

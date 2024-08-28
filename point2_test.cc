@@ -50,10 +50,11 @@ TEST(Accessors, XY) {
 
 TEST(Accessors, Data) {
   Point2_i p(1, 2);
-  std::array<int, 2> d{1, 2};
+  const int* d = p.data();
 
-  EXPECT_EQ(p.data(), d);
-  EXPECT_EQ(p.data().size(), 2);
+  ASSERT_NE(d, nullptr);
+  EXPECT_EQ(d[0], 1);
+  EXPECT_EQ(d[1], 2);
 }
 
 TEST(Accessors, Size) {
