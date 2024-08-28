@@ -9,21 +9,21 @@
 
 namespace moab {
 
-TEST(Constructor, Default) {
+TEST(Constructors, Default) {
   Point2_i p;
 
   EXPECT_EQ(p.x(), 0);
   EXPECT_EQ(p.y(), 0);
 }
 
-TEST(Constructor, XY) {
+TEST(Constructors, XY) {
   Point2_i p(1, 2);
 
   EXPECT_EQ(p.x(), 1);
   EXPECT_EQ(p.y(), 2);
 }
 
-TEST(Constructor, Copy) {
+TEST(Constructors, Copy) {
   Point2_i p1(1, 2);
   Point2_i p2(p1);
 
@@ -31,21 +31,21 @@ TEST(Constructor, Copy) {
   EXPECT_EQ(p2.y(), 2);
 }
 
-TEST(Constructor, Move) {
+TEST(Constructors, Move) {
   Point2_i p(Point2_i(1, 2));
 
   EXPECT_EQ(p.x(), 1);
   EXPECT_EQ(p.y(), 2);
 }
 
-TEST(Accessor, XY) {
+TEST(Accessors, XY) {
   Point2_i p(1, 2);
 
   EXPECT_EQ(p.x(), 1);
   EXPECT_EQ(p.y(), 2);
 }
 
-TEST(Accessor, Data) {
+TEST(Accessors, Data) {
   Point2_i p(1, 2);
   std::array<int, 2> d{1, 2};
 
@@ -53,13 +53,13 @@ TEST(Accessor, Data) {
   EXPECT_EQ(p.data().size(), 2);
 }
 
-TEST(Accessor, Size) {
+TEST(Accessors, Size) {
   Point2_i p;
 
   EXPECT_EQ(p.Size(), 2);
 }
 
-TEST(Mutator, Set) {
+TEST(Mutators, Set) {
   Point2_i p(1, 2);
   p.Set(3, 4);
 
@@ -67,7 +67,7 @@ TEST(Mutator, Set) {
   EXPECT_EQ(p.y(), 4);
 }
 
-TEST(Mutator, SetX) {
+TEST(Mutators, SetX) {
   Point2_i p(1, 2);
   p.SetX(3);
 
@@ -75,7 +75,7 @@ TEST(Mutator, SetX) {
   EXPECT_EQ(p.y(), 2);
 }
 
-TEST(Mutator, SetY) {
+TEST(Mutators, SetY) {
   Point2_i p(1, 2);
   p.SetY(4);
 
@@ -83,7 +83,7 @@ TEST(Mutator, SetY) {
   EXPECT_EQ(p.y(), 4);
 }
 
-TEST(Mutator, Shift) {
+TEST(Operations, Shift) {
   Point2_i p(1, 2);
   p.Shift(3, 4);
 
@@ -91,7 +91,7 @@ TEST(Mutator, Shift) {
   EXPECT_EQ(p.y(), 6);
 }
 
-TEST(Mutator, ShiftX) {
+TEST(Operations, ShiftX) {
   Point2_i p(1, 2);
   p.ShiftX(3);
 
@@ -99,7 +99,7 @@ TEST(Mutator, ShiftX) {
   EXPECT_EQ(p.y(), 2);
 }
 
-TEST(Mutator, ShiftY) {
+TEST(Operations, ShiftY) {
   Point2_i p(1, 2);
   p.ShiftY(4);
 
@@ -107,7 +107,23 @@ TEST(Mutator, ShiftY) {
   EXPECT_EQ(p.y(), 6);
 }
 
-TEST(Operator, Assignment) {
+TEST(Operations, Rotate90) {
+  Point2_i p(1, 2);
+  p.Rotate90();
+
+  EXPECT_EQ(p.x(), -2);
+  EXPECT_EQ(p.y(), 1);
+}
+
+TEST(Operations, Rotate180) {
+  Point2_i p(1, 2);
+  p.Rotate180();
+
+  EXPECT_EQ(p.x(), -1);
+  EXPECT_EQ(p.y(), -2);
+}
+
+TEST(Operators, Assignment) {
   Point2_i p1(1, 2);
   Point2_i p2;
   p2 = p1;
@@ -116,7 +132,7 @@ TEST(Operator, Assignment) {
   EXPECT_EQ(p2.y(), 2);
 }
 
-TEST(Operator, Equality) {
+TEST(Operators, Equality) {
   Point2_i p1(1, 2);
   Point2_i p2(1, 2);
 
@@ -124,7 +140,7 @@ TEST(Operator, Equality) {
   EXPECT_EQ(p1, p2);
 }
 
-TEST(Operator, NotEquality) {
+TEST(Operators, NotEquality) {
   Point2_i p1(1, 2);
   Point2_i p2(1, 3);
   Point2_i p3(2, 2);
@@ -139,7 +155,7 @@ TEST(Operator, NotEquality) {
   EXPECT_NE(p1, p4);
 }
 
-TEST(Operator, Inequality1) {
+TEST(Operators, Inequality1) {
   Point2_i p1(1, 2);
   Point2_i p2(2, 1);
 
@@ -149,7 +165,7 @@ TEST(Operator, Inequality1) {
   EXPECT_TRUE(p2 >= p1);
 }
 
-TEST(Operator, Inequality2) {
+TEST(Operators, Inequality2) {
   Point2_i p1(1, 2);
   Point2_i p2(1, 3);
 
@@ -159,7 +175,7 @@ TEST(Operator, Inequality2) {
   EXPECT_TRUE(p2 >= p1);
 }
 
-TEST(Operator, Inequality3) {
+TEST(Operators, Inequality3) {
   Point2_i p1(1, 2);
   Point2_i p2(2, 3);
 
@@ -169,14 +185,14 @@ TEST(Operator, Inequality3) {
   EXPECT_TRUE(p2 >= p1);
 }
 
-TEST(Operator, Subscript) {
+TEST(Operators, Subscript) {
   Point2_i p(1, 2);
 
   EXPECT_EQ(p[0], 1);
   EXPECT_EQ(p[1], 2);
 }
 
-TEST(Operator, PointAdditionAssignment) {
+TEST(Operators, PointAdditionAssignment) {
   Point2_i p1(1, 2);
   Point2_i p2(3, 4);
   p1 += p2;
@@ -187,7 +203,7 @@ TEST(Operator, PointAdditionAssignment) {
   EXPECT_EQ(p2.y(), 4);
 }
 
-TEST(Operator, PointSubstractionAssignment) {
+TEST(Operators, PointSubstractionAssignment) {
   Point2_i p1(1, 2);
   Point2_i p2(3, 4);
   p1 -= p2;
@@ -198,7 +214,7 @@ TEST(Operator, PointSubstractionAssignment) {
   EXPECT_EQ(p2.y(), 4);
 }
 
-TEST(Operator, PointAddition) {
+TEST(Operators, PointAddition) {
   Point2_i p1(1, 2);
   Point2_i p2(3, 4);
   Point2_i p3 = (p1 + p2);
@@ -211,7 +227,7 @@ TEST(Operator, PointAddition) {
   EXPECT_EQ(p3.y(), 6);
 }
 
-TEST(Operator, PointSubstraction) {
+TEST(Operators, PointSubstraction) {
   Point2_i p1(1, 2);
   Point2_i p2(3, 4);
   Point2_i p3 = (p1 - p2);
@@ -224,7 +240,7 @@ TEST(Operator, PointSubstraction) {
   EXPECT_EQ(p3.y(), -2);
 }
 
-TEST(Operator, PointPositive) {
+TEST(Operators, PointPositive) {
   Point2_i p1(1, 2);
   Point2_i p2 = +p1;
 
@@ -234,7 +250,7 @@ TEST(Operator, PointPositive) {
   EXPECT_EQ(p2.y(), 2);
 }
 
-TEST(Operator, PointNegative) {
+TEST(Operators, PointNegative) {
   Point2_i p1(1, 2);
   Point2_i p2 = -p1;
 
@@ -244,7 +260,7 @@ TEST(Operator, PointNegative) {
   EXPECT_EQ(p2.y(), -2);
 }
 
-TEST(Operator, IntegerAdditionAssignment) {
+TEST(Operators, IntegerAdditionAssignment) {
   Point2_i p1(1, 2);
   p1 += 1;
 
@@ -252,7 +268,7 @@ TEST(Operator, IntegerAdditionAssignment) {
   EXPECT_EQ(p1.y(), 3);
 }
 
-TEST(Operator, IntegerSubstractionAssignment) {
+TEST(Operators, IntegerSubstractionAssignment) {
   Point2_i p1(1, 2);
   p1 -= 1;
 
@@ -260,7 +276,7 @@ TEST(Operator, IntegerSubstractionAssignment) {
   EXPECT_EQ(p1.y(), 1);
 }
 
-TEST(Operator, IntegerMultiplicationAssignment) {
+TEST(Operators, IntegerMultiplicationAssignment) {
   Point2_i p1(1, 2);
   p1 *= 2;
 
@@ -268,7 +284,7 @@ TEST(Operator, IntegerMultiplicationAssignment) {
   EXPECT_EQ(p1.y(), 4);
 }
 
-TEST(Operator, IntegerDivisionAssignment) {
+TEST(Operators, IntegerDivisionAssignment) {
   Point2_i p1(2, 4);
   p1 /= 2;
 
@@ -276,7 +292,7 @@ TEST(Operator, IntegerDivisionAssignment) {
   EXPECT_EQ(p1.y(), 2);
 }
 
-TEST(Operator, IntegerAddition) {
+TEST(Operators, IntegerAddition) {
   Point2_i p1(1, 2);
   Point2_i p2 = p1 + 1;
 
@@ -286,7 +302,7 @@ TEST(Operator, IntegerAddition) {
   EXPECT_EQ(p2.y(), 3);
 }
 
-TEST(Operator, IntegerSubstraction) {
+TEST(Operators, IntegerSubstraction) {
   Point2_i p1(1, 2);
   Point2_i p2 = p1 - 1;
 
@@ -296,7 +312,7 @@ TEST(Operator, IntegerSubstraction) {
   EXPECT_EQ(p2.y(), 1);
 }
 
-TEST(Operator, IntegerMultiplication) {
+TEST(Operators, IntegerMultiplication) {
   Point2_i p1(1, 2);
   Point2_i p2 = p1 * 2;
 
@@ -306,7 +322,7 @@ TEST(Operator, IntegerMultiplication) {
   EXPECT_EQ(p2.y(), 4);
 }
 
-TEST(Operator, IntegerDivision) {
+TEST(Operators, IntegerDivision) {
   Point2_i p1(2, 4);
   Point2_i p2 = p1 / 2;
 
@@ -317,14 +333,14 @@ TEST(Operator, IntegerDivision) {
 }
 
 TEST(StringConversion, ToString) {
-  Point2_i p1(1, 2);
+  Point2_i p(1, 2);
 
-  EXPECT_THAT(p1.ToString(), "(1, 2)");
+  EXPECT_THAT(p.ToString(), "(1, 2)");
 }
 
 TEST(StringConversion, SupportsAbslStringify) {
-  Point2_i p1(1, 2);
-  std::string s = absl::StrFormat("%v", p1);
+  Point2_i p(1, 2);
+  std::string s = absl::StrFormat("%v", p);
 
   EXPECT_THAT(s, "(1, 2)");
 }

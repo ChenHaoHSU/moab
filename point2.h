@@ -36,12 +36,25 @@ class Point2 {
   }
   void SetX(int x) { d_[0] = x; }
   void SetY(int y) { d_[1] = y; }
+
+  // Operations.
   void Shift(int dx, int dy) {
     d_[0] += dx;
     d_[1] += dy;
   }
   void ShiftX(int dx) { d_[0] += dx; }
   void ShiftY(int dy) { d_[1] += dy; }
+  void Rotate90() {
+    // Counterclockwise rotation by 90 degrees.
+    T x = d_[0];
+    d_[0] = -d_[1];
+    d_[1] = x;
+  }
+  void Rotate180() {
+    // Rotation by 180 degrees.
+    d_[0] = -d_[0];
+    d_[1] = -d_[1];
+  }
 
   // Operators.
   // Operators - Assignment
