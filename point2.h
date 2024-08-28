@@ -1,8 +1,11 @@
 #include <array>
 #include <cstdint>
+#include <ostream>
+#include <string>
 #include <utility>
 
 #include "absl/log/log.h"
+#include "absl/strings/str_format.h"
 
 namespace moab {
 
@@ -104,6 +107,19 @@ class Point2 {
   Point2 operator-(T v) const { return Point2(d_[0] - v, d_[1] - v); }
   Point2 operator*(T v) const { return Point2(d_[0] * v, d_[1] * v); }
   Point2 operator/(T v) const { return Point2(d_[0] / v, d_[1] / v); }
+
+  // String conversion.
+  std::string ToString() const {
+    return absl::StrFormat("(%d, %d)", d_[0], d_[1]);
+  }
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const Point2& p) {
+    absl::Format(&sink, "(%d, %d)", p.d_[0], p.d_[1]);
+  }
+  friend std::ostream& operator<<(std::ostream& os, const Point2& p) {
+    os << p.ToString();
+    return os;
+  }
 
  private:
   std::array<T, 2> d_;  // <x, y>

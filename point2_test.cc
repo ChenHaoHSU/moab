@@ -1,6 +1,9 @@
 #include "point2.h"
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+
+#include <string>
 
 namespace moab {
 
@@ -309,6 +312,19 @@ TEST(Operator, IntegerDivision) {
   EXPECT_EQ(p1.y(), 4);
   EXPECT_EQ(p2.x(), 1);
   EXPECT_EQ(p2.y(), 2);
+}
+
+TEST(StringConversion, ToString) {
+  Point2_i p1(1, 2);
+
+  EXPECT_THAT(p1.ToString(), "(1, 2)");
+}
+
+TEST(StringConversion, AbslStringify) {
+  Point2_i p1(1, 2);
+  std::string s = absl::StrFormat("%v", p1);
+
+  EXPECT_THAT(s, "(1, 2)");
 }
 
 }  // namespace moab
