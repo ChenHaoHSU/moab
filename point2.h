@@ -12,7 +12,6 @@ class Point2 {
   // Constructors.
   Point2() : d_({0, 0}) {}
   explicit Point2(T x, T y) : d_({x, y}) {}
-  explicit Point2(std::initializer_list<T> il) : d_(il) {}
   Point2(Point2& p) = default;
   Point2(Point2&& p) = default;
   // Destructors.
@@ -33,6 +32,12 @@ class Point2 {
   }
   void SetX(int x) { d_[0] = x; }
   void SetY(int y) { d_[1] = y; }
+  void Shift(int dx, int dy) {
+    d_[0] += dx;
+    d_[1] += dy;
+  }
+  void ShiftX(int dx) { d_[0] += dx; }
+  void ShiftY(int dy) { d_[1] += dy; }
 
   // Operators.
   // Operators - Assignment
@@ -55,6 +60,27 @@ class Point2 {
   // Operators - Subscript
   T& operator[](int i) { return d_[i]; }
   const T& operator[](int i) const { return d_.at(i); }
+  // Operators - Arithmetic
+  Point2& operator+=(const Point2& p) {
+    d_[0] += p.d_[0];
+    d_[1] += p.d_[1];
+    return *this;
+  }
+  Point2& operator-=(const Point2& p) {
+    d_[0] -= p.d_[0];
+    d_[1] -= p.d_[1];
+    return *this;
+  }
+  Point2 operator+(const Point2& rhs) {
+    Point2 lhs(*this);
+    lhs += rhs;
+    return lhs;
+  }
+  Point2 operator-(const Point2& rhs) {
+    Point2 lhs(*this);
+    lhs -= rhs;
+    return lhs;
+  }
 
  private:
   std::array<T, 2> d_;  // <x, y>

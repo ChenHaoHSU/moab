@@ -78,6 +78,30 @@ TEST(Mutator, SetY) {
   EXPECT_EQ(p.y(), 4);
 }
 
+TEST(Mutator, Shift) {
+  Point2_i p(1, 2);
+  p.Shift(3, 4);
+
+  EXPECT_EQ(p.x(), 4);
+  EXPECT_EQ(p.y(), 6);
+}
+
+TEST(Mutator, ShiftX) {
+  Point2_i p(1, 2);
+  p.ShiftX(3);
+
+  EXPECT_EQ(p.x(), 4);
+  EXPECT_EQ(p.y(), 2);
+}
+
+TEST(Mutator, ShiftY) {
+  Point2_i p(1, 2);
+  p.ShiftY(4);
+
+  EXPECT_EQ(p.x(), 1);
+  EXPECT_EQ(p.y(), 6);
+}
+
 TEST(Operator, Assignment) {
   Point2_i p1(1, 2);
   Point2_i p2;
@@ -145,6 +169,54 @@ TEST(Operator, Subscript) {
 
   EXPECT_EQ(p[0], 1);
   EXPECT_EQ(p[1], 2);
+}
+
+TEST(Operator, AdditionAssignment) {
+  Point2_i p1(1, 2);
+  Point2_i p2(3, 4);
+  p1 += p2;
+
+  EXPECT_EQ(p1.x(), 4);
+  EXPECT_EQ(p1.y(), 6);
+  EXPECT_EQ(p2.x(), 3);
+  EXPECT_EQ(p2.y(), 4);
+}
+
+TEST(Operator, SubstractionAssignment) {
+  Point2_i p1(1, 2);
+  Point2_i p2(3, 4);
+  p1 -= p2;
+
+  EXPECT_EQ(p1.x(), -2);
+  EXPECT_EQ(p1.y(), -2);
+  EXPECT_EQ(p2.x(), 3);
+  EXPECT_EQ(p2.y(), 4);
+}
+
+TEST(Operator, Addition) {
+  Point2_i p1(1, 2);
+  Point2_i p2(3, 4);
+  Point2_i p3 = (p1 + p2);
+
+  EXPECT_EQ(p1.x(), 1);
+  EXPECT_EQ(p1.y(), 2);
+  EXPECT_EQ(p2.x(), 3);
+  EXPECT_EQ(p2.y(), 4);
+  EXPECT_EQ(p3.x(), 4);
+  EXPECT_EQ(p3.y(), 6);
+}
+
+TEST(Operator, Substraction) {
+  Point2_i p1(1, 2);
+  Point2_i p2(3, 4);
+  Point2_i p3 = (p1 - p2);
+
+  EXPECT_EQ(p1.x(), 1);
+  EXPECT_EQ(p1.y(), 2);
+  EXPECT_EQ(p2.x(), 3);
+  EXPECT_EQ(p2.y(), 4);
+  EXPECT_EQ(p3.x(), -2);
+  EXPECT_EQ(p3.y(), -2);
 }
 
 }  // namespace moab
