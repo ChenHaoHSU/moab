@@ -5,6 +5,8 @@
 
 #include <string>
 
+#include "absl/hash/hash_testing.h"
+
 namespace moab {
 
 TEST(Constructor, Default) {
@@ -320,11 +322,20 @@ TEST(StringConversion, ToString) {
   EXPECT_THAT(p1.ToString(), "(1, 2)");
 }
 
-TEST(StringConversion, AbslStringify) {
+TEST(StringConversion, SupportsAbslStringify) {
   Point2_i p1(1, 2);
   std::string s = absl::StrFormat("%v", p1);
 
   EXPECT_THAT(s, "(1, 2)");
+}
+
+TEST(Hash, SupportsAbslHash) {
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly({
+      Point2_i(),
+      Point2_i(1, 2),
+      Point2_i(2, 3),
+      Point2_i(0, -1),
+  }));
 }
 
 }  // namespace moab

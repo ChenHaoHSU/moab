@@ -4,6 +4,7 @@
 #include <string>
 #include <utility>
 
+#include "absl/hash/hash.h"
 #include "absl/log/log.h"
 #include "absl/strings/str_format.h"
 
@@ -119,6 +120,12 @@ class Point2 {
   friend std::ostream& operator<<(std::ostream& os, const Point2& p) {
     os << p.ToString();
     return os;
+  }
+
+  // Hash.
+  template <typename H>
+  friend H AbslHashValue(H h, const Point2& p) {
+    return H::combine(std::move(h), p.d_[0], p.d_[1]);
   }
 
  private:
