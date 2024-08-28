@@ -15,12 +15,35 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "point3",
+    hdrs = ["point3.h"],
+    deps = [
+        "@third_party_absl//absl/log:check",
+        "@third_party_absl//absl/log:log",
+        "@third_party_absl//absl/strings",
+        "@third_party_absl//absl/strings:str_format",
+    ],
+)
+
 cc_test(
     name = "point2_test",
     size = "small",
     srcs = ["point2_test.cc"],
     deps = [
         ":point2",
+        "@third_party_googletest//:gtest",
+        "@third_party_googletest//:gtest_main",
+    ],
+)
+
+
+cc_test(
+    name = "point3_test",
+    size = "small",
+    srcs = ["point3_test.cc"],
+    deps = [
+        ":point3",
         "@third_party_googletest//:gtest",
         "@third_party_googletest//:gtest_main",
     ],
