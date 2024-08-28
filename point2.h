@@ -2,12 +2,18 @@
 #include <cstdint>
 #include <ostream>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include "absl/hash/hash.h"
 #include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "boost/geometry/core/access.hpp"
+#include "boost/geometry/core/coordinate_dimension.hpp"
+#include "boost/geometry/core/coordinate_system.hpp"
+#include "boost/geometry/core/cs.hpp"
+#include "boost/polygon/point_concept.hpp"
 
 namespace moab {
 
@@ -147,8 +153,48 @@ class Point2 {
   std::array<T, 2> d_;  // <x, y>
 };
 
+// Aliases.
 using Point2_i = Point2<int>;
 using Point2_i32 = Point2<int32_t>;
 using Point2_i64 = Point2<int64_t>;
 
 }  // namespace moab
+
+// Boost geometry traits.
+namespace boost {
+namespace geometry {
+namespace traits {
+
+template <typename T>
+struct tag<moab::Point2<T>> {
+  using type = point_tag;
+};
+
+template <typename T>
+struct dimension<moab::Point2<T>> : boost::mpl::int_<2> {};
+
+template <typename T>
+struct coordinate_type<moab::Point2<T>> {
+  using type = T;
+};
+
+template <typename T>
+struct coordinate_system<moab::Point2<T>> {
+  using type = boost::geometry::cs::cartesian;
+};
+
+template <typename T>
+struct access<moab::Point2<T>, 0> {
+  static inline T get(moab::Point2<T> const& p) { return p.x(); }
+  static inline void set(moab::Point2<T>& p, T const& value) { p.SetX(value); }
+};
+
+template <typename T>
+struct access<moab::Point2<T>, 1> {
+  static inline T get(moab::Point2<T> const& p) { return p.y(); }
+  static inline void set(moab::Point2<T>& p, T const& value) { p.SetY(value); }
+};
+
+}  // namespace traits
+}  // namespace geometry
+}  // namespace boost

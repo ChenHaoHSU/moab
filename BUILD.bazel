@@ -11,6 +11,8 @@ cc_library(
         "@com_google_absl//absl/log:log",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
+        "@boost//:geometry",
+        "@boost//:polygon",
     ],
 )
 
