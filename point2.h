@@ -1,3 +1,6 @@
+#ifndef MOAB_POINT2_H_
+#define MOAB_POINT2_H_
+
 #include <array>
 #include <cstdint>
 #include <ostream>
@@ -23,7 +26,7 @@ class Point2 {
   // Constructors.
   Point2() : d_({0, 0}) {}
   explicit Point2(T x, T y) : d_({x, y}) {}
-  Point2(Point2& p) = default;
+  Point2(const Point2& p) = default;
   Point2(Point2&& p) = default;
   // Destructors.
   ~Point2() = default;
@@ -67,6 +70,9 @@ class Point2 {
   }
 
   // Operators.
+  // Operators - Subscript
+  T& operator[](int i) { return d_[i]; }
+  const T& operator[](int i) const { return d_.at(i); }
   // Operators - Assignment
   Point2& operator=(const Point2& p) {
     d_ = p.d_;
@@ -84,9 +90,6 @@ class Point2 {
   bool operator>(const Point2& p) const { return p < *this; }
   bool operator<=(const Point2& p) const { return !(*this > p); }
   bool operator>=(const Point2& p) const { return !(*this < p); }
-  // Operators - Subscript
-  T& operator[](int i) { return d_[i]; }
-  const T& operator[](int i) const { return d_.at(i); }
   // Operators - Arithmetic
   Point2& operator+=(const Point2& p) {
     d_[0] += p.d_[0];
@@ -198,3 +201,5 @@ struct access<moab::Point2<T>, 1> {
 }  // namespace traits
 }  // namespace geometry
 }  // namespace boost
+
+#endif  // MOAB_POINT2_H_

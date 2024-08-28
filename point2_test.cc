@@ -155,24 +155,27 @@ TEST(Operators, Assignment) {
 TEST(Operators, Equality) {
   Point2_i p1(1, 2);
   Point2_i p2(1, 2);
+  Point2_i p3(1, 3);
 
   EXPECT_TRUE(p1 == p2);
+  EXPECT_FALSE(p1 == p3);
   EXPECT_EQ(p1, p2);
 }
 
 TEST(Operators, NotEquality) {
   Point2_i p1(1, 2);
-  Point2_i p2(1, 3);
-  Point2_i p3(2, 2);
-  Point2_i p4(3, 4);
+  Point2_i p2(1, 2);
+  Point2_i p3(1, 3);
+  Point2_i p4(2, 2);
+  Point2_i p5(3, 4);
 
-  EXPECT_FALSE(p1 != p1);
-  EXPECT_TRUE(p1 != p2);
+  EXPECT_FALSE(p1 != p2);
   EXPECT_TRUE(p1 != p3);
   EXPECT_TRUE(p1 != p4);
-  EXPECT_NE(p1, p2);
+  EXPECT_TRUE(p1 != p5);
   EXPECT_NE(p1, p3);
   EXPECT_NE(p1, p4);
+  EXPECT_NE(p1, p5);
 }
 
 TEST(Operators, Inequality1) {
