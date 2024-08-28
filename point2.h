@@ -71,16 +71,39 @@ class Point2 {
     d_[1] -= p.d_[1];
     return *this;
   }
-  Point2 operator+(const Point2& rhs) {
-    Point2 lhs(*this);
-    lhs += rhs;
-    return lhs;
+  Point2 operator+(const Point2& p) {
+    return Point2(d_[0] + p.d_[0], d_[1] + p.d_[1]);
   }
-  Point2 operator-(const Point2& rhs) {
-    Point2 lhs(*this);
-    lhs -= rhs;
-    return lhs;
+  Point2 operator-(const Point2& p) {
+    return Point2(d_[0] - p.d_[0], d_[1] - p.d_[1]);
   }
+  Point2 operator+() const { return Point2(d_[0], d_[1]); }
+  Point2 operator-() const { return Point2(-d_[0], -d_[1]); }
+
+  Point2& operator+=(T v) {
+    d_[0] += v;
+    d_[1] += v;
+    return *this;
+  }
+  Point2& operator-=(T v) {
+    d_[0] -= v;
+    d_[1] -= v;
+    return *this;
+  }
+  Point2& operator*=(T v) {
+    d_[0] *= v;
+    d_[1] *= v;
+    return *this;
+  }
+  Point2& operator/=(T v) {
+    d_[0] /= v;
+    d_[1] /= v;
+    return *this;
+  }
+  Point2 operator+(T v) const { return Point2(d_[0] + v, d_[1] + v); }
+  Point2 operator-(T v) const { return Point2(d_[0] - v, d_[1] - v); }
+  Point2 operator*(T v) const { return Point2(d_[0] * v, d_[1] * v); }
+  Point2 operator/(T v) const { return Point2(d_[0] / v, d_[1] / v); }
 
  private:
   std::array<T, 2> d_;  // <x, y>

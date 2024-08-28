@@ -171,7 +171,7 @@ TEST(Operator, Subscript) {
   EXPECT_EQ(p[1], 2);
 }
 
-TEST(Operator, AdditionAssignment) {
+TEST(Operator, PointAdditionAssignment) {
   Point2_i p1(1, 2);
   Point2_i p2(3, 4);
   p1 += p2;
@@ -182,7 +182,7 @@ TEST(Operator, AdditionAssignment) {
   EXPECT_EQ(p2.y(), 4);
 }
 
-TEST(Operator, SubstractionAssignment) {
+TEST(Operator, PointSubstractionAssignment) {
   Point2_i p1(1, 2);
   Point2_i p2(3, 4);
   p1 -= p2;
@@ -193,7 +193,7 @@ TEST(Operator, SubstractionAssignment) {
   EXPECT_EQ(p2.y(), 4);
 }
 
-TEST(Operator, Addition) {
+TEST(Operator, PointAddition) {
   Point2_i p1(1, 2);
   Point2_i p2(3, 4);
   Point2_i p3 = (p1 + p2);
@@ -206,7 +206,7 @@ TEST(Operator, Addition) {
   EXPECT_EQ(p3.y(), 6);
 }
 
-TEST(Operator, Substraction) {
+TEST(Operator, PointSubstraction) {
   Point2_i p1(1, 2);
   Point2_i p2(3, 4);
   Point2_i p3 = (p1 - p2);
@@ -217,6 +217,98 @@ TEST(Operator, Substraction) {
   EXPECT_EQ(p2.y(), 4);
   EXPECT_EQ(p3.x(), -2);
   EXPECT_EQ(p3.y(), -2);
+}
+
+TEST(Operator, PointPositive) {
+  Point2_i p1(1, 2);
+  Point2_i p2 = +p1;
+
+  EXPECT_EQ(p1.x(), 1);
+  EXPECT_EQ(p1.y(), 2);
+  EXPECT_EQ(p2.x(), 1);
+  EXPECT_EQ(p2.y(), 2);
+}
+
+TEST(Operator, PointNegative) {
+  Point2_i p1(1, 2);
+  Point2_i p2 = -p1;
+
+  EXPECT_EQ(p1.x(), 1);
+  EXPECT_EQ(p1.y(), 2);
+  EXPECT_EQ(p2.x(), -1);
+  EXPECT_EQ(p2.y(), -2);
+}
+
+TEST(Operator, IntegerAdditionAssignment) {
+  Point2_i p1(1, 2);
+  p1 += 1;
+
+  EXPECT_EQ(p1.x(), 2);
+  EXPECT_EQ(p1.y(), 3);
+}
+
+TEST(Operator, IntegerSubstractionAssignment) {
+  Point2_i p1(1, 2);
+  p1 -= 1;
+
+  EXPECT_EQ(p1.x(), 0);
+  EXPECT_EQ(p1.y(), 1);
+}
+
+TEST(Operator, IntegerMultiplicationAssignment) {
+  Point2_i p1(1, 2);
+  p1 *= 2;
+
+  EXPECT_EQ(p1.x(), 2);
+  EXPECT_EQ(p1.y(), 4);
+}
+
+TEST(Operator, IntegerDivisionAssignment) {
+  Point2_i p1(2, 4);
+  p1 /= 2;
+
+  EXPECT_EQ(p1.x(), 1);
+  EXPECT_EQ(p1.y(), 2);
+}
+
+TEST(Operator, IntegerAddition) {
+  Point2_i p1(1, 2);
+  Point2_i p2 = p1 + 1;
+
+  EXPECT_EQ(p1.x(), 1);
+  EXPECT_EQ(p1.y(), 2);
+  EXPECT_EQ(p2.x(), 2);
+  EXPECT_EQ(p2.y(), 3);
+}
+
+TEST(Operator, IntegerSubstraction) {
+  Point2_i p1(1, 2);
+  Point2_i p2 = p1 - 1;
+
+  EXPECT_EQ(p1.x(), 1);
+  EXPECT_EQ(p1.y(), 2);
+  EXPECT_EQ(p2.x(), 0);
+  EXPECT_EQ(p2.y(), 1);
+}
+
+TEST(Operator, IntegerMultiplication) {
+  Point2_i p1(1, 2);
+  Point2_i p2 = p1 * 2;
+
+  EXPECT_EQ(p1.x(), 1);
+  EXPECT_EQ(p1.y(), 2);
+  EXPECT_EQ(p2.x(), 2);
+  EXPECT_EQ(p2.y(), 4);
+}
+
+TEST(Operator, IntegerDivision) {
+  Point2_i p1(2, 4);
+  Point2_i p2 = p1 / 2;
+
+  EXPECT_EQ(p1.x(), 2);
+  EXPECT_EQ(p1.y(), 4);
+  EXPECT_EQ(p2.x(), 1);
+  EXPECT_EQ(p2.y(), 2);
 }
 
 }  // namespace moab
