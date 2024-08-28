@@ -6,6 +6,7 @@
 
 #include "absl/hash/hash.h"
 #include "absl/log/log.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 
 namespace moab {
@@ -29,6 +30,8 @@ class Point2 {
 
   constexpr std::size_t Size() const { return d_.size(); }
 
+  std::pair<T, T> ToPair() const { return {d_[0], d_[1]}; }
+
   // Mutators.
   void Set(int x, int y) {
     d_[0] = x;
@@ -36,6 +39,7 @@ class Point2 {
   }
   void SetX(int x) { d_[0] = x; }
   void SetY(int y) { d_[1] = y; }
+  void SetDim(int i, T v) { d_[i] = v; }
 
   // Operations.
   void Shift(int dx, int dy) {
@@ -123,13 +127,11 @@ class Point2 {
   Point2 operator/(T v) const { return Point2(d_[0] / v, d_[1] / v); }
 
   // String conversion.
-  std::string ToString() const {
-    return absl::StrFormat("(%d, %d)", d_[0], d_[1]);
-  }
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const Point2& p) {
-    absl::Format(&sink, "(%d, %d)", p.d_[0], p.d_[1]);
+    absl::Format(&sink, "(%d %d)", p.d_[0], p.d_[1]);
   }
+  std::string ToString() const { return absl::StrCat(*this); }
   friend std::ostream& operator<<(std::ostream& os, const Point2& p) {
     os << p.ToString();
     return os;

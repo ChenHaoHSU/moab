@@ -9,6 +9,9 @@
 
 namespace moab {
 
+using ::testing::Pair;
+using ::testing::StrEq;
+
 TEST(Constructors, Default) {
   Point2_i p;
 
@@ -59,6 +62,13 @@ TEST(Accessors, Size) {
   EXPECT_EQ(p.Size(), 2);
 }
 
+TEST(Accessors, ToPair) {
+  Point2_i p(1, 2);
+  std::pair<int, int> p_pair = p.ToPair();
+
+  EXPECT_THAT(p_pair, Pair(1, 2));
+}
+
 TEST(Mutators, Set) {
   Point2_i p(1, 2);
   p.Set(3, 4);
@@ -80,6 +90,15 @@ TEST(Mutators, SetY) {
   p.SetY(4);
 
   EXPECT_EQ(p.x(), 1);
+  EXPECT_EQ(p.y(), 4);
+}
+
+TEST(Mutators, SetDim) {
+  Point2_i p(1, 2);
+  p.SetDim(0, 3);
+  p.SetDim(1, 4);
+
+  EXPECT_EQ(p.x(), 3);
   EXPECT_EQ(p.y(), 4);
 }
 
@@ -335,14 +354,14 @@ TEST(Operators, IntegerDivision) {
 TEST(StringConversion, ToString) {
   Point2_i p(1, 2);
 
-  EXPECT_THAT(p.ToString(), "(1, 2)");
+  EXPECT_THAT(p.ToString(), StrEq("(1 2)"));
 }
 
 TEST(StringConversion, SupportsAbslStringify) {
   Point2_i p(1, 2);
   std::string s = absl::StrFormat("%v", p);
 
-  EXPECT_THAT(s, "(1, 2)");
+  EXPECT_THAT(s, StrEq("(1 2)"));
 }
 
 TEST(Hash, SupportsAbslHash) {
