@@ -71,14 +71,18 @@ class Point2 {
   }
 
   // Operators.
-  // Operators - Subscript
-  T& operator[](std::size_t i) { return d_[i]; }
-  const T& operator[](std::size_t i) const { return d_.at(i); }
   // Operators - Assignment
   Point2& operator=(const Point2& p) {
     d_ = p.d_;
     return *this;
   }
+  Point2& operator=(Point2&& p) {
+    d_ = std::move(p.d_);
+    return *this;
+  }
+  // Operators - Subscript
+  T& operator[](std::size_t i) { return d_[i]; }
+  const T& operator[](std::size_t i) const { return d_.at(i); }
   // Operators - Equality
   bool operator==(const Point2& p) const {
     return d_[0] == p.d_[0] && d_[1] == p.d_[1];

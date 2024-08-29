@@ -101,9 +101,13 @@ class Box2 {
     d_ = b.d_;
     return *this;
   }
+  Box2& operator=(Box2&& b) {
+    d_ = std::move(b.d_);
+    return *this;
+  }
   // Operators - Subscript
-  Point2<T>& operator[](int i) { return d_[i]; }
-  const Point2<T>& operator[](int i) const { return d_.at(i); }
+  Point2<T>& operator[](std::size_t i) { return d_[i]; }
+  const Point2<T>& operator[](std::size_t i) const { return d_.at(i); }
   // Operators - Equality
   bool operator==(const Box2& b) const {
     return d_[0] == b.d_[0] && d_[1] == b.d_[1];

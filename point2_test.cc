@@ -144,13 +144,40 @@ TEST(Operations, Rotate180) {
   EXPECT_EQ(p.y(), -2);
 }
 
-TEST(Operators, Assignment) {
+TEST(Operators, AssignmentCopy) {
   Point2_i p1(1, 2);
   Point2_i p2;
+
   p2 = p1;
 
   EXPECT_EQ(p2.x(), 1);
   EXPECT_EQ(p2.y(), 2);
+}
+
+TEST(Operators, AssignmentMove) {
+  Point2_i p1(1, 2);
+  Point2_i p2;
+
+  p2 = std::move(p1);
+
+  EXPECT_EQ(p2.x(), 1);
+  EXPECT_EQ(p2.y(), 2);
+}
+
+TEST(Operators, SubscriptAccess) {
+  Point2_i p(1, 2);
+
+  EXPECT_EQ(p[0], 1);
+  EXPECT_EQ(p[1], 2);
+}
+
+TEST(Operators, SubscriptMutation) {
+  Point2_i p(1, 2);
+  p[0] = 3;
+  p[1] = 4;
+
+  EXPECT_EQ(p[0], 3);
+  EXPECT_EQ(p[1], 4);
 }
 
 TEST(Operators, Equality) {
@@ -207,13 +234,6 @@ TEST(Operators, Inequality3) {
   EXPECT_TRUE(p2 > p1);
   EXPECT_TRUE(p1 <= p2);
   EXPECT_TRUE(p2 >= p1);
-}
-
-TEST(Operators, Subscript) {
-  Point2_i p(1, 2);
-
-  EXPECT_EQ(p[0], 1);
-  EXPECT_EQ(p[1], 2);
 }
 
 TEST(Operators, PointAdditionAssignment) {
