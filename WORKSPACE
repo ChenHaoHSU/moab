@@ -1,5 +1,5 @@
 
-workspace(name = "third_party_moab")
+workspace(name = "moab")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository", "new_git_repository")
@@ -15,7 +15,7 @@ bazel_skylib_workspace()
 ## Bazel rules.
 ## Abseil-cpp
 git_repository(
-    name = "third_party_absl",
+    name = "com_google_absl",
     tag = "20240116.2",
     #patches = ["//patches:abseil-cpp-20240116.2.patch"],
     #patch_args = ["-p1"],
@@ -24,7 +24,7 @@ git_repository(
 
 ## Testing
 git_repository(
-    name = "third_party_googletest",
+    name = "com_google_googletest",
     tag = "v1.14.0",
     remote = "https://github.com/google/googletest.git",
 )
