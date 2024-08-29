@@ -16,7 +16,8 @@
 #include "boost/geometry/core/coordinate_system.hpp"
 #include "boost/geometry/core/cs.hpp"
 #include "boost/geometry/core/tag.hpp"
-#include "boost/polygon/point_concept.hpp"
+#include "boost/geometry/geometries/concepts/point_concept.hpp"
+#include "boost/polygon/polygon.hpp"
 
 namespace moab {
 
@@ -42,21 +43,21 @@ class Point2 {
   std::pair<T, T> ToPair() const { return {d_[0], d_[1]}; }
 
   // Mutators.
-  void Set(int x, int y) {
+  void Set(T x, T y) {
     d_[0] = x;
     d_[1] = y;
   }
-  void SetX(int x) { d_[0] = x; }
-  void SetY(int y) { d_[1] = y; }
-  void SetDim(int i, T v) { d_[i] = v; }
+  void SetX(T x) { d_[0] = x; }
+  void SetY(T y) { d_[1] = y; }
+  void SetDim(std::size_t i, T v) { d_[i] = v; }
 
   // Operations.
-  void Shift(int dx, int dy) {
+  void Shift(T dx, T dy) {
     d_[0] += dx;
     d_[1] += dy;
   }
-  void ShiftX(int dx) { d_[0] += dx; }
-  void ShiftY(int dy) { d_[1] += dy; }
+  void ShiftX(T dx) { d_[0] += dx; }
+  void ShiftY(T dy) { d_[1] += dy; }
   void Rotate90() {
     // Counterclockwise rotation by 90 degrees.
     T x = d_[0];
@@ -71,8 +72,8 @@ class Point2 {
 
   // Operators.
   // Operators - Subscript
-  T& operator[](int i) { return d_[i]; }
-  const T& operator[](int i) const { return d_.at(i); }
+  T& operator[](std::size_t i) { return d_[i]; }
+  const T& operator[](std::size_t i) const { return d_.at(i); }
   // Operators - Assignment
   Point2& operator=(const Point2& p) {
     d_ = p.d_;
@@ -164,9 +165,7 @@ using Point2_i64 = Point2<int64_t>;
 }  // namespace moab
 
 // Boost geometry traits.
-namespace boost {
-namespace geometry {
-namespace traits {
+namespace boost::geometry::traits {
 
 template <typename T>
 struct tag<moab::Point2<T>> {
@@ -198,8 +197,44 @@ struct access<moab::Point2<T>, 1> {
   static inline void set(moab::Point2<T>& p, T const& value) { p.SetY(value); }
 };
 
-}  // namespace traits
-}  // namespace geometry
-}  // namespace boost
+}  // namespace boost::geometry::traits
+
+// Boost polygon traits.
+namespace boost::polygon {
+
+template <typename T>
+struct geometry_concept<moab::Point2<T>> {
+  using type = point_concept;
+};
+
+template <typename T>
+struct point_traits<moab::Point2<T>> {
+  static inline T get(const moab::Point2<T>& p, orientation_2d orient) {
+    if (orient == HORIZONTAL) {
+      return p.x();
+    } else {
+      return p.y();
+    }
+  }
+};
+
+template <typename T>
+struct point_mutable_traits<moab::Point2<T>> {
+  typedef int coordinate_type;
+
+  static inline void set(moab::Point2<T>& point, orientation_2d orient,
+                         T value) {
+    if (orient == HORIZONTAL) {
+      point.SetX(value);
+    } else {
+      point.SetY(value);
+    }
+  }
+  static inline moab::Point2<T> construct(T x_value, T y_value) {
+    return moab::Point2<T>(x_value, y_value);
+  }
+};
+
+}  // namespace boost::polygon
 
 #endif  // MOAB_POINT2_H_

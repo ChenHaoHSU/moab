@@ -6,6 +6,7 @@
 #include <string>
 
 #include "absl/hash/hash_testing.h"
+#include "absl/strings/str_format.h"
 #include "point2.h"
 
 namespace moab {
@@ -73,11 +74,27 @@ TEST(Accessors, XLYLXHYH) {
   EXPECT_EQ(b.yh(), 4);
 }
 
+TEST(Accessors, MinXMinYMaxXMaxY) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
+
+  EXPECT_EQ(b.MinX(), 1);
+  EXPECT_EQ(b.MinY(), 2);
+  EXPECT_EQ(b.MaxX(), 3);
+  EXPECT_EQ(b.MaxY(), 4);
+}
+
 TEST(Accessors, WidthHeight) {
   Box2_i b(Point2_i(1, 2), Point2_i(3, 5));
 
   EXPECT_EQ(b.Width(), 2);
   EXPECT_EQ(b.Height(), 3);
+}
+
+TEST(Accessors, CenterXCenterY) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 6));
+
+  EXPECT_EQ(b.CenterX(), 2);
+  EXPECT_EQ(b.CenterY(), 4);
 }
 
 TEST(Accessors, Area) {
@@ -86,13 +103,27 @@ TEST(Accessors, Area) {
   EXPECT_EQ(b.Area(), 6);
 }
 
+TEST(Accessors, HalfPerimeter) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 5));
+
+  EXPECT_EQ(b.HalfPerimeter(), 5);
+}
+
 TEST(Accessors, Perimeter) {
   Box2_i b(Point2_i(1, 2), Point2_i(3, 5));
 
   EXPECT_EQ(b.Perimeter(), 10);
 }
 
-TEST(Mutators, Set) {
+TEST(Mutators, SetByFourCoordinates) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
+  b.Set(5, 6, 7, 8);
+
+  EXPECT_EQ(b.ll(), Point2_i(5, 6));
+  EXPECT_EQ(b.ur(), Point2_i(7, 8));
+}
+
+TEST(Mutators, SetByTwoPoints) {
   Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
   b.Set(Point2_i(5, 6), Point2_i(7, 8));
 
@@ -100,9 +131,41 @@ TEST(Mutators, Set) {
   EXPECT_EQ(b.ur(), Point2_i(7, 8));
 }
 
+TEST(Mutators, SetXL) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
+  b.set_xl(0);
+
+  EXPECT_EQ(b.ll(), Point2_i(0, 2));
+  EXPECT_EQ(b.ur(), Point2_i(3, 4));
+}
+
+TEST(Mutators, SetYL) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
+  b.set_yl(0);
+
+  EXPECT_EQ(b.ll(), Point2_i(1, 0));
+  EXPECT_EQ(b.ur(), Point2_i(3, 4));
+}
+
+TEST(Mutators, SetXH) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
+  b.set_xh(5);
+
+  EXPECT_EQ(b.ll(), Point2_i(1, 2));
+  EXPECT_EQ(b.ur(), Point2_i(5, 4));
+}
+
+TEST(Mutators, SetYH) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
+  b.set_yh(5);
+
+  EXPECT_EQ(b.ll(), Point2_i(1, 2));
+  EXPECT_EQ(b.ur(), Point2_i(3, 5));
+}
+
 TEST(Mutators, SetLL) {
   Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
-  b.SetLL(Point2_i(0, 1));
+  b.set_ll(Point2_i(0, 1));
 
   EXPECT_EQ(b.ll(), Point2_i(0, 1));
   EXPECT_EQ(b.ur(), Point2_i(3, 4));
@@ -110,7 +173,7 @@ TEST(Mutators, SetLL) {
 
 TEST(Mutators, SetUR) {
   Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
-  b.SetUR(Point2_i(5, 6));
+  b.set_ur(Point2_i(5, 6));
 
   EXPECT_EQ(b.ll(), Point2_i(1, 2));
   EXPECT_EQ(b.ur(), Point2_i(5, 6));
@@ -154,6 +217,58 @@ TEST(Operations, ShiftY) {
 
   EXPECT_EQ(b.ll(), Point2_i(1, 3));
   EXPECT_EQ(b.ur(), Point2_i(3, 5));
+}
+
+TEST(Operations, Expand) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
+  b.Expand(5);
+
+  EXPECT_EQ(b.ll(), Point2_i(-4, -3));
+  EXPECT_EQ(b.ur(), Point2_i(8, 9));
+
+  b.Expand(-3);
+
+  EXPECT_EQ(b.ll(), Point2_i(-1, 0));
+  EXPECT_EQ(b.ur(), Point2_i(5, 6));
+}
+
+TEST(Operations, ExpandXY) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
+  b.Expand(5, 6);
+
+  EXPECT_EQ(b.ll(), Point2_i(-4, -4));
+  EXPECT_EQ(b.ur(), Point2_i(8, 10));
+
+  b.Expand(-3, -2);
+
+  EXPECT_EQ(b.ll(), Point2_i(-1, -2));
+  EXPECT_EQ(b.ur(), Point2_i(5, 8));
+}
+
+TEST(Operations, ExpandX) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
+  b.ExpandX(5);
+
+  EXPECT_EQ(b.ll(), Point2_i(-4, 2));
+  EXPECT_EQ(b.ur(), Point2_i(8, 4));
+
+  b.ExpandX(-3);
+
+  EXPECT_EQ(b.ll(), Point2_i(-1, 2));
+  EXPECT_EQ(b.ur(), Point2_i(5, 4));
+}
+
+TEST(Operations, ExpandY) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
+  b.ExpandY(5);
+
+  EXPECT_EQ(b.ll(), Point2_i(1, -3));
+  EXPECT_EQ(b.ur(), Point2_i(3, 9));
+
+  b.ExpandY(-3);
+
+  EXPECT_EQ(b.ll(), Point2_i(1, 0));
+  EXPECT_EQ(b.ur(), Point2_i(3, 6));
 }
 
 TEST(Operators, Assignment) {
@@ -234,6 +349,29 @@ TEST(Operators, Inequality2) {
   EXPECT_TRUE(b1 >= b2);
   EXPECT_TRUE(b2 >= b1);
   EXPECT_TRUE(b2 <= b1);
+}
+
+TEST(StringConversion, ToString) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
+
+  EXPECT_THAT(b.ToString(), StrEq("((1 2) (3 4))"));
+}
+
+TEST(StringConversion, SupportsAbslStringify) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
+  std::string s = absl::StrFormat("%v", b);
+
+  EXPECT_THAT(s, StrEq("((1 2) (3 4))"));
+}
+
+TEST(Hash, SupportsAbslHash) {
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly({
+      Box2_i(),
+      Box2_i(1, 2, 3, 4),
+      Box2_i(1, 2, 3, 4),
+      Box2_i(Point2_i(1, 2), Point2_i(3, 4)),
+      Box2_i(Point2_i(4, 5), Point2_i(7, 6)),
+  }));
 }
 
 }  // namespace moab

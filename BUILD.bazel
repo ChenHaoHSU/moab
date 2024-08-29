@@ -24,6 +24,7 @@ cc_test(
         ":point2",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
+        "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/hash:hash_testing",
     ],
 )
@@ -51,6 +52,7 @@ cc_test(
         ":point2",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
+        "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/hash:hash_testing",
     ],
 )

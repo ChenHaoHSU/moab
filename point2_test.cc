@@ -6,6 +6,7 @@
 #include <string>
 
 #include "absl/hash/hash_testing.h"
+#include "absl/strings/str_format.h"
 
 namespace moab {
 
@@ -372,6 +373,7 @@ TEST(Hash, SupportsAbslHash) {
   EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly({
       Point2_i(),
       Point2_i(1, 2),
+      Point2_i(0, 0),
       Point2_i(2, 3),
       Point2_i(0, -1),
   }));
