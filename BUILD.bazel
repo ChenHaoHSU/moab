@@ -60,6 +60,7 @@ cc_library(
     hdrs = ["box2.h"],
     deps = [
         ":point2",
+        ":interval",
         "@com_google_absl//absl/log:check",
         "@com_google_absl//absl/log:log",
         "@com_google_absl//absl/strings",

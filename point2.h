@@ -17,50 +17,55 @@
 #include "boost/geometry/core/cs.hpp"
 #include "boost/geometry/core/tag.hpp"
 #include "boost/geometry/geometries/concepts/point_concept.hpp"
-#include "boost/polygon/polygon.hpp"
+#include "boost/polygon/point_concept.hpp"
 
 namespace moab {
 
 template <typename T>
 class Point2 {
  public:
+  // Type aliases.
+  using coordinate_type = T;
+
   // Constructors.
   Point2() : d_({0, 0}) {}
-  explicit Point2(T x, T y) : d_({x, y}) {}
+  explicit Point2(coordinate_type x, coordinate_type y) : d_({x, y}) {}
   Point2(const Point2& p) = default;
   Point2(Point2&& p) = default;
   // Destructors.
   ~Point2() = default;
 
   // Accessors.
-  T x() const { return d_[0]; }
-  T y() const { return d_[1]; }
-  T* data() { return d_.data(); }
-  const T* data() const { return d_.data(); }
+  coordinate_type x() const { return d_[0]; }
+  coordinate_type y() const { return d_[1]; }
+  coordinate_type* data() { return d_.data(); }
+  const coordinate_type* data() const { return d_.data(); }
 
   constexpr std::size_t Size() const { return d_.size(); }
 
-  std::pair<T, T> ToPair() const { return {d_[0], d_[1]}; }
+  std::pair<coordinate_type, coordinate_type> ToPair() const {
+    return {d_[0], d_[1]};
+  }
 
   // Mutators.
-  void Set(T x, T y) {
+  void Set(coordinate_type x, coordinate_type y) {
     d_[0] = x;
     d_[1] = y;
   }
-  void SetX(T x) { d_[0] = x; }
-  void SetY(T y) { d_[1] = y; }
-  void SetDim(std::size_t i, T v) { d_[i] = v; }
+  void SetX(coordinate_type x) { d_[0] = x; }
+  void SetY(coordinate_type y) { d_[1] = y; }
+  void SetDim(std::size_t i, coordinate_type v) { d_[i] = v; }
 
   // Operations.
-  void Shift(T dx, T dy) {
+  void Shift(coordinate_type dx, coordinate_type dy) {
     d_[0] += dx;
     d_[1] += dy;
   }
-  void ShiftX(T dx) { d_[0] += dx; }
-  void ShiftY(T dy) { d_[1] += dy; }
+  void ShiftX(coordinate_type dx) { d_[0] += dx; }
+  void ShiftY(coordinate_type dy) { d_[1] += dy; }
   void Rotate90() {
     // Counterclockwise rotation by 90 degrees.
-    T x = d_[0];
+    coordinate_type x = d_[0];
     d_[0] = -d_[1];
     d_[1] = x;
   }
@@ -81,8 +86,8 @@ class Point2 {
     return *this;
   }
   // Operators - Subscript
-  T& operator[](std::size_t i) { return d_[i]; }
-  const T& operator[](std::size_t i) const { return d_.at(i); }
+  coordinate_type& operator[](std::size_t i) { return d_[i]; }
+  const coordinate_type& operator[](std::size_t i) const { return d_.at(i); }
   // Operators - Equality
   bool operator==(const Point2& p) const {
     return d_[0] == p.d_[0] && d_[1] == p.d_[1];
@@ -115,30 +120,38 @@ class Point2 {
   Point2 operator+() const { return Point2(d_[0], d_[1]); }
   Point2 operator-() const { return Point2(-d_[0], -d_[1]); }
 
-  Point2& operator+=(T v) {
+  Point2& operator+=(coordinate_type v) {
     d_[0] += v;
     d_[1] += v;
     return *this;
   }
-  Point2& operator-=(T v) {
+  Point2& operator-=(coordinate_type v) {
     d_[0] -= v;
     d_[1] -= v;
     return *this;
   }
-  Point2& operator*=(T v) {
+  Point2& operator*=(coordinate_type v) {
     d_[0] *= v;
     d_[1] *= v;
     return *this;
   }
-  Point2& operator/=(T v) {
+  Point2& operator/=(coordinate_type v) {
     d_[0] /= v;
     d_[1] /= v;
     return *this;
   }
-  Point2 operator+(T v) const { return Point2(d_[0] + v, d_[1] + v); }
-  Point2 operator-(T v) const { return Point2(d_[0] - v, d_[1] - v); }
-  Point2 operator*(T v) const { return Point2(d_[0] * v, d_[1] * v); }
-  Point2 operator/(T v) const { return Point2(d_[0] / v, d_[1] / v); }
+  Point2 operator+(coordinate_type v) const {
+    return Point2(d_[0] + v, d_[1] + v);
+  }
+  Point2 operator-(coordinate_type v) const {
+    return Point2(d_[0] - v, d_[1] - v);
+  }
+  Point2 operator*(coordinate_type v) const {
+    return Point2(d_[0] * v, d_[1] * v);
+  }
+  Point2 operator/(coordinate_type v) const {
+    return Point2(d_[0] / v, d_[1] / v);
+  }
 
   // String conversion.
   template <typename Sink>
@@ -158,7 +171,7 @@ class Point2 {
   }
 
  private:
-  std::array<T, 2> d_;  // <x, y>
+  std::array<coordinate_type, 2> d_;  // <x, y>
 };  // class Point2
 
 // Aliases.
@@ -191,14 +204,28 @@ struct coordinate_system<moab::Point2<T>> {
 
 template <typename T>
 struct access<moab::Point2<T>, 0> {
-  static inline T get(moab::Point2<T> const& p) { return p.x(); }
-  static inline void set(moab::Point2<T>& p, T const& value) { p.SetX(value); }
+  using point_type = moab::Point2<T>;
+  using coordinate_type = typename point_type::coordinate_type;
+
+  static inline coordinate_type get(point_type const& point) {
+    return point[0];
+  }
+  static inline void set(point_type& point, coordinate_type const& value) {
+    point[0] = value;
+  }
 };
 
 template <typename T>
 struct access<moab::Point2<T>, 1> {
-  static inline T get(moab::Point2<T> const& p) { return p.y(); }
-  static inline void set(moab::Point2<T>& p, T const& value) { p.SetY(value); }
+  using point_type = moab::Point2<T>;
+  using coordinate_type = typename point_type::coordinate_type;
+
+  static inline coordinate_type get(point_type const& point) {
+    return point[1];
+  }
+  static inline void set(point_type& point, coordinate_type const& value) {
+    point[1] = value;
+  }
 };
 
 }  // namespace boost::geometry::traits
@@ -213,29 +240,26 @@ struct geometry_concept<moab::Point2<T>> {
 
 template <typename T>
 struct point_traits<moab::Point2<T>> {
-  static inline T get(const moab::Point2<T>& p, orientation_2d orient) {
-    if (orient == HORIZONTAL) {
-      return p.x();
-    } else {
-      return p.y();
-    }
+  using point_type = moab::Point2<T>;
+  using coordinate_type = typename point_type::coordinate_type;
+
+  static inline coordinate_type get(const point_type& point,
+                                    orientation_2d orient) {
+    return point[orient.to_int()];
   }
 };
 
 template <typename T>
 struct point_mutable_traits<moab::Point2<T>> {
-  typedef int coordinate_type;
+  using point_type = moab::Point2<T>;
+  using coordinate_type = typename point_type::coordinate_type;
 
-  static inline void set(moab::Point2<T>& point, orientation_2d orient,
-                         T value) {
-    if (orient == HORIZONTAL) {
-      point.SetX(value);
-    } else {
-      point.SetY(value);
-    }
+  static inline void set(point_type& point, orientation_2d orient,
+                         coordinate_type value) {
+    point[orient.to_int()] = value;
   }
-  static inline moab::Point2<T> construct(T x_value, T y_value) {
-    return moab::Point2<T>(x_value, y_value);
+  static inline point_type construct(coordinate_type x, coordinate_type y) {
+    return point_type(x, y);
   }
 };
 
