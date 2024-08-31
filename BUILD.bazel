@@ -16,17 +16,6 @@ cc_library(
     ],
 )
 
-cc_library(
-    name = "point3",
-    hdrs = ["point3.h"],
-    deps = [
-        "@third_party_absl//absl/log:check",
-        "@third_party_absl//absl/log:log",
-        "@third_party_absl//absl/strings",
-        "@third_party_absl//absl/strings:str_format",
-    ],
-)
-
 cc_test(
     name = "point2_test",
     size = "small",
@@ -37,6 +26,29 @@ cc_test(
         "@com_google_googletest//:gtest_main",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/hash:hash_testing",
+    ],
+)
+
+cc_library(
+    name = "point3",
+    hdrs = ["point3.h"],
+    deps = [
+        "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/log:log",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@boost//:geometry",
+    ],
+)
+
+cc_test(
+    name = "point3_test",
+    size = "small",
+    srcs = ["point3_test.cc"],
+    deps = [
+        ":point3",
+        "@third_party_googletest//:gtest",
+        "@third_party_googletest//:gtest_main",
     ],
 )
 
@@ -101,17 +113,6 @@ cc_library(
         ":box2",
         ":interval",
         ":point2",
-    ],
-)
-
-
-cc_test(
-    name = "point3_test",
-    size = "small",
-    srcs = ["point3_test.cc"],
-    deps = [
-        ":point3",
-        "@third_party_googletest//:gtest",
-        "@third_party_googletest//:gtest_main",
+        ":point3"
     ],
 )
