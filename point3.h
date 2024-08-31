@@ -190,7 +190,7 @@ class Point3 {
   }
 
  private:
-  std::array<T, 3> d_;  // (x, y)
+  std::array<T, 3> d_;  // (x, y, z)
 };
 
 // Aliases.
