@@ -53,6 +53,32 @@ cc_test(
 )
 
 cc_library(
+    name = "segment2",
+    hdrs = ["segment2.h", "point2.h"],
+    deps = [
+        "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/log:log",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@boost//:geometry",
+        "@boost//:polygon",
+    ],
+)
+
+cc_test(
+    name = "segment2_test",
+    size = "small",
+    srcs = ["segment2_test.cc"],
+    deps = [
+        ":segment2",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/hash:hash_testing",
+    ],
+)
+
+cc_library(
     name = "interval",
     hdrs = ["interval.h"],
     deps = [
@@ -113,6 +139,7 @@ cc_library(
         ":box2",
         ":interval",
         ":point2",
-        ":point3"
+        ":point3",
+        ":segment2"
     ],
 )
