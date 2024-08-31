@@ -39,11 +39,8 @@ class Point3 {
   const T* data() const { return d_.data(); }
   constexpr std::size_t Size() const { return d_.size(); }
 
-  std::array<T, 3>& data() { return d_; }
-  const std::array<T, 3>& data() const { return d_; }
-
   // Mutators.
-  void Set(T x, T y, Tz) {
+  void Set(T x, T y, T z) {
     d_[0] = x;
     d_[1] = y;
     d_[2] = z;
