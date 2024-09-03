@@ -7,6 +7,7 @@
 #include "absl/log/check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "boost/polygon/polygon.hpp"
 
 namespace moab {
 
@@ -14,6 +15,9 @@ namespace moab {
 template <typename T>
 class Interval {
  public:
+  // Type aliases. (Required by Boost polygon traits.)
+  using coordinate_type = T;
+
   // Constructors.
   Interval() : d_({0, 0}) {}
   explicit Interval(T lo, T hi) : d_() { Set(lo, hi); }
@@ -129,5 +133,40 @@ using Interval_i32 = Interval<int32_t>;
 using Interval_i64 = Interval<int64_t>;
 
 }  // namespace moab
+
+// Boost polygon traits.
+namespace boost::polygon {
+
+template <typename T>
+struct geometry_concept<moab::Interval<T>> {
+  using type = interval_concept;
+};
+
+template <typename T>
+struct interval_traits<moab::Interval<T>> {
+  using interval_type = moab::Interval<T>;
+  using coordinate_type = typename interval_type::coordinate_type;
+
+  static inline coordinate_type get(const interval_type& i, direction_1d dir) {
+    return i[dir.to_int()];
+  }
+};
+
+template <typename T>
+struct interval_mutable_traits<moab::Interval<T>> {
+  using interval_type = moab::Interval<T>;
+  using coordinate_type = typename interval_type::coordinate_type;
+
+  static inline void set(interval_type& i, direction_1d dir,
+                         coordinate_type value) {
+    i[dir.to_int()] = value;
+  }
+  static inline moab::Interval<T> construct(coordinate_type lo,
+                                            coordinate_type hi) {
+    return interval_type(lo, hi);
+  }
+};
+
+}  // namespace boost::polygon
 
 #endif  // MOAB_INTERVAL_H_

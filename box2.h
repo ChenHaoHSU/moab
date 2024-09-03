@@ -5,7 +5,14 @@
 #include <cstdint>
 
 #include "absl/log/check.h"
+#include "boost/geometry/core/access.hpp"
+#include "boost/geometry/core/coordinate_dimension.hpp"
+#include "boost/geometry/core/coordinate_system.hpp"
+#include "boost/geometry/core/cs.hpp"
 #include "boost/geometry/core/tag.hpp"
+#include "boost/geometry/geometries/concepts/box_concept.hpp"
+#include "boost/polygon/polygon.hpp"
+#include "interval.h"
 #include "point2.h"
 
 namespace moab {
@@ -13,6 +20,11 @@ namespace moab {
 template <typename T>
 class Box2 {
  public:
+  // Type aliases. (Required by Boost geometry/polygon traits.)
+  using coordinate_type = T;
+  using point_type = Point2<T>;
+  using interval_type = Interval<T>;
+
   // Constructors.
   Box2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
   explicit Box2(const Point2<T>& p1, const Point2<T>& p2) { Set(p1, p2); }
@@ -159,28 +171,93 @@ struct tag<moab::Box2<T>> {
 
 template <typename T>
 struct indexed_access<moab::Box2<T>, min_corner, 0> {
-  static inline T get(moab::Box2<T> const& b) { return b.xl(); }
-  static inline void set(moab::Box2<T>& b, T const& value) { b.set_xl(value); }
+  using box_type = moab::Box2<T>;
+  using coordinate_type = typename box_type::coordinate_type;
+
+  static inline coordinate_type get(box_type const& b) { return b[0][0]; }
+  static inline void set(box_type& b, coordinate_type const& value) {
+    b[0][0] = value;
+  }
 };
 
 template <typename T>
 struct indexed_access<moab::Box2<T>, min_corner, 1> {
-  static inline T get(moab::Box2<T> const& b) { return b.yl(); }
-  static inline void set(moab::Box2<T>& b, T const& value) { b.set_yl(value); }
+  using box_type = moab::Box2<T>;
+  using coordinate_type = typename box_type::coordinate_type;
+
+  static inline coordinate_type get(box_type const& b) { return b[0][1]; }
+  static inline void set(box_type& b, coordinate_type const& value) {
+    b[0][1] = value;
+  }
 };
 
 template <typename T>
 struct indexed_access<moab::Box2<T>, max_corner, 0> {
-  static inline T get(moab::Box2<T> const& b) { return b.xh(); }
-  static inline void set(moab::Box2<T>& b, T const& value) { b.set_xh(value); }
+  using box_type = moab::Box2<T>;
+  using coordinate_type = typename box_type::coordinate_type;
+
+  static inline coordinate_type get(box_type const& b) { return b[1][0]; }
+  static inline void set(box_type& b, coordinate_type const& value) {
+    b[1][0] = value;
+  }
 };
 
 template <typename T>
 struct indexed_access<moab::Box2<T>, max_corner, 1> {
-  static inline T get(moab::Box2<T> const& b) { return b.yh(); }
-  static inline void set(moab::Box2<T>& b, T const& value) { b.set_yh(value); }
+  using box_type = moab::Box2<T>;
+  using coordinate_type = typename box_type::coordinate_type;
+
+  static inline coordinate_type get(box_type const& b) { return b[1][1]; }
+  static inline void set(box_type& b, coordinate_type const& value) {
+    b[1][1] = value;
+  }
 };
 
 }  // namespace boost::geometry::traits
+
+// Boost polygon traits.
+namespace boost::polygon {
+
+template <typename T>
+struct geometry_concept<moab::Box2<T>> {
+  using type = rectangle_concept;
+};
+
+template <typename T>
+struct rectangle_traits<
+    moab::Box2<T>, typename gtl_same_type<typename T::interval_type,
+                                          typename T::interval_type>::type> {
+  using coordinate_type = typename moab::Box2<T>::coordinate_type;
+  using interval_type = typename moab::Box2<T>::interval_type;
+
+  static inline interval_type get(const moab::Box2<T>& rectangle,
+                                  orientation_2d orient) {
+    return interval_mutable_traits<interval_type>::construct(
+        rectangle[0][orient.to_int()], rectangle[1][orient.to_int()]);
+  }
+};
+
+template <typename T>
+struct rectangle_mutable_traits<moab::Box2<T>> {
+  using coordinate_type = typename moab::Box2<T>::coordinate_type;
+  using interval_type = typename moab::Box2<T>::interval_type;
+
+  template <typename T2>
+  static inline void set(T& rectangle, orientation_2d orient,
+                         const T2& interval) {
+    rectangle[0][orient.to_int()] = interval_traits<T2>::get(interval, LOW);
+    rectangle[1][orient.to_int()] = interval_traits<T2>::get(interval, HIGH);
+  }
+  template <typename T2, typename T3>
+  static inline moab::Box2<T> construct(const T2& interval_horizontal,
+                                        const T3& interval_vertical) {
+    return moab::Box2<T>(interval_traits<T2>::get(interval_horizontal, LOW),
+                         interval_traits<T3>::get(interval_vertical, LOW),
+                         interval_traits<T2>::get(interval_horizontal, HIGH),
+                         interval_traits<T3>::get(interval_vertical, HIGH));
+  }
+};
+
+}  // namespace boost::polygon
 
 #endif  // MOAB_BOX2_H_

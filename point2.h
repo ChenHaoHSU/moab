@@ -17,13 +17,16 @@
 #include "boost/geometry/core/cs.hpp"
 #include "boost/geometry/core/tag.hpp"
 #include "boost/geometry/geometries/concepts/point_concept.hpp"
-#include "boost/polygon/polygon.hpp"
+#include "boost/polygon/point_concept.hpp"
 
 namespace moab {
 
 template <typename T>
 class Point2 {
  public:
+  // Type aliases. (Required by Boost geometry/polygon traits.)
+  using coordinate_type = T;
+
   // Constructors.
   Point2() : d_({0, 0}) {}
   explicit Point2(T x, T y) : d_({x, y}) {}
@@ -191,14 +194,26 @@ struct coordinate_system<moab::Point2<T>> {
 
 template <typename T>
 struct access<moab::Point2<T>, 0> {
-  static inline T get(moab::Point2<T> const& p) { return p.x(); }
-  static inline void set(moab::Point2<T>& p, T const& value) { p.SetX(value); }
+  using coordinate_type = typename moab::Point2<T>::coordinate_type;
+
+  static inline coordinate_type get(moab::Point2<T> const& point) {
+    return point[0];
+  }
+  static inline void set(moab::Point2<T>& point, coordinate_type const& value) {
+    point[0] = value;
+  }
 };
 
 template <typename T>
 struct access<moab::Point2<T>, 1> {
-  static inline T get(moab::Point2<T> const& p) { return p.y(); }
-  static inline void set(moab::Point2<T>& p, T const& value) { p.SetY(value); }
+  using coordinate_type = typename moab::Point2<T>::coordinate_type;
+
+  static inline coordinate_type get(moab::Point2<T> const& point) {
+    return point[1];
+  }
+  static inline void set(moab::Point2<T>& point, coordinate_type const& value) {
+    point[1] = value;
+  }
 };
 
 }  // namespace boost::geometry::traits
@@ -213,29 +228,25 @@ struct geometry_concept<moab::Point2<T>> {
 
 template <typename T>
 struct point_traits<moab::Point2<T>> {
-  static inline T get(const moab::Point2<T>& p, orientation_2d orient) {
-    if (orient == HORIZONTAL) {
-      return p.x();
-    } else {
-      return p.y();
-    }
+  using coordinate_type = typename moab::Point2<T>::coordinate_type;
+
+  static inline coordinate_type get(const moab::Point2<T>& point,
+                                    orientation_2d orient) {
+    return point[orient.to_int()];
   }
 };
 
 template <typename T>
 struct point_mutable_traits<moab::Point2<T>> {
-  typedef int coordinate_type;
+  using coordinate_type = typename moab::Point2<T>::coordinate_type;
 
   static inline void set(moab::Point2<T>& point, orientation_2d orient,
-                         T value) {
-    if (orient == HORIZONTAL) {
-      point.SetX(value);
-    } else {
-      point.SetY(value);
-    }
+                         coordinate_type value) {
+    point[orient.to_int()] = value;
   }
-  static inline moab::Point2<T> construct(T x_value, T y_value) {
-    return moab::Point2<T>(x_value, y_value);
+  static inline moab::Point2<T> construct(coordinate_type x,
+                                          coordinate_type y) {
+    return moab::Point2<T>(x, y);
   }
 };
 
