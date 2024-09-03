@@ -15,51 +15,49 @@ namespace moab {
 template <typename T>
 class Interval {
  public:
-  // Type aliases.
+  // Type aliases. (Required by Boost polygon traits.)
   using coordinate_type = T;
 
   // Constructors.
   Interval() : d_({0, 0}) {}
-  explicit Interval(coordinate_type lo, coordinate_type hi) : d_() {
-    Set(lo, hi);
-  }
+  explicit Interval(T lo, T hi) : d_() { Set(lo, hi); }
   Interval(const Interval& i) = default;
   Interval(Interval&& i) = default;
   ~Interval() = default;
 
   // Accessors.
-  coordinate_type lo() const { return d_[0]; }
-  coordinate_type hi() const { return d_[1]; }
-  coordinate_type* data() { return d_.data(); }
-  const coordinate_type* data() const { return d_.data(); }
+  T lo() const { return d_[0]; }
+  T hi() const { return d_[1]; }
+  T* data() { return d_.data(); }
+  const T* data() const { return d_.data(); }
 
-  coordinate_type Min() const { return d_[0]; }
-  coordinate_type Max() const { return d_[1]; }
+  T Min() const { return d_[0]; }
+  T Max() const { return d_[1]; }
 
-  coordinate_type Length() const { return d_[1] - d_[0]; }
-  coordinate_type Size() const { return d_[1] - d_[0]; }
+  T Length() const { return d_[1] - d_[0]; }
+  T Size() const { return d_[1] - d_[0]; }
 
   // Mutators.
-  void Set(coordinate_type lo, coordinate_type hi) {
+  void Set(T lo, T hi) {
     DCHECK(lo <= hi) << "Invalid interval. low: " << lo << ", high: " << hi;
     d_[0] = lo;
     d_[1] = hi;
   }
 
-  void set_lo(coordinate_type v) { Set(v, hi()); }
-  void set_hi(coordinate_type v) { Set(lo(), v); }
+  void set_lo(T v) { Set(v, hi()); }
+  void set_hi(T v) { Set(lo(), v); }
 
-  void SetMin(coordinate_type v) { Set(v, hi()); }
-  void SetMax(coordinate_type v) { Set(lo(), v); }
+  void SetMin(T v) { Set(v, hi()); }
+  void SetMax(T v) { Set(lo(), v); }
 
   // Queries.
-  bool Contains(coordinate_type v) const { return lo() <= v && v <= hi(); }
+  bool Contains(T v) const { return lo() <= v && v <= hi(); }
   bool Contains(const Interval& i) const {
     return lo() <= i.lo() && i.hi() <= hi();
   }
 
   // Operations.
-  void Shift(coordinate_type d) {
+  void Shift(T d) {
     d_[0] += d;
     d_[1] += d;
   }
@@ -75,8 +73,8 @@ class Interval {
     return *this;
   }
   // Operators - Subscript.
-  coordinate_type& operator[](std::size_t i) { return d_[i]; }
-  const coordinate_type& operator[](std::size_t i) const { return d_.at(i); }
+  T& operator[](std::size_t i) { return d_[i]; }
+  const T& operator[](std::size_t i) const { return d_.at(i); }
   // Operators - Equality.
   bool operator==(const Interval& i) const {
     return d_[0] == i.d_[0] && d_[1] == i.d_[1];
@@ -90,20 +88,20 @@ class Interval {
   bool operator<=(const Interval& i) const { return !(*this > i); }
   bool operator>=(const Interval& i) const { return !(*this < i); }
   // Operators - Arithmetic.
-  Interval& operator+=(coordinate_type d) {
+  Interval& operator+=(T d) {
     Shift(d);
     return *this;
   }
-  Interval& operator-=(coordinate_type d) {
+  Interval& operator-=(T d) {
     Shift(-d);
     return *this;
   }
-  Interval operator+(coordinate_type d) const {
+  Interval operator+(T d) const {
     Interval i(*this);
     i += d;
     return i;
   }
-  Interval operator-(coordinate_type d) const {
+  Interval operator-(T d) const {
     Interval i(*this);
     i -= d;
     return i;
@@ -127,7 +125,7 @@ class Interval {
   }
 
  private:
-  std::array<coordinate_type, 2> d_;  // <low, high>
+  std::array<T, 2> d_;  // <low, high>
 };  // class Interval
 
 using Interval_i = Interval<int>;

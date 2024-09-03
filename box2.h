@@ -20,98 +20,92 @@ namespace moab {
 template <typename T>
 class Box2 {
  public:
-  // Type aliases.
+  // Type aliases. (Required by Boost geometry/polygon traits.)
   using coordinate_type = T;
   using point_type = Point2<T>;
   using interval_type = Interval<T>;
 
   // Constructors.
-  Box2() : d_({point_type(0, 0), point_type(0, 0)}) {}
-  explicit Box2(const point_type& p1, const point_type& p2) { Set(p1, p2); }
-  explicit Box2(coordinate_type xl, coordinate_type yl, coordinate_type xh,
-                coordinate_type yh) {
-    Set(point_type(xl, yl), point_type(xh, yh));
+  Box2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
+  explicit Box2(const Point2<T>& p1, const Point2<T>& p2) { Set(p1, p2); }
+  explicit Box2(T xl, T yl, T xh, T yh) {
+    Set(Point2<T>(xl, yl), Point2<T>(xh, yh));
   }
   Box2(const Box2& b) = default;
   Box2(Box2&& b) = default;
   ~Box2() = default;
 
   // Accessors.
-  point_type& ll() { return d_[0]; }
-  const point_type& ll() const { return d_[0]; }
-  point_type& ur() { return d_[1]; }
-  const point_type& ur() const { return d_[1]; }
+  Point2<T>& ll() { return d_[0]; }
+  const Point2<T>& ll() const { return d_[0]; }
+  Point2<T>& ur() { return d_[1]; }
+  const Point2<T>& ur() const { return d_[1]; }
 
-  point_type& MinCorner() { return d_[0]; }
-  const point_type& MinCorner() const { return d_[0]; }
-  point_type& MaxCorner() { return d_[1]; }
-  const point_type& MaxCorner() const { return d_[1]; }
+  Point2<T>& MinCorner() { return d_[0]; }
+  const Point2<T>& MinCorner() const { return d_[0]; }
+  Point2<T>& MaxCorner() { return d_[1]; }
+  const Point2<T>& MaxCorner() const { return d_[1]; }
 
-  coordinate_type xl() const { return d_[0].x(); }
-  coordinate_type yl() const { return d_[0].y(); }
-  coordinate_type xh() const { return d_[1].x(); }
-  coordinate_type yh() const { return d_[1].y(); }
+  T xl() const { return d_[0].x(); }
+  T yl() const { return d_[0].y(); }
+  T xh() const { return d_[1].x(); }
+  T yh() const { return d_[1].y(); }
 
-  coordinate_type MinX() const { return d_[0].x(); }
-  coordinate_type MinY() const { return d_[0].y(); }
-  coordinate_type MaxX() const { return d_[1].x(); }
-  coordinate_type MaxY() const { return d_[1].y(); }
+  T MinX() const { return d_[0].x(); }
+  T MinY() const { return d_[0].y(); }
+  T MaxX() const { return d_[1].x(); }
+  T MaxY() const { return d_[1].y(); }
 
-  coordinate_type Width() const { return d_[1].x() - d_[0].x(); }
-  coordinate_type Height() const { return d_[1].y() - d_[0].y(); }
+  T Width() const { return d_[1].x() - d_[0].x(); }
+  T Height() const { return d_[1].y() - d_[0].y(); }
 
-  coordinate_type CenterX() const { return (d_[0].x() + d_[1].x()) / 2; }
-  coordinate_type CenterY() const { return (d_[0].y() + d_[1].y()) / 2; }
+  T CenterX() const { return (d_[0].x() + d_[1].x()) / 2; }
+  T CenterY() const { return (d_[0].y() + d_[1].y()) / 2; }
 
-  coordinate_type Area() const { return Width() * Height(); }
-  coordinate_type HalfPerimeter() const { return (Width() + Height()); }
-  coordinate_type Perimeter() const { return 2 * (Width() + Height()); }
+  T Area() const { return Width() * Height(); }
+  T HalfPerimeter() const { return (Width() + Height()); }
+  T Perimeter() const { return 2 * (Width() + Height()); }
 
   // Mutators.
-  void Set(coordinate_type xl, coordinate_type yl, coordinate_type xh,
-           coordinate_type yh) {
+  void Set(T xl, T yl, T xh, T yh) {
     DCHECK(xl <= xh && yl <= yh) << "Invalid box. xl: " << xl << ", yl: " << yl
                                  << ", xh: " << xh << ", yh: " << yh;
     d_[0].Set(xl, yl);
     d_[1].Set(xh, yh);
   }
-  void Set(const point_type& ll, const point_type& ur) {
+  void Set(const Point2<T>& ll, const Point2<T>& ur) {
     Set(ll.x(), ll.y(), ur.x(), ur.y());
   }
 
-  void set_xl(coordinate_type xl) { Set(xl, yl(), xh(), yh()); }
-  void set_yl(coordinate_type yl) { Set(xl(), yl, xh(), yh()); }
-  void set_xh(coordinate_type xh) { Set(xl(), yl(), xh, yh()); }
-  void set_yh(coordinate_type yh) { Set(xl(), yl(), xh(), yh); }
-  void set_ll(const point_type& p) { Set(p.x(), p.y(), xh(), yh()); }
-  void set_ur(const point_type& p) { Set(xl(), yl(), p.x(), p.y()); }
+  void set_xl(T xl) { Set(xl, yl(), xh(), yh()); }
+  void set_yl(T yl) { Set(xl(), yl, xh(), yh()); }
+  void set_xh(T xh) { Set(xl(), yl(), xh, yh()); }
+  void set_yh(T yh) { Set(xl(), yl(), xh(), yh); }
+  void set_ll(const Point2<T>& p) { Set(p.x(), p.y(), xh(), yh()); }
+  void set_ur(const Point2<T>& p) { Set(xl(), yl(), p.x(), p.y()); }
 
-  void SetMinCorner(const point_type& p) { Set(p.x(), p.y(), xh(), yh()); }
-  void SetMaxCorner(const point_type& p) { Set(xl(), yl(), p.x(), p.y()); }
+  void SetMinCorner(const Point2<T>& p) { Set(p.x(), p.y(), xh(), yh()); }
+  void SetMaxCorner(const Point2<T>& p) { Set(xl(), yl(), p.x(), p.y()); }
 
   // Operations.
   // Operations - Shift (It's safe. No need to check for validity.)
-  void Shift(coordinate_type dx, coordinate_type dy) {
+  void Shift(T dx, T dy) {
     d_[0].Shift(dx, dy);
     d_[1].Shift(dx, dy);
   }
-  void ShiftX(coordinate_type dx) {
+  void ShiftX(T dx) {
     d_[0].ShiftX(dx);
     d_[1].ShiftX(dx);
   }
-  void ShiftY(coordinate_type dy) {
+  void ShiftY(T dy) {
     d_[0].ShiftY(dy);
     d_[1].ShiftY(dy);
   }
   // Operations - Expand (It's unsafe. Need to check for validity.)
-  void Expand(coordinate_type d) {
-    Set(xl() - d, yl() - d, xh() + d, yh() + d);
-  }
-  void Expand(coordinate_type dx, coordinate_type dy) {
-    Set(xl() - dx, yl() - dy, xh() + dx, yh() + dy);
-  }
-  void ExpandX(coordinate_type dx) { Set(xl() - dx, yl(), xh() + dx, yh()); }
-  void ExpandY(coordinate_type dy) { Set(xl(), yl() - dy, xh(), yh() + dy); }
+  void Expand(T d) { Set(xl() - d, yl() - d, xh() + d, yh() + d); }
+  void Expand(T dx, T dy) { Set(xl() - dx, yl() - dy, xh() + dx, yh() + dy); }
+  void ExpandX(T dx) { Set(xl() - dx, yl(), xh() + dx, yh()); }
+  void ExpandY(T dy) { Set(xl(), yl() - dy, xh(), yh() + dy); }
 
   // Operators.
   // Operators - Assignment
@@ -124,8 +118,8 @@ class Box2 {
     return *this;
   }
   // Operators - Subscript
-  point_type& operator[](std::size_t i) { return d_[i]; }
-  const point_type& operator[](std::size_t i) const { return d_.at(i); }
+  Point2<T>& operator[](std::size_t i) { return d_[i]; }
+  const Point2<T>& operator[](std::size_t i) const { return d_.at(i); }
   // Operators - Equality
   bool operator==(const Box2& b) const {
     return d_[0] == b.d_[0] && d_[1] == b.d_[1];
@@ -157,7 +151,7 @@ class Box2 {
   }
 
  private:
-  std::array<point_type, 2> d_;
+  std::array<Point2<T>, 2> d_;
 };  // class Box2
 
 // Aliases.
@@ -233,11 +227,10 @@ template <typename T>
 struct rectangle_traits<
     moab::Box2<T>, typename gtl_same_type<typename T::interval_type,
                                           typename T::interval_type>::type> {
-  using rectangle_type = moab::Box2<T>;
-  using coordinate_type = typename rectangle_type::coordinate_type;
-  using interval_type = typename rectangle_type::interval_type;
+  using coordinate_type = typename moab::Box2<T>::coordinate_type;
+  using interval_type = typename moab::Box2<T>::interval_type;
 
-  static inline interval_type get(const rectangle_type& rectangle,
+  static inline interval_type get(const moab::Box2<T>& rectangle,
                                   orientation_2d orient) {
     return interval_mutable_traits<interval_type>::construct(
         rectangle[0][orient.to_int()], rectangle[1][orient.to_int()]);
@@ -246,9 +239,8 @@ struct rectangle_traits<
 
 template <typename T>
 struct rectangle_mutable_traits<moab::Box2<T>> {
-  using rectangle_type = moab::Box2<T>;
-  using coordinate_type = typename rectangle_type::coordinate_type;
-  using interval_type = typename rectangle_type::interval_type;
+  using coordinate_type = typename moab::Box2<T>::coordinate_type;
+  using interval_type = typename moab::Box2<T>::interval_type;
 
   template <typename T2>
   static inline void set(T& rectangle, orientation_2d orient,
@@ -257,12 +249,12 @@ struct rectangle_mutable_traits<moab::Box2<T>> {
     rectangle[1][orient.to_int()] = interval_traits<T2>::get(interval, HIGH);
   }
   template <typename T2, typename T3>
-  static inline rectangle_type construct(const T2& interval_horizontal,
-                                         const T3& interval_vertical) {
-    return rectangle_type(interval_traits<T2>::get(interval_horizontal, LOW),
-                          interval_traits<T3>::get(interval_vertical, LOW),
-                          interval_traits<T2>::get(interval_horizontal, HIGH),
-                          interval_traits<T3>::get(interval_vertical, HIGH));
+  static inline moab::Box2<T> construct(const T2& interval_horizontal,
+                                        const T3& interval_vertical) {
+    return moab::Box2<T>(interval_traits<T2>::get(interval_horizontal, LOW),
+                         interval_traits<T3>::get(interval_vertical, LOW),
+                         interval_traits<T2>::get(interval_horizontal, HIGH),
+                         interval_traits<T3>::get(interval_vertical, HIGH));
   }
 };
 
