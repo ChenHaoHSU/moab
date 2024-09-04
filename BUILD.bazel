@@ -179,5 +179,6 @@ cc_library(
         ":point2",
         ":point3",
         ":segment2",
+        ":segment3",
     ],
 )
