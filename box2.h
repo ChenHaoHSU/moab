@@ -28,9 +28,7 @@ class Box2 {
   // Constructors.
   Box2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
   explicit Box2(const Point2<T>& p1, const Point2<T>& p2) { Set(p1, p2); }
-  explicit Box2(T xl, T yl, T xh, T yh) {
-    Set(Point2<T>(xl, yl), Point2<T>(xh, yh));
-  }
+  explicit Box2(T xl, T yl, T xh, T yh) { Set(xl, yl, xh, yh); }
   Box2(const Box2& b) = default;
   Box2(Box2&& b) = default;
   ~Box2() = default;
@@ -225,8 +223,9 @@ struct geometry_concept<moab::Box2<T>> {
 
 template <typename T>
 struct rectangle_traits<
-    moab::Box2<T>, typename gtl_same_type<typename T::interval_type,
-                                          typename T::interval_type>::type> {
+    moab::Box2<T>,
+    typename gtl_same_type<typename moab::Box2<T>::interval_type,
+                           typename moab::Box2<T>::interval_type>::type> {
   using coordinate_type = typename moab::Box2<T>::coordinate_type;
   using interval_type = typename moab::Box2<T>::interval_type;
 
@@ -243,18 +242,19 @@ struct rectangle_mutable_traits<moab::Box2<T>> {
   using interval_type = typename moab::Box2<T>::interval_type;
 
   template <typename T2>
-  static inline void set(T& rectangle, orientation_2d orient,
+  static inline void set(moab::Box2<T>& rectangle, orientation_2d orient,
                          const T2& interval) {
     rectangle[0][orient.to_int()] = interval_traits<T2>::get(interval, LOW);
     rectangle[1][orient.to_int()] = interval_traits<T2>::get(interval, HIGH);
   }
-  template <typename T2, typename T3>
-  static inline moab::Box2<T> construct(const T2& interval_horizontal,
-                                        const T3& interval_vertical) {
-    return moab::Box2<T>(interval_traits<T2>::get(interval_horizontal, LOW),
-                         interval_traits<T3>::get(interval_vertical, LOW),
-                         interval_traits<T2>::get(interval_horizontal, HIGH),
-                         interval_traits<T3>::get(interval_vertical, HIGH));
+  static inline moab::Box2<T> construct(
+      const interval_type& interval_horizontal,
+      const interval_type& interval_vertical) {
+    return moab::Box2<T>(
+        interval_traits<interval_type>::get(interval_horizontal, LOW),
+        interval_traits<interval_type>::get(interval_vertical, LOW),
+        interval_traits<interval_type>::get(interval_horizontal, HIGH),
+        interval_traits<interval_type>::get(interval_vertical, HIGH));
   }
 };
 

@@ -144,26 +144,25 @@ struct geometry_concept<moab::Interval<T>> {
 
 template <typename T>
 struct interval_traits<moab::Interval<T>> {
-  using interval_type = moab::Interval<T>;
-  using coordinate_type = typename interval_type::coordinate_type;
+  using coordinate_type = typename moab::Interval<T>::coordinate_type;
 
-  static inline coordinate_type get(const interval_type& i, direction_1d dir) {
+  static inline coordinate_type get(const moab::Interval<T>& i,
+                                    direction_1d dir) {
     return i[dir.to_int()];
   }
 };
 
 template <typename T>
 struct interval_mutable_traits<moab::Interval<T>> {
-  using interval_type = moab::Interval<T>;
-  using coordinate_type = typename interval_type::coordinate_type;
+  using coordinate_type = typename moab::Interval<T>::coordinate_type;
 
-  static inline void set(interval_type& i, direction_1d dir,
+  static inline void set(moab::Interval<T>& i, direction_1d dir,
                          coordinate_type value) {
     i[dir.to_int()] = value;
   }
   static inline moab::Interval<T> construct(coordinate_type lo,
                                             coordinate_type hi) {
-    return interval_type(lo, hi);
+    return moab::Interval<T>(lo, hi);
   }
 };
 
