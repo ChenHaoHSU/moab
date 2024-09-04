@@ -66,7 +66,7 @@ class Segment2 {
   void SetLow(const Point2<T>& p) { Set(p.x(), p.y(), d_[1].x(), d_[1].y()); }
   void SetHi(const Point2<T>& p) { Set(d_[0].x(), d_[0].y(), p.x(), p.y()); }
   void SetP(std::size_t i, const Point2<T>& p) {
-    DCHECK(0 <= i && i <= 1) << "Invalid SetP Index i" << i;
+    DCHECK(i < 2) << "Invalid SetP Index i" << i;
     (i == 0) ? SetLow(p) : SetHi(p);
   }
 
@@ -125,12 +125,11 @@ class Segment2 {
   // Hash.
   template <typename H>
   friend H AbslHashValue(H h, const Segment2& s) {
-    return H::combine(std::move(h), s.d_[0][0], s.d_[0][1], s.d_[1][0],
-                      s.d_[1][1]);
+    return H::combine(std::move(h), s.d_[0], s.d_[1]);
   }
 
  private:
-  std::array<Point2<T>, 2> d_;  // low, hi>
+  std::array<Point2<T>, 2> d_;  // <low, hi>
 };  // class Segment2
 
 // Aliases.

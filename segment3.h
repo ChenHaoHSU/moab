@@ -70,7 +70,7 @@ class Segment3 {
     Set(d_[0].x(), d_[0].y(), d_[0].z(), p.x(), p.y(), p.z());
   }
   void SetP(std::size_t i, const Point3<T>& p) {
-    DCHECK(0 <= i && i <= 1) << "Invalid SetP Index i" << i;
+    DCHECK(i < 2) << "Invalid SetP Index i" << i;
     (i == 0) ? SetLow(p) : SetHi(p);
   }
 
@@ -134,8 +134,7 @@ class Segment3 {
   // Hash.
   template <typename H>
   friend H AbslHashValue(H h, const Segment3& s) {
-    return H::combine(std::move(h), s.d_[0][0], s.d_[0][1], s.d_[0][2],
-                      s.d_[1][0], s.d_[1][1], s.d_[1][2]);
+    return H::combine(std::move(h), s.d_[0], s.d_[1]);
   }
 
  private:
