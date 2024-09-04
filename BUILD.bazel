@@ -134,6 +134,16 @@ cc_test(
 )
 
 cc_library(
+    name = "operation",
+    hdrs = ["operation.h"],
+    deps = [
+        ":box2",
+        ":interval",
+        ":point2",
+    ],
+)
+
+cc_library(
     name = "moab",
     hdrs = ["moab.h"],
     deps = [
