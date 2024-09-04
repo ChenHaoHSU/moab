@@ -63,7 +63,10 @@ class Segment2 {
   }
   void SetP1(Point2<T> p) { Set(p.x(), p.y(), d_[1].x(), d_[1].y()); }
   void SetP2(Point2<T> p) { Set(d_[0].x(), d_[0].y(), p.x(), p.y()); }
-  void SetP(std::size_t i, Point2<T> p) { (i == 0) ? SetP1(p) : SetP2(p); }
+  void SetP(std::size_t i, Point2<T> p) {
+    DCHECK(0 <= i && i <= 1) << "Invalid SetP Index i" << i;
+    (i == 0) ? SetP1(p) : SetP2(p);
+  }
 
   // Operations.
   void Shift(T dxP1, T dyP1, T dxP2, T dyP2) {
@@ -218,4 +221,4 @@ struct segment_mutable_traits<moab::Segment2<T>> {
 
 }  // namespace boost::polygon
 
-#endif  // MOAB_POINT2_H_
+#endif  // MOAB_SEGMENT2_H_

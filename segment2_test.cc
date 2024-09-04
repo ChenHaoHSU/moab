@@ -222,8 +222,8 @@ TEST(StringConversion, ToString) {
 }
 
 TEST(StringConversion, SupportsAbslStringify) {
-  Segment2_i b(Point2_i(1, 2), Point2_i(3, 4));
-  std::string s = absl::StrFormat("%v", b);
+  Segment2_i seg(Point2_i(1, 2), Point2_i(3, 4));
+  std::string s = absl::StrFormat("%v", seg);
 
   EXPECT_THAT(s, StrEq("((1 2) (3 4))"));
 }
