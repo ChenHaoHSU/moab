@@ -26,13 +26,13 @@ namespace moab {
 template <typename T>
 class Segment2 {
  public:
-  // Type aliases. (Required by Boost geometry/polygon traits.)
+  // Type aliases. (Required by Boost geometry/poylgon traits.)
   using coordinate_type = T;
   using point_type = Point2<T>;
 
   // Constructors.
   Segment2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
-  explicit Segment2(const Point2<T>& p1, const Point2<T>& p2) { Set(p1, p2); }
+  explicit Segment2(const Point2<T>& low, const Point2<T>& hi) { Set(low, hi); }
   explicit Segment2(T xl, T yl, T xh, T yh) {
     Set(Point2<T>(xl, yl), Point2<T>(xh, yh));
   }
@@ -42,8 +42,10 @@ class Segment2 {
   ~Segment2() = default;
 
   // Accessors.
-  Point2<T> p1() const { return d_[0]; }
-  Point2<T> p2() const { return d_[1]; }
+  Point2<T>& low() { return d_[0]; }
+  Point2<T>& hi() { return d_[1]; }
+  const Point2<T>& low() const { return d_.at(0); }
+  const Point2<T>& hi() const { return d_.at(1); }
   Point2<T>* data() { return d_.data(); }
   const Point2<T>* data() const { return d_.data(); }
 
@@ -52,27 +54,23 @@ class Segment2 {
   std::pair<Point2<T>, Point2<T>> ToPair() const { return {d_[0], d_[1]}; }
 
   // Mutators.
-  void Set(T p1x, T p1y, T p2x, T p2y) {
-    DCHECK(p1x <= p2x) << "Invalid segment. p1x: " << p1x << ", p1y: " << p1y
-                       << ", p2x: " << p2x << ", p2y: " << p2y;
-    d_[0].Set(p1x, p1y);
-    d_[1].Set(p2x, p2y);
+  void Set(T xl, T yl, T xh, T yh) {
+    DCHECK(xl <= xh) << "Invalid segment. xl: " << xl << ", yl: " << yl
+                     << ", xh: " << xh << ", yh: " << yh;
+    d_[0].Set(xl, yl);
+    d_[1].Set(xh, yh);
   }
-  void Set(const Point2<T>& p1, const Point2<T>& p2) {
-    Set(p1.x(), p1.y(), p2.x(), p2.y());
+  void Set(const Point2<T>& low, const Point2<T>& hi) {
+    Set(low.x(), low.y(), hi.x(), hi.y());
   }
-  void SetP1(Point2<T> p) { Set(p.x(), p.y(), d_[1].x(), d_[1].y()); }
-  void SetP2(Point2<T> p) { Set(d_[0].x(), d_[0].y(), p.x(), p.y()); }
-  void SetP(std::size_t i, Point2<T> p) {
+  void SetLow(const Point2<T>& p) { Set(p.x(), p.y(), d_[1].x(), d_[1].y()); }
+  void SetHi(const Point2<T>& p) { Set(d_[0].x(), d_[0].y(), p.x(), p.y()); }
+  void SetP(std::size_t i, const Point2<T>& p) {
     DCHECK(0 <= i && i <= 1) << "Invalid SetP Index i" << i;
-    (i == 0) ? SetP1(p) : SetP2(p);
+    (i == 0) ? SetLow(p) : SetHi(p);
   }
 
   // Operations.
-  void Shift(T dxP1, T dyP1, T dxP2, T dyP2) {
-    d_[0].Sfhit(dxP1, dyP1);
-    d_[1].Sfhit(dxP2, dyP2);
-  }
   void Shift(T dx, T dy) {
     d_[0].Shift(dx, dy);
     d_[1].Shift(dx, dy);
@@ -85,8 +83,6 @@ class Segment2 {
     d_[0].ShiftY(dy);
     d_[1].ShiftY(dy);
   }
-  void ShiftP1(T dx, T dy) { d_[0].Shift(dx, dy); }
-  void ShiftP2(T dx, T dy) { d_[1].Shift(dx, dy); }
 
   // Operators.
   // Operators - Assignment
@@ -114,9 +110,6 @@ class Segment2 {
   bool operator<=(const Segment2& p) const { return !(*this > p); }
   bool operator>=(const Segment2& p) const { return !(*this < p); }
 
-  Segment2 operator+() const { return Segment2(d_[0], d_[1]); }
-  Segment2 operator-() const { return Segment2(-d_[0], -d_[1]); }
-
   // String conversion.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const Segment2& s) {
@@ -137,7 +130,7 @@ class Segment2 {
   }
 
  private:
-  std::array<Point2<T>, 2> d_;  // <p1, p2>
+  std::array<Point2<T>, 2> d_;  // low, hi>
 };  // class Segment2
 
 // Aliases.
@@ -172,6 +165,7 @@ template <typename T>
 struct access<moab::Segment2<T>, 0> {
   using coordinate_type = typename moab::Segment2<T>::coordinate_type;
   using point_type = typename moab::Segment2<T>::point_type;
+
   static inline point_type get(moab::Segment2<T> const& s) { return s[0]; }
   static inline void set(moab::Segment2<T>& s, point_type const& p) {
     s[0] = p;
@@ -182,6 +176,7 @@ template <typename T>
 struct access<moab::Segment2<T>, 1> {
   using coordinate_type = typename moab::Segment2<T>::coordinate_type;
   using point_type = typename moab::Segment2<T>::point_type;
+
   static inline point_type get(moab::Segment2<T> const& s) { return s[1]; }
   static inline void set(moab::Segment2<T>& s, point_type const& p) {
     s[1] = p;
@@ -190,7 +185,7 @@ struct access<moab::Segment2<T>, 1> {
 
 }  // namespace boost::geometry::traits
 
-// Boost polygon traits.
+// Boost poylgon traits.
 namespace boost::polygon {
 
 template <typename T>
@@ -207,15 +202,15 @@ struct segment_traits<moab::Segment2<T>> {
 
 template <typename T>
 struct segment_mutable_traits<moab::Segment2<T>> {
-  typedef int coordinate_type;
+  using coordinate_type = typename moab::Segment2<T>::coordinate_type;
+  using point_type = typename moab::Segment2<T>::point_type;
 
   static inline void set(moab::Segment2<T>& s, direction_1d dir,
-                         moab::Point2<T> p) {
+                         point_type& p) {
     s[dir.to_int()] = p;
   }
-  static inline moab::Segment2<T> construct(moab::Point2<T> p1,
-                                            moab::Point2<T> p2) {
-    return moab::Segment2<T>(p1, p2);
+  static inline moab::Segment2<T> construct(point_type& low, point_type& hi) {
+    return moab::Segment2<T>(low, hi);
   }
 };
 
