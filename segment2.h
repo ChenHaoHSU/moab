@@ -25,6 +25,9 @@ namespace moab {
 template <typename T>
 class Segment2 {
  public:
+  // Type aliases. (Required by Boost geometry/polygon traits.)
+  using coordinate_type = Point2<T>;
+
   // Constructors.
   Segment2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
   explicit Segment2(Point2<T> x, Point2<T> y) : d_({x, y}) {}
@@ -193,16 +196,19 @@ struct coordinate_system<moab::Segment2<T>> {
 
 template <typename T>
 struct access<moab::Segment2<T>, 0> {
+  using coordinate_type = typename moab::Segment2<T>::coordinate_type;
   static inline T get(moab::Segment2<T> const& s) { return s.p1(); }
-  static inline void set(moab::Segment2<T>& s, moab::Point2<T> const& p) {
-    p.SetP1(p);
+  static inline void set(moab::Segment2<T>& s, coordinate_type const& p) {
+    s.SetP1(p);
   }
 };
 
 template <typename T>
 struct access<moab::Segment2<T>, 1> {
+  using coordinate_type = typename moab::Segment2<T>::coordinate_type;
+
   static inline T get(moab::Segment2<T> const& s) { return s.p2(); }
-  static inline void set(moab::Segment2<T>& s, moab::Point2<T> const& p) {
+  static inline void set(moab::Segment2<T>& s, coordinate_type const& p) {
     s.SetP2(p);
   }
 };

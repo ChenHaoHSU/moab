@@ -23,6 +23,9 @@ namespace moab {
 template <typename T>
 class Point3 {
  public:
+  // Type aliases. (Required by Boost geometry/polygon traits.)
+  using coordinate_type = T;
+
   // Constructors.
   Point3() : d_({0, 0, 0}) {}
   explicit Point3(T x, T y, T z) : d_({x, y, z}) {}
@@ -220,20 +223,32 @@ struct coordinate_system<moab::Point3<T>> {
 
 template <typename T>
 struct access<moab::Point3<T>, 0> {
-  static inline T get(moab::Point3<T> const& p) { return p.x(); }
-  static inline void set(moab::Point3<T>& p, T const& value) { p.SetX(value); }
+  using coordinate_type = typename moab::Point3<T>::coordinate_type;
+
+  static inline coordinate_type get(moab::Point3<T> const& p) { return p[0]; }
+  static inline void set(moab::Point3<T>& p, coordinate_type const& value) {
+    p[0] = value;
+  }
 };
 
 template <typename T>
 struct access<moab::Point3<T>, 1> {
-  static inline T get(moab::Point3<T> const& p) { return p.y(); }
-  static inline void set(moab::Point3<T>& p, T const& value) { p.SetY(value); }
+  using coordinate_type = typename moab::Point3<T>::coordinate_type;
+
+  static inline coordinate_type get(moab::Point3<T> const& p) { return p[1]; }
+  static inline void set(moab::Point3<T>& p, coordinate_type const& value) {
+    p[1] = value;
+  }
 };
 
 template <typename T>
 struct access<moab::Point3<T>, 2> {
-  static inline T get(moab::Point3<T> const& p) { return p.z(); }
-  static inline void set(moab::Point3<T>& p, T const& value) { p.SetZ(value); }
+  using coordinate_type = typename moab::Point3<T>::coordinate_type;
+
+  static inline coordinate_type get(moab::Point3<T> const& p) { return p[2]; }
+  static inline void set(moab::Point3<T>& p, coordinate_type const& value) {
+    p[2] = value;
+  }
 };
 
 }  // namespace boost::geometry::traits
