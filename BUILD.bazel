@@ -27,6 +27,85 @@ cc_test(
 )
 
 cc_library(
+    name = "point3",
+    hdrs = ["point3.h"],
+    deps = [
+        "@boost//:geometry",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "point3_test",
+    size = "small",
+    srcs = ["point3_test.cc"],
+    deps = [
+        ":point3",
+        "@com_google_absl//absl/hash:hash_testing",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "segment2",
+    hdrs = ["segment2.h"],
+    deps = [
+        "point2",
+        "@boost//:geometry",
+        "@boost//:polygon",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "segment2_test",
+    size = "small",
+    srcs = ["segment2_test.cc"],
+    deps = [
+        ":segment2",
+        "@com_google_absl//absl/hash:hash_testing",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "segment3",
+    hdrs = ["segment3.h"],
+    deps = [
+        "point3",
+        "@boost//:geometry",
+        "@boost//:polygon",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "segment3_test",
+    size = "small",
+    srcs = ["segment3_test.cc"],
+    deps = [
+        ":segment3",
+        "@com_google_absl//absl/hash:hash_testing",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "interval",
     hdrs = ["interval.h"],
     deps = [
@@ -98,5 +177,8 @@ cc_library(
         ":box2",
         ":interval",
         ":point2",
+        ":point3",
+        ":segment2",
+        ":segment3",
     ],
 )
