@@ -195,6 +195,7 @@ cc_library(
     deps = [
         ":box2",
         ":interval",
+        ":operation",
         ":point2",
         ":point3",
         ":segment2",

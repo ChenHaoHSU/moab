@@ -168,6 +168,11 @@ struct tag<moab::Box2<T>> {
 };
 
 template <typename T>
+struct point_type<moab::Box2<T>> {
+  using type = typename moab::Box2<T>::point_type;
+};
+
+template <typename T>
 struct indexed_access<moab::Box2<T>, min_corner, 0> {
   using box_type = moab::Box2<T>;
   using coordinate_type = typename box_type::coordinate_type;
