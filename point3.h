@@ -59,7 +59,6 @@ class Point3 {
     d_[1] += dy;
     d_[2] += dz;
   }
-
   void ShiftX(T dx) { d_[0] += dx; }
   void ShiftY(T dy) { d_[1] += dy; }
   void ShiftZ(T dz) { d_[2] += dz; }
@@ -70,13 +69,11 @@ class Point3 {
     d_[axis1] = -d_[axis2];
     d_[axis2] = x;
   }
-
   void Rotate180(size_t axis1, size_t axis2) {
     // Rotation by 180 degrees on (axis1, axis2) plane.
     d_[axis1] = -d_[axis1];
     d_[axis2] = -d_[axis2];
   }
-
   void Rotate270(size_t axis1, size_t axis2) {
     // Counterclockwise rotation by 270 degrees on (axis1, axis2) plane.
     Rotate90(axis1, axis2);
@@ -88,7 +85,6 @@ class Point3 {
     d_ = p.d_;
     return *this;
   }
-
   Point3& operator=(Point3&& p) {
     d_ = std::move(p.d_);
     return *this;
@@ -96,7 +92,6 @@ class Point3 {
   // Operators - Subscript
   T& operator[](std::size_t i) { return d_[i]; }
   const T& operator[](std::size_t i) const { return d_.at(i); }
-
   // Operators - Equality
   bool operator==(const Point3& p) const {
     return d_[0] == p.d_[0] && d_[1] == p.d_[1] && d_[2] == p.d_[2];
@@ -108,7 +103,6 @@ class Point3 {
            : d_[1] != p.d_[1] ? d_[1] < p.d_[1]
                               : d_[2] < p.d_[2];
   }
-
   bool operator>(const Point3& p) const { return p < *this; }
   bool operator<=(const Point3& p) const { return !(*this > p); }
   bool operator>=(const Point3& p) const { return !(*this < p); }
@@ -225,8 +219,8 @@ template <typename T>
 struct access<moab::Point3<T>, 0> {
   using coordinate_type = typename moab::Point3<T>::coordinate_type;
 
-  static inline coordinate_type get(moab::Point3<T> const& p) { return p[0]; }
-  static inline void set(moab::Point3<T>& p, coordinate_type const& value) {
+  static inline coordinate_type get(const moab::Point3<T>& p) { return p[0]; }
+  static inline void set(moab::Point3<T>& p, const coordinate_type& value) {
     p[0] = value;
   }
 };
@@ -235,8 +229,8 @@ template <typename T>
 struct access<moab::Point3<T>, 1> {
   using coordinate_type = typename moab::Point3<T>::coordinate_type;
 
-  static inline coordinate_type get(moab::Point3<T> const& p) { return p[1]; }
-  static inline void set(moab::Point3<T>& p, coordinate_type const& value) {
+  static inline coordinate_type get(const moab::Point3<T>& p) { return p[1]; }
+  static inline void set(moab::Point3<T>& p, const coordinate_type& value) {
     p[1] = value;
   }
 };
@@ -245,8 +239,8 @@ template <typename T>
 struct access<moab::Point3<T>, 2> {
   using coordinate_type = typename moab::Point3<T>::coordinate_type;
 
-  static inline coordinate_type get(moab::Point3<T> const& p) { return p[2]; }
-  static inline void set(moab::Point3<T>& p, coordinate_type const& value) {
+  static inline coordinate_type get(const moab::Point3<T>& p) { return p[2]; }
+  static inline void set(moab::Point3<T>& p, const coordinate_type& value) {
     p[2] = value;
   }
 };

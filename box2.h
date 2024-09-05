@@ -172,8 +172,8 @@ struct indexed_access<moab::Box2<T>, min_corner, 0> {
   using box_type = moab::Box2<T>;
   using coordinate_type = typename box_type::coordinate_type;
 
-  static inline coordinate_type get(box_type const& b) { return b[0][0]; }
-  static inline void set(box_type& b, coordinate_type const& value) {
+  static inline coordinate_type get(const box_type& b) { return b[0][0]; }
+  static inline void set(box_type& b, const coordinate_type& value) {
     b[0][0] = value;
   }
 };
@@ -183,8 +183,8 @@ struct indexed_access<moab::Box2<T>, min_corner, 1> {
   using box_type = moab::Box2<T>;
   using coordinate_type = typename box_type::coordinate_type;
 
-  static inline coordinate_type get(box_type const& b) { return b[0][1]; }
-  static inline void set(box_type& b, coordinate_type const& value) {
+  static inline coordinate_type get(const box_type& b) { return b[0][1]; }
+  static inline void set(box_type& b, const coordinate_type& value) {
     b[0][1] = value;
   }
 };
@@ -194,8 +194,8 @@ struct indexed_access<moab::Box2<T>, max_corner, 0> {
   using box_type = moab::Box2<T>;
   using coordinate_type = typename box_type::coordinate_type;
 
-  static inline coordinate_type get(box_type const& b) { return b[1][0]; }
-  static inline void set(box_type& b, coordinate_type const& value) {
+  static inline coordinate_type get(const box_type& b) { return b[1][0]; }
+  static inline void set(box_type& b, const coordinate_type& value) {
     b[1][0] = value;
   }
 };
@@ -205,8 +205,8 @@ struct indexed_access<moab::Box2<T>, max_corner, 1> {
   using box_type = moab::Box2<T>;
   using coordinate_type = typename box_type::coordinate_type;
 
-  static inline coordinate_type get(box_type const& b) { return b[1][1]; }
-  static inline void set(box_type& b, coordinate_type const& value) {
+  static inline coordinate_type get(const box_type& b) { return b[1][1]; }
+  static inline void set(box_type& b, const coordinate_type& value) {
     b[1][1] = value;
   }
 };
@@ -247,14 +247,14 @@ struct rectangle_mutable_traits<moab::Box2<T>> {
     rectangle[0][orient.to_int()] = interval_traits<T2>::get(interval, LOW);
     rectangle[1][orient.to_int()] = interval_traits<T2>::get(interval, HIGH);
   }
+  template <typename T2, typename T3>
   static inline moab::Box2<T> construct(
       const interval_type& interval_horizontal,
       const interval_type& interval_vertical) {
-    return moab::Box2<T>(
-        interval_traits<interval_type>::get(interval_horizontal, LOW),
-        interval_traits<interval_type>::get(interval_vertical, LOW),
-        interval_traits<interval_type>::get(interval_horizontal, HIGH),
-        interval_traits<interval_type>::get(interval_vertical, HIGH));
+    return moab::Box2<T>(interval_traits<T2>::get(interval_horizontal, LOW),
+                         interval_traits<T3>::get(interval_vertical, LOW),
+                         interval_traits<T2>::get(interval_horizontal, HIGH),
+                         interval_traits<T3>::get(interval_vertical, HIGH));
   }
 };
 

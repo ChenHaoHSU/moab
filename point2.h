@@ -196,10 +196,10 @@ template <typename T>
 struct access<moab::Point2<T>, 0> {
   using coordinate_type = typename moab::Point2<T>::coordinate_type;
 
-  static inline coordinate_type get(moab::Point2<T> const& point) {
+  static inline coordinate_type get(const moab::Point2<T>& point) {
     return point[0];
   }
-  static inline void set(moab::Point2<T>& point, coordinate_type const& value) {
+  static inline void set(moab::Point2<T>& point, const coordinate_type& value) {
     point[0] = value;
   }
 };
@@ -208,10 +208,10 @@ template <typename T>
 struct access<moab::Point2<T>, 1> {
   using coordinate_type = typename moab::Point2<T>::coordinate_type;
 
-  static inline coordinate_type get(moab::Point2<T> const& point) {
+  static inline coordinate_type get(const moab::Point2<T>& point) {
     return point[1];
   }
-  static inline void set(moab::Point2<T>& point, coordinate_type const& value) {
+  static inline void set(moab::Point2<T>& point, const coordinate_type& value) {
     point[1] = value;
   }
 };

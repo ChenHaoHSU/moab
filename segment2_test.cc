@@ -17,70 +17,70 @@ using ::testing::StrEq;
 TEST(Constructors, Default) {
   Segment2_i s;
 
-  EXPECT_EQ(s.low(), Point2_i(0, 0));
-  EXPECT_EQ(s.hi(), Point2_i(0, 0));
+  EXPECT_EQ(s.p0(), Point2_i(0, 0));
+  EXPECT_EQ(s.p1(), Point2_i(0, 0));
 }
 
 TEST(Constructors, TwoPoints) {
   Segment2_i s(Point2_i(1, 2), Point2_i(3, 4));
 
-  EXPECT_EQ(s.low(), Point2_i(1, 2));
-  EXPECT_EQ(s.hi(), Point2_i(3, 4));
+  EXPECT_EQ(s.p0(), Point2_i(1, 2));
+  EXPECT_EQ(s.p1(), Point2_i(3, 4));
 }
 
 TEST(Constructors, MinMaxXY) {
   Segment2_i s(1, 2, 3, 4);
 
-  EXPECT_EQ(s.low(), Point2_i(1, 2));
-  EXPECT_EQ(s.hi(), Point2_i(3, 4));
+  EXPECT_EQ(s.p0(), Point2_i(1, 2));
+  EXPECT_EQ(s.p1(), Point2_i(3, 4));
 }
 
 TEST(Constructors, Copy) {
   Segment2_i s1(Point2_i(1, 2), Point2_i(3, 4));
   Segment2_i s2(s1);
 
-  EXPECT_EQ(s2.low(), Point2_i(1, 2));
-  EXPECT_EQ(s2.hi(), Point2_i(3, 4));
+  EXPECT_EQ(s2.p0(), Point2_i(1, 2));
+  EXPECT_EQ(s2.p1(), Point2_i(3, 4));
 }
 
 TEST(Constructors, Move) {
   Segment2_i s1(Point2_i(1, 2), Point2_i(3, 4));
   Segment2_i s2(std::move(s1));
 
-  EXPECT_EQ(s2.low(), Point2_i(1, 2));
-  EXPECT_EQ(s2.hi(), Point2_i(3, 4));
+  EXPECT_EQ(s2.p0(), Point2_i(1, 2));
+  EXPECT_EQ(s2.p1(), Point2_i(3, 4));
 }
 
 TEST(Accessors, P1P2) {
   Segment2_i s(Point2_i(1, 2), Point2_i(3, 4));
 
-  EXPECT_EQ(s.low(), Point2_i(1, 2));
-  EXPECT_EQ(s.hi(), Point2_i(3, 4));
+  EXPECT_EQ(s.p0(), Point2_i(1, 2));
+  EXPECT_EQ(s.p1(), Point2_i(3, 4));
 }
 
 TEST(Mutators, SetByFourCoordinates) {
   Segment2_i s(Point2_i(1, 2), Point2_i(3, 4));
   s.Set(5, 6, 7, 8);
 
-  EXPECT_EQ(s.low(), Point2_i(5, 6));
-  EXPECT_EQ(s.hi(), Point2_i(7, 8));
+  EXPECT_EQ(s.p0(), Point2_i(5, 6));
+  EXPECT_EQ(s.p1(), Point2_i(7, 8));
 }
 
 TEST(Mutators, SetByTwoPoints) {
   Segment2_i s(Point2_i(1, 2), Point2_i(3, 4));
   s.Set(Point2_i(5, 6), Point2_i(7, 8));
 
-  EXPECT_EQ(s.low(), Point2_i(5, 6));
-  EXPECT_EQ(s.hi(), Point2_i(7, 8));
+  EXPECT_EQ(s.p0(), Point2_i(5, 6));
+  EXPECT_EQ(s.p1(), Point2_i(7, 8));
 }
 
 TEST(Mutators, SetP1P2) {
   Segment2_i s(Point2_i(1, 2), Point2_i(3, 4));
-  s.SetHi(Point2_i(7, 8));
-  s.SetLow(Point2_i(5, 6));
+  s.SetP0(Point2_i(5, 6));
+  s.SetP1(Point2_i(7, 8));
 
-  EXPECT_EQ(s.low(), Point2_i(5, 6));
-  EXPECT_EQ(s.hi(), Point2_i(7, 8));
+  EXPECT_EQ(s.p0(), Point2_i(5, 6));
+  EXPECT_EQ(s.p1(), Point2_i(7, 8));
 }
 
 TEST(Mutators, SetDimensionP) {
@@ -88,32 +88,32 @@ TEST(Mutators, SetDimensionP) {
   s.SetP(1, Point2_i(7, 8));
   s.SetP(0, Point2_i(5, 6));
 
-  EXPECT_EQ(s.low(), Point2_i(5, 6));
-  EXPECT_EQ(s.hi(), Point2_i(7, 8));
+  EXPECT_EQ(s.p0(), Point2_i(5, 6));
+  EXPECT_EQ(s.p1(), Point2_i(7, 8));
 }
 
 TEST(Operations, Shift) {
   Segment2_i s(Point2_i(1, 2), Point2_i(3, 4));
   s.Shift(1, 2);
 
-  EXPECT_EQ(s.low(), Point2_i(2, 4));
-  EXPECT_EQ(s.hi(), Point2_i(4, 6));
+  EXPECT_EQ(s.p0(), Point2_i(2, 4));
+  EXPECT_EQ(s.p1(), Point2_i(4, 6));
 }
 
 TEST(Operations, ShiftX) {
   Segment2_i s(Point2_i(1, 2), Point2_i(3, 4));
   s.ShiftX(1);
 
-  EXPECT_EQ(s.low(), Point2_i(2, 2));
-  EXPECT_EQ(s.hi(), Point2_i(4, 4));
+  EXPECT_EQ(s.p0(), Point2_i(2, 2));
+  EXPECT_EQ(s.p1(), Point2_i(4, 4));
 }
 
 TEST(Operations, ShiftY) {
   Segment2_i s(Point2_i(1, 2), Point2_i(3, 4));
   s.ShiftY(1);
 
-  EXPECT_EQ(s.low(), Point2_i(1, 3));
-  EXPECT_EQ(s.hi(), Point2_i(3, 5));
+  EXPECT_EQ(s.p0(), Point2_i(1, 3));
+  EXPECT_EQ(s.p1(), Point2_i(3, 5));
 }
 
 TEST(Operators, AssignmentCopy) {
@@ -122,8 +122,8 @@ TEST(Operators, AssignmentCopy) {
 
   s2 = s1;
 
-  EXPECT_EQ(s2.low(), Point2_i(1, 2));
-  EXPECT_EQ(s2.hi(), Point2_i(3, 4));
+  EXPECT_EQ(s2.p0(), Point2_i(1, 2));
+  EXPECT_EQ(s2.p1(), Point2_i(3, 4));
 }
 
 TEST(Operators, AssignmentMove) {
@@ -132,8 +132,8 @@ TEST(Operators, AssignmentMove) {
 
   s2 = std::move(s1);
 
-  EXPECT_EQ(s2.low(), Point2_i(1, 2));
-  EXPECT_EQ(s2.hi(), Point2_i(3, 4));
+  EXPECT_EQ(s2.p0(), Point2_i(1, 2));
+  EXPECT_EQ(s2.p1(), Point2_i(3, 4));
 }
 
 TEST(Operators, SubscriptAccess) {

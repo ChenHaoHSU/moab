@@ -31,7 +31,7 @@ class Segment3 {
 
   // Constructors.
   Segment3() : d_({Point3<T>(0, 0, 0), Point3<T>(0, 0, 0)}) {}
-  explicit Segment3(const Point3<T>& low, const Point3<T>& hi) { Set(low, hi); }
+  explicit Segment3(const Point3<T>& p0, const Point3<T>& p1) { Set(p0, p1); }
   explicit Segment3(T xl, T yl, T zl, T xh, T yh, T zh) {
     Set(Point3<T>(xl, yl, zl), Point3<T>(xh, yh, zh));
   }
@@ -41,10 +41,10 @@ class Segment3 {
   ~Segment3() = default;
 
   // Accessors.
-  Point3<T>& low() { return d_[0]; }
-  Point3<T>& hi() { return d_[1]; }
-  const Point3<T>& low() const { return d_.at(0); }
-  const Point3<T>& hi() const { return d_.at(1); }
+  Point3<T>& p0() { return d_[0]; }
+  const Point3<T>& p0() const { return d_.at(0); }
+  Point3<T>& p1() { return d_[1]; }
+  const Point3<T>& p1() const { return d_.at(1); }
   Point3<T>* data() { return d_.data(); }
   const Point3<T>* data() const { return d_.data(); }
 
@@ -54,28 +54,22 @@ class Segment3 {
 
   // Mutators.
   void Set(T xl, T yl, T zl, T xh, T yh, T zh) {
-    DCHECK(xl <= xh) << "Invalid segment. xl: " << xl << ", yl: " << yl
-                     << ", zl: " << zl << ", xh: " << xh << ", yh: " << yh
-                     << ", zh: " << zh;
     d_[0].Set(xl, yl, zl);
     d_[1].Set(xh, yh, zh);
   }
-  void Set(const Point3<T>& low, const Point3<T>& hi) {
-    Set(low.x(), low.y(), low.z(), hi.x(), hi.y(), hi.z());
+  void Set(const Point3<T>& p0, const Point3<T>& p1) {
+    d_[0] = p0;
+    d_[1] = p1;
   }
-  void SetLow(const Point3<T>& p) {
-    Set(p.x(), p.y(), p.z(), d_[1].x(), d_[1].y(), d_[1].z());
-  }
-  void SetHi(const Point3<T>& p) {
-    Set(d_[0].x(), d_[0].y(), d_[0].z(), p.x(), p.y(), p.z());
-  }
+  void SetP0(const Point3<T>& p) { d_[0] = p; }
+  void SetP1(const Point3<T>& p) { d_[1] = p; }
   void SetP(std::size_t i, const Point3<T>& p) {
     DCHECK(i < 2) << "Invalid SetP Index i" << i;
-    (i == 0) ? SetLow(p) : SetHi(p);
+    d_[i] = p;
   }
 
   // Operations.
-
+  // It's safe. No need to check for validity.
   void Shift(T dx, T dy, T dz) {
     d_[0].Shift(dx, dy, dz);
     d_[1].Shift(dx, dy, dz);
@@ -122,8 +116,7 @@ class Segment3 {
   // String conversion.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const Segment3& s) {
-    absl::Format(&sink, "((%d %d %d) (%d %d %d))", s.d_[0][0], s.d_[0][1],
-                 s.d_[0][2], s.d_[1][0], s.d_[1][1], s.d_[1][2]);
+    absl::Format(&sink, "(%v %v)", s.d_.at(0), s.d_.at(1));
   }
   std::string ToString() const { return absl::StrCat(*this); }
   friend std::ostream& operator<<(std::ostream& os, const Segment3& s) {
@@ -134,11 +127,11 @@ class Segment3 {
   // Hash.
   template <typename H>
   friend H AbslHashValue(H h, const Segment3& s) {
-    return H::combine(std::move(h), s.d_[0], s.d_[1]);
+    return H::combine(std::move(h), s.d_.at(0), s.d_.at(1));
   }
 
  private:
-  std::array<Point3<T>, 2> d_;  // <low, hi>
+  std::array<Point3<T>, 2> d_;  // <p0, p1>
 };  // class Segment3
 
 // Aliases.
@@ -174,8 +167,8 @@ struct access<moab::Segment3<T>, 0> {
   using coordinate_type = typename moab::Segment3<T>::coordinate_type;
   using point_type = typename moab::Segment3<T>::point_type;
 
-  static inline point_type get(moab::Segment3<T> const& s) { return s[0]; }
-  static inline void set(moab::Segment3<T>& s, point_type const& p) {
+  static inline point_type get(const moab::Segment3<T>& s) { return s[0]; }
+  static inline void set(moab::Segment3<T>& s, const point_type& p) {
     s[0] = p;
   }
 };
@@ -185,8 +178,8 @@ struct access<moab::Segment3<T>, 1> {
   using coordinate_type = typename moab::Segment3<T>::coordinate_type;
   using point_type = typename moab::Segment3<T>::point_type;
 
-  static inline point_type get(moab::Segment3<T> const& s) { return s[1]; }
-  static inline void set(moab::Segment3<T>& s, point_type const& p) {
+  static inline point_type get(const moab::Segment3<T>& s) { return s[1]; }
+  static inline void set(moab::Segment3<T>& s, const point_type& p) {
     s[1] = p;
   }
 };
@@ -196,8 +189,8 @@ struct access<moab::Segment3<T>, 2> {
   using coordinate_type = typename moab::Segment3<T>::coordinate_type;
   using point_type = typename moab::Segment3<T>::point_type;
 
-  static inline point_type get(moab::Segment3<T> const& s) { return s[2]; }
-  static inline void set(moab::Segment3<T>& s, point_type const& p) {
+  static inline point_type get(const moab::Segment3<T>& s) { return s[2]; }
+  static inline void set(moab::Segment3<T>& s, const point_type& p) {
     s[2] = p;
   }
 };

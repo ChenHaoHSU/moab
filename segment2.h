@@ -32,7 +32,7 @@ class Segment2 {
 
   // Constructors.
   Segment2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
-  explicit Segment2(const Point2<T>& low, const Point2<T>& hi) { Set(low, hi); }
+  explicit Segment2(const Point2<T>& p0, const Point2<T>& p1) { Set(p0, p1); }
   explicit Segment2(T xl, T yl, T xh, T yh) {
     Set(Point2<T>(xl, yl), Point2<T>(xh, yh));
   }
@@ -42,10 +42,10 @@ class Segment2 {
   ~Segment2() = default;
 
   // Accessors.
-  Point2<T>& low() { return d_[0]; }
-  Point2<T>& hi() { return d_[1]; }
-  const Point2<T>& low() const { return d_.at(0); }
-  const Point2<T>& hi() const { return d_.at(1); }
+  Point2<T>& p0() { return d_[0]; }
+  const Point2<T>& p0() const { return d_.at(0); }
+  Point2<T>& p1() { return d_[1]; }
+  const Point2<T>& p1() const { return d_.at(1); }
   Point2<T>* data() { return d_.data(); }
   const Point2<T>* data() const { return d_.data(); }
 
@@ -55,19 +55,18 @@ class Segment2 {
 
   // Mutators.
   void Set(T xl, T yl, T xh, T yh) {
-    DCHECK(xl <= xh) << "Invalid segment. xl: " << xl << ", yl: " << yl
-                     << ", xh: " << xh << ", yh: " << yh;
     d_[0].Set(xl, yl);
     d_[1].Set(xh, yh);
   }
-  void Set(const Point2<T>& low, const Point2<T>& hi) {
-    Set(low.x(), low.y(), hi.x(), hi.y());
+  void Set(const Point2<T>& p0, const Point2<T>& p1) {
+    d_[0] = p0;
+    d_[1] = p1;
   }
-  void SetLow(const Point2<T>& p) { Set(p.x(), p.y(), d_[1].x(), d_[1].y()); }
-  void SetHi(const Point2<T>& p) { Set(d_[0].x(), d_[0].y(), p.x(), p.y()); }
+  void SetP0(const Point2<T>& p) { d_[0] = p; }
+  void SetP1(const Point2<T>& p) { d_[1] = p; }
   void SetP(std::size_t i, const Point2<T>& p) {
-    DCHECK(i < 2) << "Invalid SetP Index i" << i;
-    (i == 0) ? SetLow(p) : SetHi(p);
+    DCHECK(i < 2) << "Invalid index. i: " << i;
+    d_[i] = p;
   }
 
   // Operations.
@@ -113,8 +112,7 @@ class Segment2 {
   // String conversion.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const Segment2& s) {
-    absl::Format(&sink, "((%d %d) (%d %d))", s.d_[0][0], s.d_[0][1], s.d_[1][0],
-                 s.d_[1][1]);
+    absl::Format(&sink, "(%v %v)", s.d_.at(0), s.d_.at(1));
   }
   std::string ToString() const { return absl::StrCat(*this); }
   friend std::ostream& operator<<(std::ostream& os, const Segment2& s) {
@@ -125,11 +123,11 @@ class Segment2 {
   // Hash.
   template <typename H>
   friend H AbslHashValue(H h, const Segment2& s) {
-    return H::combine(std::move(h), s.d_[0], s.d_[1]);
+    return H::combine(std::move(h), s.d_.at(0), s.d_.at(1));
   }
 
  private:
-  std::array<Point2<T>, 2> d_;  // <low, hi>
+  std::array<Point2<T>, 2> d_;  // <p0, p1>
 };  // class Segment2
 
 // Aliases.
@@ -165,8 +163,8 @@ struct access<moab::Segment2<T>, 0> {
   using coordinate_type = typename moab::Segment2<T>::coordinate_type;
   using point_type = typename moab::Segment2<T>::point_type;
 
-  static inline point_type get(moab::Segment2<T> const& s) { return s[0]; }
-  static inline void set(moab::Segment2<T>& s, point_type const& p) {
+  static inline point_type get(const moab::Segment2<T>& s) { return s[0]; }
+  static inline void set(moab::Segment2<T>& s, const point_type& p) {
     s[0] = p;
   }
 };
@@ -176,8 +174,8 @@ struct access<moab::Segment2<T>, 1> {
   using coordinate_type = typename moab::Segment2<T>::coordinate_type;
   using point_type = typename moab::Segment2<T>::point_type;
 
-  static inline point_type get(moab::Segment2<T> const& s) { return s[1]; }
-  static inline void set(moab::Segment2<T>& s, point_type const& p) {
+  static inline point_type get(const moab::Segment2<T>& s) { return s[1]; }
+  static inline void set(moab::Segment2<T>& s, const point_type& p) {
     s[1] = p;
   }
 };
@@ -194,7 +192,10 @@ struct geometry_concept<moab::Segment2<T>> {
 
 template <typename T>
 struct segment_traits<moab::Segment2<T>> {
-  static inline T get(const moab::Segment2<T>& s, direction_1d dir) {
+  using coordinate_type = typename moab::Segment2<T>::coordinate_type;
+  using point_type = typename moab::Segment2<T>::point_type;
+
+  static inline point_type get(const moab::Segment2<T>& s, direction_1d dir) {
     return s[dir.to_int()];
   }
 };
@@ -205,11 +206,12 @@ struct segment_mutable_traits<moab::Segment2<T>> {
   using point_type = typename moab::Segment2<T>::point_type;
 
   static inline void set(moab::Segment2<T>& s, direction_1d dir,
-                         point_type& p) {
+                         const point_type& p) {
     s[dir.to_int()] = p;
   }
-  static inline moab::Segment2<T> construct(point_type& low, point_type& hi) {
-    return moab::Segment2<T>(low, hi);
+  static inline moab::Segment2<T> construct(const point_type& p0,
+                                            const point_type& p1) {
+    return moab::Segment2<T>(p0, p1);
   }
 };
 
