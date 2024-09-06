@@ -100,7 +100,7 @@ constexpr auto IsWithin = [](const auto& g1, const auto& g2) constexpr -> bool {
 // Box-Box: the intersection of two boxes is not empty and not equal to either
 // of the boxes.
 constexpr auto IsOverlap = [](const auto& g1,
-                              const auto& g2) constexpr -> double {
+                              const auto& g2) constexpr -> bool {
   return boost::geometry::overlaps(g1, g2);
 };
 
@@ -121,7 +121,7 @@ constexpr auto IsDisjoint = [](const auto& g1,
 // Checks if a geometry are spatially equal.
 // Point-Point
 // Box-Box
-constexpr auto IsEqual = [](auto&& g1, auto&& g2) constexpr -> bool {
+constexpr auto IsEqual = [](const auto& g1, const auto& g2) constexpr -> bool {
   return boost::geometry::equals(g1, g2);
 };
 
