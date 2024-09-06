@@ -15,6 +15,9 @@ class Interval;
 template <typename T>
 class Box2;
 
+template <typename T>
+class Ring2;
+
 // Please refer to
 //   https://www.boost.org/doc/libs/1_85_0/libs/polygon/doc/gtl_polygon_set_concept.htm
 // for more information.

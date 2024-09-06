@@ -9,6 +9,7 @@
 #include "absl/log/log.h"
 #include "box2.h"
 #include "point2.h"
+#include "ring2.h"
 
 namespace moab {
 
@@ -69,6 +70,17 @@ TEST(PolygonOperators, UnionBoxBox5) {
 
   EXPECT_THAT(lhs, UnorderedElementsAre(Box2_i(0, 0, 2, 2)));
   EXPECT_THAT(rhs, UnorderedElementsAre(Box2_i(0, 0, 2, 2)));
+}
+
+TEST(PolygonOperators, UnionRingRing1) {
+  std::vector<Ring2_i> lhs = {Ring2_i(Box2_i(0, 0, 1, 1))};
+  std::vector<Ring2_i> rhs = {Ring2_i(Box2_i(1, 0, 2, 1))};
+
+  UnionSet(lhs, rhs);
+
+  EXPECT_TRUE(moab::Equivalence(
+      lhs, std::vector<Ring2_i>{Ring2_i(Box2_i(0, 0, 2, 1))}));
+  EXPECT_THAT(rhs, UnorderedElementsAre(Ring2_i(Box2_i(1, 0, 2, 1))));
 }
 
 TEST(PolygonOperators, IntersectionBoxBox1) {

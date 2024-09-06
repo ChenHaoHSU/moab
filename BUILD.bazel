@@ -195,10 +195,6 @@ cc_library(
     name = "operation",
     hdrs = ["operation.h"],
     deps = [
-        ":box2",
-        ":interval",
-        ":point2",
-        ":segment2",
         "@boost//:geometry",
         "@boost//:polygon",
     ],
@@ -213,6 +209,7 @@ cc_test(
         ":interval",
         ":operation",
         ":point2",
+        ":ring2",
         ":segment2",
         "@com_google_absl//absl/log",
         "@com_google_googletest//:gtest",

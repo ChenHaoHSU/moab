@@ -58,6 +58,16 @@ TEST(Constructor, InitializerList) {
                           Point2_i(0, 2), Point2_i(0, 0)));
 }
 
+TEST(Constructors, Box) {
+  Box2_i b(0, 0, 2, 2);
+  Ring2_i r(b);
+
+  EXPECT_EQ(r.Size(), 5);
+  EXPECT_THAT(r.Points(),
+              ElementsAre(Point2_i(0, 0), Point2_i(2, 0), Point2_i(2, 2),
+                          Point2_i(0, 2), Point2_i(0, 0)));
+}
+
 TEST(Constructor, Copy) {
   Ring2_i r1 = {Point2_i(0, 0), Point2_i(2, 0), Point2_i(2, 2), Point2_i(0, 2),
                 Point2_i(0, 0)};
