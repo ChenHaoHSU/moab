@@ -161,6 +161,37 @@ cc_test(
 )
 
 cc_library(
+    name = "ring2",
+    hdrs = ["ring2.h"],
+    deps = [
+        ":box2",
+        ":operation",
+        ":point2",
+        "@boost//:geometry",
+        "@boost//:polygon",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "ring2_test",
+    size = "small",
+    srcs = ["ring2_test.cc"],
+    deps = [
+        ":box2",
+        ":point2",
+        ":ring2",
+        "@com_google_absl//absl/hash:hash_testing",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "operation",
     hdrs = ["operation.h"],
     deps = [
