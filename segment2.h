@@ -33,9 +33,7 @@ class Segment2 {
   // Constructors.
   Segment2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
   explicit Segment2(const Point2<T>& p0, const Point2<T>& p1) { Set(p0, p1); }
-  explicit Segment2(T xl, T yl, T xh, T yh) {
-    Set(Point2<T>(xl, yl), Point2<T>(xh, yh));
-  }
+  explicit Segment2(T x0, T y0, T x1, T y1) { Set(x0, y0, x1, y1); }
   Segment2(const Segment2& s) = default;
   Segment2(Segment2&& s) = default;
   // Destructors.
@@ -53,10 +51,20 @@ class Segment2 {
 
   std::pair<Point2<T>, Point2<T>> ToPair() const { return {d_[0], d_[1]}; }
 
+  T xl() const { return d_[0].x() < d_[1].x() ? d_[0].x() : d_[1].x(); }
+  T yl() const { return d_[0].y() < d_[1].y() ? d_[0].y() : d_[1].y(); }
+  T xh() const { return d_[0].x() > d_[1].x() ? d_[0].x() : d_[1].x(); }
+  T yh() const { return d_[0].y() > d_[1].y() ? d_[0].y() : d_[1].y(); }
+
+  T MinX() const { return xl(); }
+  T MinY() const { return yl(); }
+  T MaxX() const { return xh(); }
+  T MaxY() const { return yh(); }
+
   // Mutators.
-  void Set(T xl, T yl, T xh, T yh) {
-    d_[0].Set(xl, yl);
-    d_[1].Set(xh, yh);
+  void Set(T x0, T y0, T x1, T y1) {
+    d_[0].Set(x0, y0);
+    d_[1].Set(x1, y1);
   }
   void Set(const Point2<T>& p0, const Point2<T>& p1) {
     d_[0] = p0;
