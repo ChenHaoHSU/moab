@@ -61,6 +61,11 @@ class Segment2 {
   T MaxX() const { return xh(); }
   T MaxY() const { return yh(); }
 
+  Point2<T>& MinPoint() { return d_[0] < d_[1] ? d_[0] : d_[1]; }
+  const Point2<T>& MinPoint() const { return d_[0] < d_[1] ? d_[0] : d_[1]; }
+  Point2<T>& MaxPoint() { return d_[0] > d_[1] ? d_[0] : d_[1]; }
+  const Point2<T>& MaxPoint() const { return d_[0] > d_[1] ? d_[0] : d_[1]; }
+
   // Mutators.
   void Set(T x0, T y0, T x1, T y1) {
     d_[0].Set(x0, y0);
@@ -204,7 +209,7 @@ struct segment_traits<moab::Segment2<T>> {
   using point_type = typename moab::Segment2<T>::point_type;
 
   static inline point_type get(const moab::Segment2<T>& s, direction_1d dir) {
-    return s[dir.to_int()];
+    return dir == LOW ? s.MinPoint() : s.MaxPoint();
   }
 };
 
@@ -215,7 +220,8 @@ struct segment_mutable_traits<moab::Segment2<T>> {
 
   static inline void set(moab::Segment2<T>& s, direction_1d dir,
                          const point_type& p) {
-    s[dir.to_int()] = p;
+    point_type& point = (dir == LOW ? s.MinPoint() : s.MaxPoint());
+    point = p;
   }
   static inline moab::Segment2<T> construct(const point_type& p0,
                                             const point_type& p1) {
