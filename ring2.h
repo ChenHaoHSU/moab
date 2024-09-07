@@ -216,7 +216,9 @@ struct polygon_traits<moab::Ring2<int>> {
   static inline iterator_type end_points(const moab::Ring2<int>& r) {
     return r.end();
   }
-  static inline std::size_t size(const moab::Ring2<int>& r) { return r.Size(); }
+  static inline unsigned int size(const moab::Ring2<int>& r) {
+    return r.Size();
+  }
   static inline winding_direction winding(const moab::Ring2<int>& r) {
     return winding_direction::unknown_winding;
   }
@@ -225,49 +227,16 @@ struct polygon_traits<moab::Ring2<int>> {
 template <>
 struct polygon_mutable_traits<moab::Ring2<int>> {
   template <typename iT>
-  static inline moab::Ring2<int>& set_points(moab::Ring2<int>& r, iT first,
-                                             iT last) {
+  static inline moab::Ring2<int>& set_points(moab::Ring2<int>& r,
+                                             iT input_begin, iT input_end) {
     r.Clear();
-    while (first != last) {
-      r.Append(moab::Point2<int>(first->x(), first->y()));
-      ++first;
+    while (input_begin != input_end) {
+      r.Append(moab::Point2<int>(input_begin->x(), input_begin->y()));
+      ++input_begin;
     }
     return r;
   }
 };
-
-// template <typename T>
-// struct geometry_concept<moab::Ring2<T>> {
-//   using type = polygon_concept;
-// };
-
-// template <typename T>
-// struct polygon_traits<moab::Ring2<T>> {
-//   using coordinate_type = T;
-//   using point_type = typename moab::Ring2<T>::point_type;
-//   using iterator_type = typename moab::Ring2<T>::const_iterator_type;
-
-//   static inline iterator_type begin_points(const moab::Ring2<T>& r) {
-//     return r.begin();
-//   }
-//   static inline iterator_type end_points(const moab::Ring2<T>& r) {
-//     return r.end();
-//   }
-//   static inline std::size_t size(const moab::Ring2<T>& r) { return r.Size();
-//   } static inline winding_direction winding(const moab::Ring2<T>& r) {
-//     return winding_direction::unknown_winding;
-//   }
-// };
-
-// template <typename T>
-// struct polygon_mutable_traits<moab::Ring2<T>> {
-//   template <typename InputIt>
-//   static inline moab::Ring2<T>& set_points(moab::Ring2<T>& r, InputIt first,
-//                                            InputIt last) {
-//     r.Assign(begin_points, end_points);
-//     return r;
-//   }
-// };
 
 }  // namespace boost::polygon
 

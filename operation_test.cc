@@ -83,6 +83,29 @@ TEST(PolygonOperators, UnionRingRing1) {
   EXPECT_THAT(rhs, UnorderedElementsAre(Ring2_i(Box2_i(1, 0, 2, 1))));
 }
 
+TEST(PolygonOperators, UnionRingRing2) {
+  std::vector<Ring2_i> lhs = {Ring2_i(Box2_i(0, 0, 2, 1))};
+  std::vector<Ring2_i> rhs = {Ring2_i(Box2_i(0, 0, 1, 2))};
+
+  UnionSet(lhs, rhs);
+
+  EXPECT_TRUE(moab::Equivalence(
+      lhs, std::vector<Ring2_i>{Ring2_i(Box2_i(0, 0, 2, 1)),
+                                Ring2_i(Box2_i(0, 0, 1, 2))}));
+  EXPECT_THAT(rhs, UnorderedElementsAre(Ring2_i(Box2_i(0, 0, 1, 2))));
+}
+
+TEST(PolygonOperators, UnionRingBox1) {
+  std::vector<Ring2_i> lhs = {Ring2_i(Box2_i(0, 0, 1, 1))};
+  std::vector<Box2_i> rhs = {Box2_i(1, 0, 2, 1)};
+
+  UnionSet(lhs, rhs);
+
+  EXPECT_TRUE(moab::Equivalence(
+      lhs, std::vector<Ring2_i>{Ring2_i(Box2_i(0, 0, 2, 1))}));
+  EXPECT_THAT(rhs, UnorderedElementsAre(Box2_i(1, 0, 2, 1)));
+}
+
 TEST(PolygonOperators, IntersectionBoxBox1) {
   std::vector<Box2_i> lhs = {Box2_i(0, 0, 1, 1)};
   std::vector<Box2_i> rhs = {Box2_i(1, 0, 2, 1)};
@@ -303,6 +326,27 @@ TEST(PolygonFunctions, AreaBox5) {
   std::vector<Box2_i> set = {Box2_i(0, 0, 0, 0)};
 
   EXPECT_EQ(Area(set), 0);
+}
+
+TEST(PolygonFunctions, AreaRing1) {
+  std::vector<Ring2_i> set = {Ring2_i(Box2_i(0, 0, 10, 10))};
+
+  EXPECT_EQ(Area(set), 100);
+}
+
+TEST(PolygonFunctions, AreaRing2) {
+  std::vector<Ring2_i> set = {Ring2_i(Box2_i(0, 0, 10, 10)),
+                              Ring2_i(Box2_i(0, 0, 10, 10)),
+                              Ring2_i(Box2_i(4, 4, 6, 6))};
+
+  EXPECT_EQ(Area(set), 100);
+}
+
+TEST(PolygonFunctions, AreaRing3) {
+  std::vector<Ring2_i> set = {Ring2_i(Box2_i(0, 0, 10, 10)),
+                              Ring2_i(Box2_i(5, 0, 15, 10))};
+
+  EXPECT_EQ(Area(set), 150);
 }
 
 TEST(GeometryFunctions, IsCoveredByPointBox) {
@@ -613,6 +657,20 @@ TEST(GeometryFunctions, IsEqualBoxBox) {
   EXPECT_FALSE(IsEqual(b1, b8));
   EXPECT_FALSE(IsEqual(b1, b9));
   EXPECT_FALSE(IsEqual(b1, b10));
+}
+
+TEST(GeometryFunctions, IsEqualRingRing) {
+  Ring2_i r1 = Ring2_i(Box2_i(0, 0, 10, 10));
+  Ring2_i r2 = Ring2_i({Point2_i(0, 0), Point2_i(5, 0), Point2_i(10, 0),
+                        Point2_i(10, 10), Point2_i(0, 10), Point2_i(0, 5),
+                        Point2_i(0, 0)});
+  Ring2_i r3 = Ring2_i({Point2_i(0, 0), Point2_i(5, 0), Point2_i(11, 0),
+                        Point2_i(11, 11), Point2_i(0, 11), Point2_i(0, 5),
+                        Point2_i(0, 0)});
+
+  EXPECT_TRUE(IsEqual(r1, r1));
+  EXPECT_TRUE(IsEqual(r1, r2));
+  EXPECT_FALSE(IsEqual(r1, r3));
 }
 
 }  // namespace moab
