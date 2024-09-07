@@ -33,7 +33,7 @@ class Segment3 {
   Segment3() : d_({Point3<T>(0, 0, 0), Point3<T>(0, 0, 0)}) {}
   explicit Segment3(const Point3<T>& p0, const Point3<T>& p1) { Set(p0, p1); }
   explicit Segment3(T xl, T yl, T zl, T xh, T yh, T zh) {
-    Set(Point3<T>(xl, yl, zl), Point3<T>(xh, yh, zh));
+    Set(xl, yl, zl, xh, yh, zh);
   }
   Segment3(const Segment3& s) = default;
   Segment3(Segment3&& s) = default;
@@ -52,10 +52,29 @@ class Segment3 {
 
   std::pair<Point3<T>, Point3<T>> ToPair() const { return {d_[0], d_[1]}; }
 
+  T xl() const { return d_[0].x() < d_[1].x() ? d_[0].x() : d_[1].x(); }
+  T yl() const { return d_[0].y() < d_[1].y() ? d_[0].y() : d_[1].y(); }
+  T zl() const { return d_[0].z() < d_[1].z() ? d_[0].z() : d_[1].z(); }
+  T xh() const { return d_[0].x() > d_[1].x() ? d_[0].x() : d_[1].x(); }
+  T yh() const { return d_[0].y() > d_[1].y() ? d_[0].y() : d_[1].y(); }
+  T zh() const { return d_[0].z() > d_[1].z() ? d_[0].z() : d_[1].z(); }
+
+  T MinX() const { return xl(); }
+  T MinY() const { return yl(); }
+  T MinZ() const { return zl(); }
+  T MaxX() const { return xh(); }
+  T MaxY() const { return yh(); }
+  T MaxZ() const { return zh(); }
+
+  Point3<T>& MinPoint() { return d_[0] < d_[1] ? d_[0] : d_[1]; }
+  const Point3<T>& MinPoint() const { return d_[0] < d_[1] ? d_[0] : d_[1]; }
+  Point3<T>& MaxPoint() { return d_[0] > d_[1] ? d_[0] : d_[1]; }
+  const Point3<T>& MaxPoint() const { return d_[0] > d_[1] ? d_[0] : d_[1]; }
+
   // Mutators.
-  void Set(T xl, T yl, T zl, T xh, T yh, T zh) {
-    d_[0].Set(xl, yl, zl);
-    d_[1].Set(xh, yh, zh);
+  void Set(T x0, T y0, T z0, T x1, T y1, T z1) {
+    d_[0].Set(x0, y0, z0);
+    d_[1].Set(x1, y1, z1);
   }
   void Set(const Point3<T>& p0, const Point3<T>& p1) {
     d_[0] = p0;
@@ -150,48 +169,31 @@ struct tag<moab::Segment3<T>> {
 };
 
 template <typename T>
-struct dimension<moab::Segment3<T>> : boost::mpl::int_<3> {};
-
-template <typename T>
-struct coordinate_type<moab::Segment3<T>> {
-  using type = T;
+struct point_type<moab::Segment3<T>> {
+  using type = typename moab::Segment3<T>::point_type;
 };
 
-template <typename T>
-struct coordinate_system<moab::Segment3<T>> {
-  using type = boost::geometry::cs::cartesian;
-};
-
-template <typename T>
-struct access<moab::Segment3<T>, 0> {
+template <typename T, std::size_t Dimension>
+struct indexed_access<moab::Segment3<T>, 0, Dimension> {
   using coordinate_type = typename moab::Segment3<T>::coordinate_type;
-  using point_type = typename moab::Segment3<T>::point_type;
 
-  static inline point_type get(const moab::Segment3<T>& s) { return s[0]; }
-  static inline void set(moab::Segment3<T>& s, const point_type& p) {
-    s[0] = p;
+  static inline coordinate_type get(const moab::Segment3<T>& s) {
+    return s[0][Dimension];
+  }
+  static inline void set(moab::Segment3<T>& s, const coordinate_type& value) {
+    s[0][Dimension] = value;
   }
 };
 
-template <typename T>
-struct access<moab::Segment3<T>, 1> {
+template <typename T, std::size_t Dimension>
+struct indexed_access<moab::Segment3<T>, 1, Dimension> {
   using coordinate_type = typename moab::Segment3<T>::coordinate_type;
-  using point_type = typename moab::Segment3<T>::point_type;
 
-  static inline point_type get(const moab::Segment3<T>& s) { return s[1]; }
-  static inline void set(moab::Segment3<T>& s, const point_type& p) {
-    s[1] = p;
+  static inline coordinate_type get(const moab::Segment3<T>& s) {
+    return s[0][Dimension];
   }
-};
-
-template <typename T>
-struct access<moab::Segment3<T>, 2> {
-  using coordinate_type = typename moab::Segment3<T>::coordinate_type;
-  using point_type = typename moab::Segment3<T>::point_type;
-
-  static inline point_type get(const moab::Segment3<T>& s) { return s[2]; }
-  static inline void set(moab::Segment3<T>& s, const point_type& p) {
-    s[2] = p;
+  static inline void set(moab::Segment3<T>& s, const coordinate_type& value) {
+    s[0][Dimension] = value;
   }
 };
 

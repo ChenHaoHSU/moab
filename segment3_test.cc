@@ -51,11 +51,93 @@ TEST(Constructors, Move) {
   EXPECT_EQ(s2.p1(), Point3_i(4, 5, 6));
 }
 
-TEST(Accessors, P1P2) {
+TEST(Accessors, P0P1) {
   Segment3_i s(Point3_i(1, 2, 3), Point3_i(4, 5, 6));
 
   EXPECT_EQ(s.p0(), Point3_i(1, 2, 3));
   EXPECT_EQ(s.p1(), Point3_i(4, 5, 6));
+}
+
+TEST(Accessors, P0P1Const) {
+  const Segment3_i s(Point3_i(1, 2, 3), Point3_i(4, 5, 6));
+
+  EXPECT_EQ(s.p0(), Point3_i(1, 2, 3));
+  EXPECT_EQ(s.p1(), Point3_i(4, 5, 6));
+}
+
+TEST(Accessors, Data) {
+  Segment3_i s(Point3_i(1, 2, 3), Point3_i(4, 5, 6));
+  Point3_i* data = s.data();
+
+  data[1] = Point3_i(7, 8, 9);
+
+  EXPECT_EQ(data[0], Point3_i(1, 2, 3));
+  EXPECT_EQ(data[1], Point3_i(7, 8, 9));
+}
+
+TEST(Accessors, DataConst) {
+  const Segment3_i s(Point3_i(1, 2, 3), Point3_i(4, 5, 6));
+  const Point3_i* data = s.data();
+
+  EXPECT_EQ(data[0], Point3_i(1, 2, 3));
+  EXPECT_EQ(data[1], Point3_i(4, 5, 6));
+}
+
+TEST(Accessors, Size) {
+  Segment3_i s(Point3_i(1, 2, 3), Point3_i(4, 5, 6));
+
+  EXPECT_EQ(s.Size(), 2);
+}
+
+TEST(Accessors, ToPair) {
+  Segment3_i s(Point3_i(1, 2, 3), Point3_i(4, 5, 6));
+  std::pair<Point3_i, Point3_i> p = s.ToPair();
+
+  EXPECT_THAT(p, Pair(Point3_i(1, 2, 3), Point3_i(4, 5, 6)));
+}
+
+TEST(Accessors, XLYLZLXHYHZH1) {
+  Segment3_i s(Point3_i(1, 2, 3), Point3_i(4, 5, 6));
+
+  EXPECT_EQ(s.xl(), 1);
+  EXPECT_EQ(s.yl(), 2);
+  EXPECT_EQ(s.zl(), 3);
+  EXPECT_EQ(s.xh(), 4);
+  EXPECT_EQ(s.yh(), 5);
+  EXPECT_EQ(s.zh(), 6);
+}
+
+TEST(Accessors, XLYLZLXHYHZH2) {
+  Segment3_i s(Point3_i(4, 5, 6), Point3_i(1, 2, 3));
+
+  EXPECT_EQ(s.xl(), 1);
+  EXPECT_EQ(s.yl(), 2);
+  EXPECT_EQ(s.zl(), 3);
+  EXPECT_EQ(s.xh(), 4);
+  EXPECT_EQ(s.yh(), 5);
+  EXPECT_EQ(s.zh(), 6);
+}
+
+TEST(Accessors, MinMaxXYZ1) {
+  Segment3_i s(Point3_i(1, 2, 3), Point3_i(4, 5, 6));
+
+  EXPECT_EQ(s.MinX(), 1);
+  EXPECT_EQ(s.MinY(), 2);
+  EXPECT_EQ(s.MinZ(), 3);
+  EXPECT_EQ(s.MaxX(), 4);
+  EXPECT_EQ(s.MaxY(), 5);
+  EXPECT_EQ(s.MaxZ(), 6);
+}
+
+TEST(Accessors, MinMaxXYZ2) {
+  Segment3_i s(Point3_i(4, 5, 6), Point3_i(1, 2, 3));
+
+  EXPECT_EQ(s.MinX(), 1);
+  EXPECT_EQ(s.MinY(), 2);
+  EXPECT_EQ(s.MinZ(), 3);
+  EXPECT_EQ(s.MaxX(), 4);
+  EXPECT_EQ(s.MaxY(), 5);
+  EXPECT_EQ(s.MaxZ(), 6);
 }
 
 TEST(Mutators, SetByFourCoordinates) {
@@ -74,7 +156,7 @@ TEST(Mutators, SetByTwoPoints) {
   EXPECT_EQ(s.p1(), Point3_i(10, 11, 12));
 }
 
-TEST(Mutators, SetP1P2) {
+TEST(Mutators, SetP0P1) {
   Segment3_i s(Point3_i(1, 2, 3), Point3_i(4, 5, 6));
   s.SetP0(Point3_i(7, 8, 9));
   s.SetP1(Point3_i(10, 11, 12));
@@ -83,10 +165,10 @@ TEST(Mutators, SetP1P2) {
   EXPECT_EQ(s.p1(), Point3_i(10, 11, 12));
 }
 
-TEST(Mutators, SetDimensionP) {
+TEST(Mutators, SetP) {
   Segment3_i s(Point3_i(1, 2, 3), Point3_i(4, 5, 6));
-  s.SetP(1, Point3_i(10, 11, 12));
   s.SetP(0, Point3_i(7, 8, 9));
+  s.SetP(1, Point3_i(10, 11, 12));
 
   EXPECT_EQ(s.p0(), Point3_i(7, 8, 9));
   EXPECT_EQ(s.p1(), Point3_i(10, 11, 12));
