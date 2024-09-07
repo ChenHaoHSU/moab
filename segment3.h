@@ -169,48 +169,31 @@ struct tag<moab::Segment3<T>> {
 };
 
 template <typename T>
-struct dimension<moab::Segment3<T>> : boost::mpl::int_<3> {};
-
-template <typename T>
-struct coordinate_type<moab::Segment3<T>> {
-  using type = T;
+struct point_type<moab::Segment3<T>> {
+  using type = typename moab::Segment3<T>::point_type;
 };
 
-template <typename T>
-struct coordinate_system<moab::Segment3<T>> {
-  using type = boost::geometry::cs::cartesian;
-};
-
-template <typename T>
-struct access<moab::Segment3<T>, 0> {
+template <typename T, std::size_t Dimension>
+struct indexed_access<moab::Segment3<T>, 0, Dimension> {
   using coordinate_type = typename moab::Segment3<T>::coordinate_type;
-  using point_type = typename moab::Segment3<T>::point_type;
 
-  static inline point_type get(const moab::Segment3<T>& s) { return s[0]; }
-  static inline void set(moab::Segment3<T>& s, const point_type& p) {
-    s[0] = p;
+  static inline coordinate_type get(const moab::Segment3<T>& s) {
+    return s[0][Dimension];
+  }
+  static inline void set(moab::Segment3<T>& s, const coordinate_type& value) {
+    s[0][Dimension] = value;
   }
 };
 
-template <typename T>
-struct access<moab::Segment3<T>, 1> {
+template <typename T, std::size_t Dimension>
+struct indexed_access<moab::Segment3<T>, 1, Dimension> {
   using coordinate_type = typename moab::Segment3<T>::coordinate_type;
-  using point_type = typename moab::Segment3<T>::point_type;
 
-  static inline point_type get(const moab::Segment3<T>& s) { return s[1]; }
-  static inline void set(moab::Segment3<T>& s, const point_type& p) {
-    s[1] = p;
+  static inline coordinate_type get(const moab::Segment3<T>& s) {
+    return s[0][Dimension];
   }
-};
-
-template <typename T>
-struct access<moab::Segment3<T>, 2> {
-  using coordinate_type = typename moab::Segment3<T>::coordinate_type;
-  using point_type = typename moab::Segment3<T>::point_type;
-
-  static inline point_type get(const moab::Segment3<T>& s) { return s[2]; }
-  static inline void set(moab::Segment3<T>& s, const point_type& p) {
-    s[2] = p;
+  static inline void set(moab::Segment3<T>& s, const coordinate_type& value) {
+    s[0][Dimension] = value;
   }
 };
 
