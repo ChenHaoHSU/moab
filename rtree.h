@@ -2,9 +2,12 @@
 #define MOAB_RTREE_H_
 
 #include <cstdint>
+#include <initializer_list>
+#include <utility>
 
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
+#include "boost/function_output_iterator.hpp"
 #include "boost/geometry.hpp"
 #include "boost/geometry/geometries/point.hpp"
 #include "boost/geometry/index/parameters.hpp"
@@ -20,13 +23,23 @@ template <typename Value>
 class Rtree {
  public:
   // Rtree type.
-  using rtree_type = bgi::rtree<Value, bgi::rstar<16>, bgi::indexable<Value>,
+  using rtree_type = bgi::rtree<Value, bgi::rstar<16, 4>, bgi::indexable<Value>,
                                 bgi::equal_to<Value>>;
 
   // Constructors.
+  // Default constructor.
   Rtree() = default;
+  // Range constructor.
+  template <typename Iterator>
+  Rtree(Iterator first, Iterator last) : rtree_(first, last) {}
+  // Initializer list constructor.
+  Rtree(std::initializer_list<Value> il) : rtree_(il) {}
+  // Copy constructor.
   Rtree(const Rtree& r) = default;
+  // Move constructor.
   Rtree(Rtree&& r) = default;
+
+  // Destructor.
   ~Rtree() = default;
 
   // Accessors.
@@ -85,13 +98,18 @@ class Rtree {
   rtree_type rtree_;
 };
 
+// Type aliases.
 // Box R-tree.
 using RtreeBox2_i = Rtree<Box2_i>;
 using RtreeBox2_i32 = Rtree<Box2_i32>;
 using RtreeBox2_i64 = Rtree<Box2_i64>;
-
 // Box R-tree map.
-using RtreeBoxMap2_i = Rtree<std::pair<Box2_i, int>>;
+template <typename T>
+using RtreeBoxMap2_i = Rtree<std::pair<Box2_i, T>>;
+template <typename T>
+using RtreeBoxMap2_i32 = Rtree<std::pair<Box2_i32, T>>;
+template <typename T>
+using RtreeBoxMap2_i64 = Rtree<std::pair<Box2_i64, T>>;
 
 }  // namespace moab
 

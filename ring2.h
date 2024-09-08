@@ -2,6 +2,7 @@
 #define MOAB_RING2_H_
 
 #include <cstdint>
+#include <initializer_list>
 #include <string>
 #include <vector>
 
