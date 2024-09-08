@@ -172,47 +172,29 @@ struct point_type<moab::Box2<T>> {
   using type = typename moab::Box2<T>::point_type;
 };
 
-template <typename T>
-struct indexed_access<moab::Box2<T>, min_corner, 0> {
+template <typename T, std::size_t Dimension>
+struct indexed_access<moab::Box2<T>, min_corner, Dimension> {
   using box_type = moab::Box2<T>;
   using coordinate_type = typename box_type::coordinate_type;
 
-  static inline coordinate_type get(const box_type& b) { return b[0][0]; }
+  static inline coordinate_type get(const box_type& b) {
+    return b[0][Dimension];
+  }
   static inline void set(box_type& b, const coordinate_type& value) {
-    b[0][0] = value;
+    b[0][Dimension] = value;
   }
 };
 
-template <typename T>
-struct indexed_access<moab::Box2<T>, min_corner, 1> {
+template <typename T, std::size_t Dimension>
+struct indexed_access<moab::Box2<T>, max_corner, Dimension> {
   using box_type = moab::Box2<T>;
   using coordinate_type = typename box_type::coordinate_type;
 
-  static inline coordinate_type get(const box_type& b) { return b[0][1]; }
-  static inline void set(box_type& b, const coordinate_type& value) {
-    b[0][1] = value;
+  static inline coordinate_type get(const box_type& b) {
+    return b[1][Dimension];
   }
-};
-
-template <typename T>
-struct indexed_access<moab::Box2<T>, max_corner, 0> {
-  using box_type = moab::Box2<T>;
-  using coordinate_type = typename box_type::coordinate_type;
-
-  static inline coordinate_type get(const box_type& b) { return b[1][0]; }
   static inline void set(box_type& b, const coordinate_type& value) {
-    b[1][0] = value;
-  }
-};
-
-template <typename T>
-struct indexed_access<moab::Box2<T>, max_corner, 1> {
-  using box_type = moab::Box2<T>;
-  using coordinate_type = typename box_type::coordinate_type;
-
-  static inline coordinate_type get(const box_type& b) { return b[1][1]; }
-  static inline void set(box_type& b, const coordinate_type& value) {
-    b[1][1] = value;
+    b[1][Dimension] = value;
   }
 };
 
