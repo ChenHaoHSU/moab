@@ -218,6 +218,33 @@ cc_test(
 )
 
 cc_library(
+    name = "rtree",
+    hdrs = ["rtree.h"],
+    deps = [
+        ":box2",
+        ":point2",
+        "@boost//:geometry",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "rtree_test",
+    size = "small",
+    srcs = ["rtree_test.cc"],
+    deps = [
+        ":box2",
+        ":point2",
+        ":rtree",
+        "@com_google_absl//absl/log",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "moab",
     hdrs = ["moab.h"],
     deps = [
