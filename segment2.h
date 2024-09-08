@@ -163,27 +163,15 @@ struct point_type<moab::Segment2<T>> {
   using type = typename moab::Segment2<T>::point_type;
 };
 
-template <typename T, std::size_t Dimension>
-struct indexed_access<moab::Segment2<T>, 0, Dimension> {
+template <typename T, std::size_t Index, std::size_t Dimension>
+struct indexed_access<moab::Segment2<T>, Index, Dimension> {
   using coordinate_type = typename moab::Segment2<T>::coordinate_type;
 
   static inline coordinate_type get(const moab::Segment2<T>& s) {
-    return s[0][Dimension];
+    return s[Index][Dimension];
   }
   static inline void set(moab::Segment2<T>& s, const coordinate_type& value) {
-    s[0][Dimension] = value;
-  }
-};
-
-template <typename T, std::size_t Dimension>
-struct indexed_access<moab::Segment2<T>, 1, Dimension> {
-  using coordinate_type = typename moab::Segment2<T>::coordinate_type;
-
-  static inline coordinate_type get(const moab::Segment2<T>& s) {
-    return s[0][Dimension];
-  }
-  static inline void set(moab::Segment2<T>& s, const coordinate_type& value) {
-    s[0][Dimension] = value;
+    s[Index][Dimension] = value;
   }
 };
 
