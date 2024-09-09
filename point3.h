@@ -215,33 +215,15 @@ struct coordinate_system<moab::Point3<T>> {
   using type = boost::geometry::cs::cartesian;
 };
 
-template <typename T>
-struct access<moab::Point3<T>, 0> {
+template <typename T, std::size_t Dimension>
+struct access<moab::Point3<T>, Dimension> {
   using coordinate_type = typename moab::Point3<T>::coordinate_type;
 
-  static inline coordinate_type get(const moab::Point3<T>& p) { return p[0]; }
-  static inline void set(moab::Point3<T>& p, const coordinate_type& value) {
-    p[0] = value;
+  static inline coordinate_type get(const moab::Point3<T>& p) {
+    return p[Dimension];
   }
-};
-
-template <typename T>
-struct access<moab::Point3<T>, 1> {
-  using coordinate_type = typename moab::Point3<T>::coordinate_type;
-
-  static inline coordinate_type get(const moab::Point3<T>& p) { return p[1]; }
   static inline void set(moab::Point3<T>& p, const coordinate_type& value) {
-    p[1] = value;
-  }
-};
-
-template <typename T>
-struct access<moab::Point3<T>, 2> {
-  using coordinate_type = typename moab::Point3<T>::coordinate_type;
-
-  static inline coordinate_type get(const moab::Point3<T>& p) { return p[2]; }
-  static inline void set(moab::Point3<T>& p, const coordinate_type& value) {
-    p[2] = value;
+    p[Dimension] = value;
   }
 };
 

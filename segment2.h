@@ -61,6 +61,11 @@ class Segment2 {
   T MaxX() const { return xh(); }
   T MaxY() const { return yh(); }
 
+  Point2<T>& MinPoint() { return d_[0] < d_[1] ? d_[0] : d_[1]; }
+  const Point2<T>& MinPoint() const { return d_[0] < d_[1] ? d_[0] : d_[1]; }
+  Point2<T>& MaxPoint() { return d_[0] > d_[1] ? d_[0] : d_[1]; }
+  const Point2<T>& MaxPoint() const { return d_[0] > d_[1] ? d_[0] : d_[1]; }
+
   // Mutators.
   void Set(T x0, T y0, T x1, T y1) {
     d_[0].Set(x0, y0);
@@ -154,37 +159,19 @@ struct tag<moab::Segment2<T>> {
 };
 
 template <typename T>
-struct dimension<moab::Segment2<T>> : boost::mpl::int_<2> {};
-
-template <typename T>
-struct coordinate_type<moab::Segment2<T>> {
-  using type = T;
+struct point_type<moab::Segment2<T>> {
+  using type = typename moab::Segment2<T>::point_type;
 };
 
-template <typename T>
-struct coordinate_system<moab::Segment2<T>> {
-  using type = boost::geometry::cs::cartesian;
-};
-
-template <typename T>
-struct access<moab::Segment2<T>, 0> {
+template <typename T, std::size_t Index, std::size_t Dimension>
+struct indexed_access<moab::Segment2<T>, Index, Dimension> {
   using coordinate_type = typename moab::Segment2<T>::coordinate_type;
-  using point_type = typename moab::Segment2<T>::point_type;
 
-  static inline point_type get(const moab::Segment2<T>& s) { return s[0]; }
-  static inline void set(moab::Segment2<T>& s, const point_type& p) {
-    s[0] = p;
+  static inline coordinate_type get(const moab::Segment2<T>& s) {
+    return s[Index][Dimension];
   }
-};
-
-template <typename T>
-struct access<moab::Segment2<T>, 1> {
-  using coordinate_type = typename moab::Segment2<T>::coordinate_type;
-  using point_type = typename moab::Segment2<T>::point_type;
-
-  static inline point_type get(const moab::Segment2<T>& s) { return s[1]; }
-  static inline void set(moab::Segment2<T>& s, const point_type& p) {
-    s[1] = p;
+  static inline void set(moab::Segment2<T>& s, const coordinate_type& value) {
+    s[Index][Dimension] = value;
   }
 };
 
@@ -204,7 +191,7 @@ struct segment_traits<moab::Segment2<T>> {
   using point_type = typename moab::Segment2<T>::point_type;
 
   static inline point_type get(const moab::Segment2<T>& s, direction_1d dir) {
-    return s[dir.to_int()];
+    return dir == LOW ? s.MinPoint() : s.MaxPoint();
   }
 };
 
@@ -215,7 +202,8 @@ struct segment_mutable_traits<moab::Segment2<T>> {
 
   static inline void set(moab::Segment2<T>& s, direction_1d dir,
                          const point_type& p) {
-    s[dir.to_int()] = p;
+    point_type& point = (dir == LOW ? s.MinPoint() : s.MaxPoint());
+    point = p;
   }
   static inline moab::Segment2<T> construct(const point_type& p0,
                                             const point_type& p1) {
