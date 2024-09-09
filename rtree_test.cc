@@ -35,6 +35,15 @@ TEST(RtreeBoxTest, ConstructorWithIterator) {
   EXPECT_FALSE(rtree.Empty());
 }
 
+TEST(RtreeBoxTest, ConstructorRange) {
+  std::vector<Box2_i> boxes = {Box2_i(0, 0, 1, 1), Box2_i(2, 2, 3, 3),
+                               Box2_i(4, 4, 5, 5)};
+  RtreeBox2_i rtree(boxes);
+
+  EXPECT_EQ(rtree.Size(), 3);
+  EXPECT_FALSE(rtree.Empty());
+}
+
 TEST(RtreeBoxTest, ConstructorWithInitializerList) {
   RtreeBox2_i rtree = {Box2_i(0, 0, 1, 1), Box2_i(2, 2, 3, 3),
                        Box2_i(4, 4, 5, 5)};

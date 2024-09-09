@@ -49,9 +49,12 @@ class Rtree {
   // Constructors.
   // Default constructor.
   Rtree() = default;
-  // Range constructor.
+  // Range constructor using iterators.
   template <typename Iterator>
-  Rtree(Iterator first, Iterator last) : rtree_(first, last) {}
+  explicit Rtree(Iterator first, Iterator last) : rtree_(first, last) {}
+  // Range constructor.
+  template <typename Range>
+  explicit Rtree(const Range& rng) : rtree_(rng) {}
   // Initializer list constructor.
   Rtree(std::initializer_list<T> il) : rtree_(il) {}
   // Copy constructor.
