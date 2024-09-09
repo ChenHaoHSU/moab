@@ -596,10 +596,10 @@ TEST(RtreePointMapTest, QueryIntersectsBox) {
 }
 
 TEST(RtreePointMapTest, QueryIntersectsKeyBox) {
+  std::vector<std::pair<Point2_i, int>> point_values = {
+      {Point2_i(0, 0), 0}, {Point2_i(2, 2), 1}, {Point2_i(4, 4), 2}};
   RtreePointMap2_i<int> rtree;
-  rtree.Insert({Point2_i(0, 0), 0});
-  rtree.Insert({Point2_i(2, 2), 1});
-  rtree.Insert({Point2_i(4, 4), 2});
+  rtree.Insert(point_values);
 
   std::vector<Point2_i> points = rtree.QueryIntersectsKey(Box2_i(0, 0, 2, 2));
 

@@ -22,13 +22,13 @@ namespace bgi = boost::geometry::index;
 
 namespace index {
 
-constexpr auto Contains = [](auto&& g) { return bgi::contains(g); };
-constexpr auto CoveredBy = [](auto&& g) { return bgi::covered_by(g); };
-constexpr auto Covers = [](auto&& g) { return bgi::covers(g); };
-constexpr auto Disjoint = [](auto&& g) { return bgi::disjoint(g); };
-constexpr auto Intersects = [](auto&& g) { return bgi::intersects(g); };
-constexpr auto Overlaps = [](auto&& g) { return bgi::overlaps(g); };
-constexpr auto Within = [](auto&& g) { return bgi::within(g); };
+constexpr auto Contains = [](const auto& g) { return bgi::contains(g); };
+constexpr auto CoveredBy = [](const auto& g) { return bgi::covered_by(g); };
+constexpr auto Covers = [](const auto& g) { return bgi::covers(g); };
+constexpr auto Disjoint = [](const auto& g) { return bgi::disjoint(g); };
+constexpr auto Intersects = [](const auto& g) { return bgi::intersects(g); };
+constexpr auto Overlaps = [](const auto& g) { return bgi::overlaps(g); };
+constexpr auto Within = [](const auto& g) { return bgi::within(g); };
 
 }  // namespace index
 
