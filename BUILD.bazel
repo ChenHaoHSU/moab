@@ -253,6 +253,8 @@ cc_library(
         ":operation",
         ":point2",
         ":point3",
+        ":ring2",
+        ":rtree",
         ":segment2",
         ":segment3",
     ],
