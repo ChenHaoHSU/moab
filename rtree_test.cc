@@ -562,13 +562,59 @@ TEST(RtreeBoxMapTest, QueryIntersectsKeyBox1) {
 
 TEST(RtreeBoxMapTest, QueryIntersectsValueBox1) {
   RtreeBoxMap2_i<int> rtree;
-  rtree.Insert({Box2_i(0, 0, 1, 1), 0});
-  rtree.Insert({Box2_i(2, 2, 3, 3), 1});
-  rtree.Insert({Box2_i(4, 4, 5, 5), 2});
+  rtree.Insert(Box2_i(0, 0, 1, 1), 0);
+  rtree.Insert(Box2_i(2, 2, 3, 3), 1);
+  rtree.Insert(Box2_i(4, 4, 5, 5), 2);
 
   std::vector<int> boxes = rtree.QueryIntersectsValue(Box2_i(1, 1, 2, 2));
 
   EXPECT_THAT(boxes, UnorderedElementsAre(0, 1));
+}
+
+TEST(RtreePointTest, QueryIntersectsPoint) {
+  RtreePoint2_i rtree;
+  rtree.Insert(Point2_i(0, 0));
+  rtree.Insert(Point2_i(2, 2));
+  rtree.Insert(Point2_i(4, 4));
+
+  std::vector<Point2_i> points = rtree.QueryIntersects(Box2_i(0, 0, 2, 2));
+
+  EXPECT_THAT(points, UnorderedElementsAre(Point2_i(0, 0), Point2_i(2, 2)));
+}
+
+TEST(RtreePointMapTest, QueryIntersectsBox) {
+  RtreePointMap2_i<int> rtree;
+  rtree.Insert({Point2_i(0, 0), 0});
+  rtree.Insert({Point2_i(2, 2), 1});
+  rtree.Insert({Point2_i(4, 4), 2});
+
+  std::vector<std::pair<Point2_i, int>> points =
+      rtree.QueryIntersects(Box2_i(0, 0, 2, 2));
+
+  EXPECT_THAT(points, UnorderedElementsAre(Pair(Point2_i(0, 0), 0),
+                                           Pair(Point2_i(2, 2), 1)));
+}
+
+TEST(RtreePointMapTest, QueryIntersectsKeyBox) {
+  RtreePointMap2_i<int> rtree;
+  rtree.Insert({Point2_i(0, 0), 0});
+  rtree.Insert({Point2_i(2, 2), 1});
+  rtree.Insert({Point2_i(4, 4), 2});
+
+  std::vector<Point2_i> points = rtree.QueryIntersectsKey(Box2_i(0, 0, 2, 2));
+
+  EXPECT_THAT(points, UnorderedElementsAre(Point2_i(0, 0), Point2_i(2, 2)));
+}
+
+TEST(RtreePointMapTest, QueryIntersectsValueBox) {
+  RtreePointMap2_i<int> rtree;
+  rtree.Insert(Point2_i(0, 0), 0);
+  rtree.Insert(Point2_i(2, 2), 1);
+  rtree.Insert(Point2_i(4, 4), 2);
+
+  std::vector<int> points = rtree.QueryIntersectsValue(Box2_i(0, 0, 2, 2));
+
+  EXPECT_THAT(points, UnorderedElementsAre(0, 1));
 }
 
 }  // namespace moab

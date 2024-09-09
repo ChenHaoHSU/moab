@@ -165,6 +165,7 @@ class Rtree {
   // Key/Value queries (only for R-tree maps).
   template <std::size_t I, typename Predicates>
   auto Query(const Predicates& predicates) const {
+    static_assert(is_pair<T>::value, "T is not a std::pair");
     if constexpr (is_pair<T>::value) {
       static_assert(I < 2, "I is out of bounds");
       std::vector<std::tuple_element_t<I, T>> result;
@@ -174,7 +175,6 @@ class Rtree {
                    }));
       return result;
     }
-    static_assert(is_pair<T>::value, "T is not a std::pair");
   }
   // Keys queries (only for R-tree maps).
   template <typename Indexable>
@@ -253,16 +253,27 @@ class Rtree {
 
 // Type aliases.
 // Box R-tree.
-using RtreeBox2_i = Rtree<Box2_i>;
-using RtreeBox2_i32 = Rtree<Box2_i32>;
-using RtreeBox2_i64 = Rtree<Box2_i64>;
+using RtreeBox2_i = Rtree<Box2<int>>;
+using RtreeBox2_i32 = Rtree<Box2<int32_t>>;
+using RtreeBox2_i64 = Rtree<Box2<int64_t>>;
 // Box R-tree map.
 template <typename T>
-using RtreeBoxMap2_i = Rtree<std::pair<Box2_i, T>>;
+using RtreeBoxMap2_i = Rtree<std::pair<Box2<int>, T>>;
 template <typename T>
-using RtreeBoxMap2_i32 = Rtree<std::pair<Box2_i32, T>>;
+using RtreeBoxMap2_i32 = Rtree<std::pair<Box2<int32_t>, T>>;
 template <typename T>
-using RtreeBoxMap2_i64 = Rtree<std::pair<Box2_i64, T>>;
+using RtreeBoxMap2_i64 = Rtree<std::pair<Box2<int64_t>, T>>;
+// Point R-tree.
+using RtreePoint2_i = Rtree<Point2<int>>;
+using RtreePoint2_i32 = Rtree<Point2<int32_t>>;
+using RtreePoint2_i64 = Rtree<Point2<int64_t>>;
+// Point R-tree map.
+template <typename T>
+using RtreePointMap2_i = Rtree<std::pair<Point2<int>, T>>;
+template <typename T>
+using RtreePointMap2_i32 = Rtree<std::pair<Point2<int32_t>, T>>;
+template <typename T>
+using RtreePointMap2_i64 = Rtree<std::pair<Point2<int64_t>, T>>;
 
 }  // namespace moab
 
