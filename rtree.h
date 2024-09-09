@@ -3,8 +3,10 @@
 
 #include <cstdint>
 #include <initializer_list>
+#include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
@@ -22,13 +24,13 @@ namespace bgi = boost::geometry::index;
 
 namespace index {
 
-constexpr auto Contains = [](auto&& g) { return bgi::contains(g); };
-constexpr auto CoveredBy = [](auto&& g) { return bgi::covered_by(g); };
-constexpr auto Covers = [](auto&& g) { return bgi::covers(g); };
-constexpr auto Disjoint = [](auto&& g) { return bgi::disjoint(g); };
-constexpr auto Intersects = [](auto&& g) { return bgi::intersects(g); };
-constexpr auto Overlaps = [](auto&& g) { return bgi::overlaps(g); };
-constexpr auto Within = [](auto&& g) { return bgi::within(g); };
+constexpr auto Contains = [](const auto& g) { return bgi::contains(g); };
+constexpr auto CoveredBy = [](const auto& g) { return bgi::covered_by(g); };
+constexpr auto Covers = [](const auto& g) { return bgi::covers(g); };
+constexpr auto Disjoint = [](const auto& g) { return bgi::disjoint(g); };
+constexpr auto Intersects = [](const auto& g) { return bgi::intersects(g); };
+constexpr auto Overlaps = [](const auto& g) { return bgi::overlaps(g); };
+constexpr auto Within = [](const auto& g) { return bgi::within(g); };
 
 }  // namespace index
 
@@ -49,9 +51,12 @@ class Rtree {
   // Constructors.
   // Default constructor.
   Rtree() = default;
-  // Range constructor.
+  // Range constructor using iterators.
   template <typename Iterator>
-  Rtree(Iterator first, Iterator last) : rtree_(first, last) {}
+  explicit Rtree(Iterator first, Iterator last) : rtree_(first, last) {}
+  // Range constructor.
+  template <typename Range>
+  explicit Rtree(const Range& rng) : rtree_(rng) {}
   // Initializer list constructor.
   Rtree(std::initializer_list<T> il) : rtree_(il) {}
   // Copy constructor.

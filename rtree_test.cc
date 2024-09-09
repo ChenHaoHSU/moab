@@ -35,6 +35,15 @@ TEST(RtreeBoxTest, ConstructorWithIterator) {
   EXPECT_FALSE(rtree.Empty());
 }
 
+TEST(RtreeBoxTest, ConstructorRange) {
+  std::vector<Box2_i> boxes = {Box2_i(0, 0, 1, 1), Box2_i(2, 2, 3, 3),
+                               Box2_i(4, 4, 5, 5)};
+  RtreeBox2_i rtree(boxes);
+
+  EXPECT_EQ(rtree.Size(), 3);
+  EXPECT_FALSE(rtree.Empty());
+}
+
 TEST(RtreeBoxTest, ConstructorWithInitializerList) {
   RtreeBox2_i rtree = {Box2_i(0, 0, 1, 1), Box2_i(2, 2, 3, 3),
                        Box2_i(4, 4, 5, 5)};
@@ -596,10 +605,10 @@ TEST(RtreePointMapTest, QueryIntersectsBox) {
 }
 
 TEST(RtreePointMapTest, QueryIntersectsKeyBox) {
+  std::vector<std::pair<Point2_i, int>> point_values = {
+      {Point2_i(0, 0), 0}, {Point2_i(2, 2), 1}, {Point2_i(4, 4), 2}};
   RtreePointMap2_i<int> rtree;
-  rtree.Insert({Point2_i(0, 0), 0});
-  rtree.Insert({Point2_i(2, 2), 1});
-  rtree.Insert({Point2_i(4, 4), 2});
+  rtree.Insert(point_values);
 
   std::vector<Point2_i> points = rtree.QueryIntersectsKey(Box2_i(0, 0, 2, 2));
 
