@@ -3,6 +3,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <sstream>
 #include <string>
 #include <utility>
 
@@ -16,6 +17,7 @@ namespace moab {
 using ::testing::ElementsAre;
 using ::testing::Pair;
 using ::testing::StrEq;
+using ::testing::UnorderedElementsAre;
 
 TEST(RtreeBoxTest, DefaultConstructor) {
   RtreeBox2_i rtree;
@@ -69,6 +71,36 @@ TEST(RtreeBoxTest, MoveConstructor) {
   EXPECT_FALSE(rtree2.Empty());
 }
 
+TEST(RtreeBoxTest, CopyAssignment) {
+  RtreeBox2_i rtree1;
+  rtree1.Insert(Box2_i(0, 0, 1, 1));
+  rtree1.Insert(Box2_i(2, 2, 3, 3));
+  rtree1.Insert(Box2_i(4, 4, 5, 5));
+
+  RtreeBox2_i rtree2;
+  rtree2 = rtree1;
+
+  EXPECT_EQ(rtree1.Size(), 3);
+  EXPECT_FALSE(rtree1.Empty());
+  EXPECT_EQ(rtree2.Size(), 3);
+  EXPECT_FALSE(rtree2.Empty());
+}
+
+TEST(RtreeBoxTest, MoveAssignment) {
+  RtreeBox2_i rtree1;
+  rtree1.Insert(Box2_i(0, 0, 1, 1));
+  rtree1.Insert(Box2_i(2, 2, 3, 3));
+  rtree1.Insert(Box2_i(4, 4, 5, 5));
+
+  RtreeBox2_i rtree2;
+  rtree2 = std::move(rtree1);
+
+  EXPECT_EQ(rtree1.Size(), 0);
+  EXPECT_TRUE(rtree1.Empty());
+  EXPECT_EQ(rtree2.Size(), 3);
+  EXPECT_FALSE(rtree2.Empty());
+}
+
 TEST(RtreeBoxTest, Size) {
   RtreeBox2_i rtree;
   rtree.Insert(Box2_i(0, 0, 1, 1));
@@ -91,6 +123,52 @@ TEST(RtreeBoxTest, Empty2) {
   rtree.Insert(Box2_i(2, 2, 3, 3));
 
   EXPECT_FALSE(rtree.Empty());
+}
+
+TEST(RtreeBoxTest, Count1) {
+  RtreeBox2_i rtree;
+  rtree.Insert(Box2_i(0, 0, 1, 1));
+  rtree.Insert(Box2_i(2, 2, 3, 3));
+  rtree.Insert(Box2_i(4, 4, 5, 5));
+
+  EXPECT_EQ(rtree.Count(Box2_i(0, 0, 1, 1)), 1);
+  EXPECT_EQ(rtree.Count(Box2_i(2, 2, 3, 3)), 1);
+  EXPECT_EQ(rtree.Count(Box2_i(4, 4, 5, 5)), 1);
+  EXPECT_EQ(rtree.Count(Box2_i(1, 1, 2, 2)), 0);
+}
+
+TEST(RtreeBoxTest, Count2) {
+  RtreeBox2_i rtree;
+  rtree.Insert(Box2_i(0, 0, 1, 1));
+  rtree.Insert(Box2_i(2, 2, 3, 3));
+  rtree.Insert(Box2_i(4, 4, 5, 5));
+  rtree.Insert(Box2_i(4, 4, 5, 5));
+  rtree.Insert(Box2_i(4, 4, 5, 5));
+  rtree.Insert(Box2_i(2, 2, 3, 3));
+
+  EXPECT_EQ(rtree.Count(Box2_i(0, 0, 1, 1)), 1);
+  EXPECT_EQ(rtree.Count(Box2_i(2, 2, 3, 3)), 2);
+  EXPECT_EQ(rtree.Count(Box2_i(4, 4, 5, 5)), 3);
+  EXPECT_EQ(rtree.Count(Box2_i(1, 1, 2, 2)), 0);
+}
+
+TEST(RtreeBoxTest, Clear1) {
+  RtreeBox2_i rtree;
+  rtree.Insert(Box2_i(0, 0, 1, 1));
+  rtree.Insert(Box2_i(2, 2, 3, 3));
+  rtree.Insert(Box2_i(4, 4, 5, 5));
+  rtree.Clear();
+
+  EXPECT_EQ(rtree.Size(), 0);
+  EXPECT_TRUE(rtree.Empty());
+}
+
+TEST(RtreeBoxTest, Clear2) {
+  RtreeBox2_i rtree;
+  rtree.Clear();
+
+  EXPECT_EQ(rtree.Size(), 0);
+  EXPECT_TRUE(rtree.Empty());
 }
 
 TEST(RtreeBoxTest, InsertValue1) {
@@ -117,7 +195,7 @@ TEST(RtreeBoxTest, InsertIterator1) {
   std::vector<Box2_i> boxes = {Box2_i(0, 0, 1, 1), Box2_i(2, 2, 3, 3),
                                Box2_i(4, 4, 5, 5)};
   RtreeBox2_i rtree;
-  rtree.insert(boxes.begin(), boxes.end());
+  rtree.Insert(boxes.begin(), boxes.end());
 
   EXPECT_EQ(rtree.Size(), 3);
 }
@@ -127,7 +205,17 @@ TEST(RtreeBoxTest, InsertIterator2) {
                                Box2_i(2, 2, 3, 3), Box2_i(4, 4, 5, 5),
                                Box2_i(4, 4, 5, 5)};
   RtreeBox2_i rtree;
-  rtree.insert(boxes.begin(), boxes.end());
+  rtree.Insert(boxes.begin(), boxes.end());
+
+  EXPECT_EQ(rtree.Size(), 5);
+}
+
+TEST(RtreeBoxTest, InsertIterator3) {
+  std::vector<Box2_i> boxes = {Box2_i(0, 0, 1, 1), Box2_i(2, 2, 3, 3),
+                               Box2_i(2, 2, 3, 3), Box2_i(4, 4, 5, 5),
+                               Box2_i(4, 4, 5, 5)};
+  RtreeBox2_i rtree;
+  rtree.Insert(boxes);
 
   EXPECT_EQ(rtree.Size(), 5);
 }
@@ -187,7 +275,7 @@ TEST(RtreeBoxTest, RemoveIterator1) {
   std::vector<Box2_i> boxes = {Box2_i(0, 0, 1, 1), Box2_i(2, 2, 3, 3),
                                Box2_i(4, 4, 5, 5)};
   RtreeBox2_i rtree;
-  rtree.insert(boxes.begin(), boxes.end());
+  rtree.Insert(boxes.begin(), boxes.end());
 
   EXPECT_EQ(rtree.Size(), 3);
   EXPECT_EQ(rtree.Count(Box2_i(0, 0, 1, 1)), 1);
@@ -212,7 +300,7 @@ TEST(RtreeBoxTest, RemoveIterator2) {
                                Box2_i(4, 4, 5, 5), Box2_i(0, 0, 1, 1),
                                Box2_i(2, 2, 3, 3), Box2_i(4, 4, 5, 5)};
   RtreeBox2_i rtree;
-  rtree.insert(boxes.begin(), boxes.end());
+  rtree.Insert(boxes.begin(), boxes.end());
 
   EXPECT_EQ(rtree.Size(), 6);
   EXPECT_EQ(rtree.Count(Box2_i(0, 0, 1, 1)), 2);
@@ -244,80 +332,160 @@ TEST(RtreeBoxTest, RemoveIterator2) {
   EXPECT_EQ(rtree.Count(Box2_i(14, 14, 15, 15)), 0);
 }
 
-TEST(RtreeBoxTest, Count1) {
+TEST(RtreeBoxTest, RemoveRange1) {
+  std::vector<Box2_i> boxes = {Box2_i(0, 0, 1, 1), Box2_i(2, 2, 3, 3),
+                               Box2_i(4, 4, 5, 5)};
   RtreeBox2_i rtree;
-  rtree.Insert(Box2_i(0, 0, 1, 1));
-  rtree.Insert(Box2_i(2, 2, 3, 3));
-  rtree.Insert(Box2_i(4, 4, 5, 5));
+  rtree.Insert(boxes);
 
+  EXPECT_EQ(rtree.Size(), 3);
+  EXPECT_EQ(rtree.Count(Box2_i(0, 0, 1, 1)), 1);
+
+  std::vector<Box2_i> removed_boxes(boxes.begin(), boxes.begin() + 1);
+  rtree.Remove(removed_boxes);
+
+  EXPECT_EQ(rtree.Size(), 2);
+  EXPECT_EQ(rtree.Count(Box2_i(0, 0, 1, 1)), 0);
+  EXPECT_EQ(rtree.Count(Box2_i(2, 2, 3, 3)), 1);
+  EXPECT_EQ(rtree.Count(Box2_i(4, 4, 5, 5)), 1);
+
+  rtree.Remove(boxes);
+
+  EXPECT_EQ(rtree.Size(), 0);
+  EXPECT_EQ(rtree.Count(Box2_i(0, 0, 1, 1)), 0);
+  EXPECT_EQ(rtree.Count(Box2_i(2, 2, 3, 3)), 0);
+  EXPECT_EQ(rtree.Count(Box2_i(4, 4, 5, 5)), 0);
+}
+
+TEST(RtreeBoxTest, RemoveRange2) {
+  std::vector<Box2_i> boxes = {Box2_i(0, 0, 1, 1), Box2_i(2, 2, 3, 3),
+                               Box2_i(4, 4, 5, 5), Box2_i(0, 0, 1, 1),
+                               Box2_i(2, 2, 3, 3), Box2_i(4, 4, 5, 5)};
+  RtreeBox2_i rtree;
+  rtree.Insert(boxes);
+
+  EXPECT_EQ(rtree.Size(), 6);
+  EXPECT_EQ(rtree.Count(Box2_i(0, 0, 1, 1)), 2);
+  EXPECT_EQ(rtree.Count(Box2_i(2, 2, 3, 3)), 2);
+  EXPECT_EQ(rtree.Count(Box2_i(4, 4, 5, 5)), 2);
+
+  std::vector<Box2_i> removed_boxes = {
+      Box2_i(0, 0, 1, 1),     Box2_i(2, 2, 3, 3),     Box2_i(4, 4, 5, 5),
+      Box2_i(10, 10, 11, 11), Box2_i(12, 12, 13, 13), Box2_i(14, 14, 15, 15)};
+
+  rtree.Remove(removed_boxes);
+
+  EXPECT_EQ(rtree.Size(), 3);
   EXPECT_EQ(rtree.Count(Box2_i(0, 0, 1, 1)), 1);
   EXPECT_EQ(rtree.Count(Box2_i(2, 2, 3, 3)), 1);
   EXPECT_EQ(rtree.Count(Box2_i(4, 4, 5, 5)), 1);
-  EXPECT_EQ(rtree.Count(Box2_i(1, 1, 2, 2)), 0);
+  EXPECT_EQ(rtree.Count(Box2_i(10, 10, 11, 11)), 0);
+  EXPECT_EQ(rtree.Count(Box2_i(12, 12, 13, 13)), 0);
+  EXPECT_EQ(rtree.Count(Box2_i(14, 14, 15, 15)), 0);
+
+  rtree.Remove(boxes);
+
+  EXPECT_EQ(rtree.Size(), 0);
+  EXPECT_EQ(rtree.Count(Box2_i(0, 0, 1, 1)), 0);
+  EXPECT_EQ(rtree.Count(Box2_i(2, 2, 3, 3)), 0);
+  EXPECT_EQ(rtree.Count(Box2_i(4, 4, 5, 5)), 0);
+  EXPECT_EQ(rtree.Count(Box2_i(10, 10, 11, 11)), 0);
+  EXPECT_EQ(rtree.Count(Box2_i(12, 12, 13, 13)), 0);
+  EXPECT_EQ(rtree.Count(Box2_i(14, 14, 15, 15)), 0);
 }
 
-TEST(RtreeBoxTest, Count2) {
+TEST(RtreeBoxTest, QueryIntersectsPoint1) {
   RtreeBox2_i rtree;
   rtree.Insert(Box2_i(0, 0, 1, 1));
   rtree.Insert(Box2_i(2, 2, 3, 3));
   rtree.Insert(Box2_i(4, 4, 5, 5));
-  rtree.Insert(Box2_i(4, 4, 5, 5));
-  rtree.Insert(Box2_i(4, 4, 5, 5));
-  rtree.Insert(Box2_i(2, 2, 3, 3));
 
-  EXPECT_EQ(rtree.Count(Box2_i(0, 0, 1, 1)), 1);
-  EXPECT_EQ(rtree.Count(Box2_i(2, 2, 3, 3)), 2);
-  EXPECT_EQ(rtree.Count(Box2_i(4, 4, 5, 5)), 3);
-  EXPECT_EQ(rtree.Count(Box2_i(1, 1, 2, 2)), 0);
+  std::vector<Box2_i> boxes = rtree.QueryIntersects(Point2_i(1, 1));
+
+  EXPECT_THAT(boxes, UnorderedElementsAre(Box2_i(0, 0, 1, 1)));
 }
 
-TEST(RtreeBoxTest, Clear1) {
+TEST(RtreeBoxTest, QueryIntersectsPoint2) {
   RtreeBox2_i rtree;
   rtree.Insert(Box2_i(0, 0, 1, 1));
   rtree.Insert(Box2_i(2, 2, 3, 3));
   rtree.Insert(Box2_i(4, 4, 5, 5));
-  rtree.Clear();
 
-  EXPECT_EQ(rtree.Size(), 0);
-  EXPECT_TRUE(rtree.Empty());
+  std::vector<Box2_i> boxes = rtree.QueryIntersects(Point2_i(2, 2));
+
+  EXPECT_THAT(boxes, UnorderedElementsAre(Box2_i(2, 2, 3, 3)));
 }
 
-TEST(RtreeBoxTest, Clear2) {
+TEST(RtreeBoxTest, QueryIntersectsBox1) {
   RtreeBox2_i rtree;
-  rtree.Clear();
+  rtree.Insert(Box2_i(0, 0, 1, 1));
+  rtree.Insert(Box2_i(2, 2, 3, 3));
+  rtree.Insert(Box2_i(4, 4, 5, 5));
 
-  EXPECT_EQ(rtree.Size(), 0);
-  EXPECT_TRUE(rtree.Empty());
+  std::vector<Box2_i> boxes = rtree.QueryIntersects(Box2_i(1, 1, 2, 2));
+
+  EXPECT_THAT(boxes,
+              UnorderedElementsAre(Box2_i(0, 0, 1, 1), Box2_i(2, 2, 3, 3)));
 }
 
-TEST(RtreeBoxTest, CopyAssignment) {
-  RtreeBox2_i rtree1;
-  rtree1.Insert(Box2_i(0, 0, 1, 1));
-  rtree1.Insert(Box2_i(2, 2, 3, 3));
-  rtree1.Insert(Box2_i(4, 4, 5, 5));
+TEST(RtreeBoxTest, QueryIntersectsBox2) {
+  RtreeBox2_i rtree;
+  rtree.Insert(Box2_i(0, 0, 1, 1));
+  rtree.Insert(Box2_i(2, 2, 3, 3));
+  rtree.Insert(Box2_i(2, 2, 3, 3));
+  rtree.Insert(Box2_i(2, 2, 3, 3));
+  rtree.Insert(Box2_i(4, 4, 5, 5));
 
-  RtreeBox2_i rtree2;
-  rtree2 = rtree1;
+  std::vector<Box2_i> boxes = rtree.QueryIntersects(Box2_i(0, 0, 3, 3));
 
-  EXPECT_EQ(rtree1.Size(), 3);
-  EXPECT_FALSE(rtree1.Empty());
-  EXPECT_EQ(rtree2.Size(), 3);
-  EXPECT_FALSE(rtree2.Empty());
+  EXPECT_THAT(boxes,
+              UnorderedElementsAre(Box2_i(0, 0, 1, 1), Box2_i(2, 2, 3, 3),
+                                   Box2_i(2, 2, 3, 3), Box2_i(2, 2, 3, 3)));
 }
 
-TEST(RtreeBoxTest, MoveAssignment) {
-  RtreeBox2_i rtree1;
-  rtree1.Insert(Box2_i(0, 0, 1, 1));
-  rtree1.Insert(Box2_i(2, 2, 3, 3));
-  rtree1.Insert(Box2_i(4, 4, 5, 5));
+TEST(RtreeBoxTest, QueryIntersectsBox3) {
+  RtreeBox2_i rtree;
+  rtree.Insert(Box2_i(0, 0, 1, 1));
+  rtree.Insert(Box2_i(2, 2, 3, 3));
+  rtree.Insert(Box2_i(2, 2, 3, 3));
+  rtree.Insert(Box2_i(2, 2, 3, 3));
+  rtree.Insert(Box2_i(4, 4, 5, 5));
 
-  RtreeBox2_i rtree2;
-  rtree2 = std::move(rtree1);
+  std::vector<Box2_i> boxes =
+      rtree.Query(!index::Intersects(Box2_i(0, 0, 3, 3)));
 
-  EXPECT_EQ(rtree1.Size(), 0);
-  EXPECT_TRUE(rtree1.Empty());
-  EXPECT_EQ(rtree2.Size(), 3);
-  EXPECT_FALSE(rtree2.Empty());
+  EXPECT_THAT(boxes, UnorderedElementsAre(Box2_i(4, 4, 5, 5)));
+}
+
+TEST(RtreeBoxTest, SupportsRangeBasedForLoop1) {
+  RtreeBox2_i rtree;
+  rtree.Insert(Box2_i(0, 0, 1, 1));
+  rtree.Insert(Box2_i(2, 2, 3, 3));
+  rtree.Insert(Box2_i(4, 4, 5, 5));
+
+  std::vector<Box2_i> boxes;
+  for (const Box2_i& box : rtree) {
+    boxes.push_back(box);
+  }
+
+  EXPECT_THAT(boxes, ElementsAre(Box2_i(0, 0, 1, 1), Box2_i(2, 2, 3, 3),
+                                 Box2_i(4, 4, 5, 5)));
+}
+
+TEST(RtreeBoxTest, SupportsRangeBasedForLoop2) {
+  RtreeBox2_i rtree;
+  rtree.Insert(Box2_i(0, 0, 1, 1));
+  rtree.Insert(Box2_i(2, 2, 3, 3));
+  rtree.Insert(Box2_i(4, 4, 5, 5));
+
+  std::vector<Box2_i> boxes;
+  for (auto iter = rtree.begin(); iter != rtree.end(); ++iter) {
+    const Box2_i& box = *iter;
+    boxes.push_back(box);
+  }
+
+  EXPECT_THAT(boxes, ElementsAre(Box2_i(0, 0, 1, 1), Box2_i(2, 2, 3, 3),
+                                 Box2_i(4, 4, 5, 5)));
 }
 
 TEST(RtreeBoxTest, ToString) {
@@ -342,6 +510,65 @@ TEST(RtreeBoxTest, SupportsAbslStringify) {
   EXPECT_THAT(
       s,
       StrEq("<Size=3, Values=[((0 0) (1 1)), ((2 2) (3 3)), ((4 4) (5 5))]>"));
+}
+
+TEST(RtreeBoxTest, SupportsStreamOutput) {
+  RtreeBox2_i rtree;
+  rtree.Insert(Box2_i(0, 0, 1, 1));
+  rtree.Insert(Box2_i(2, 2, 3, 3));
+  rtree.Insert(Box2_i(4, 4, 5, 5));
+
+  std::stringstream ss;
+  ss << rtree;
+
+  EXPECT_THAT(
+      ss.str(),
+      StrEq("<Size=3, Values=[((0 0) (1 1)), ((2 2) (3 3)), ((4 4) (5 5))]>"));
+}
+
+TEST(RtreeBoxMapTest, InsertKeyValuePair) {
+  RtreeBoxMap2_i<int> rtree;
+  rtree.Insert(Box2_i(0, 0, 1, 1), 0);
+  rtree.Insert(Box2_i(2, 2, 3, 3), 1);
+  rtree.Insert(Box2_i(4, 4, 5, 5), 2);
+
+  EXPECT_EQ(rtree.Size(), 3);
+}
+
+TEST(RtreeBoxMapTest, QueryIntersectsBox1) {
+  RtreeBoxMap2_i<int> rtree;
+  rtree.Insert({Box2_i(0, 0, 1, 1), 0});
+  rtree.Insert({Box2_i(2, 2, 3, 3), 1});
+  rtree.Insert({Box2_i(4, 4, 5, 5), 2});
+
+  std::vector<std::pair<Box2_i, int>> boxes =
+      rtree.QueryIntersects(Box2_i(1, 1, 2, 2));
+
+  EXPECT_THAT(boxes, UnorderedElementsAre(Pair(Box2_i(0, 0, 1, 1), 0),
+                                          Pair(Box2_i(2, 2, 3, 3), 1)));
+}
+
+TEST(RtreeBoxMapTest, QueryIntersectsKeyBox1) {
+  RtreeBoxMap2_i<int> rtree;
+  rtree.Insert({Box2_i(0, 0, 1, 1), 0});
+  rtree.Insert({Box2_i(2, 2, 3, 3), 1});
+  rtree.Insert({Box2_i(4, 4, 5, 5), 2});
+
+  std::vector<Box2_i> boxes = rtree.QueryIntersectsKey(Box2_i(1, 1, 2, 2));
+
+  EXPECT_THAT(boxes,
+              UnorderedElementsAre(Box2_i(0, 0, 1, 1), Box2_i(2, 2, 3, 3)));
+}
+
+TEST(RtreeBoxMapTest, QueryIntersectsValueBox1) {
+  RtreeBoxMap2_i<int> rtree;
+  rtree.Insert({Box2_i(0, 0, 1, 1), 0});
+  rtree.Insert({Box2_i(2, 2, 3, 3), 1});
+  rtree.Insert({Box2_i(4, 4, 5, 5), 2});
+
+  std::vector<int> boxes = rtree.QueryIntersectsValue(Box2_i(1, 1, 2, 2));
+
+  EXPECT_THAT(boxes, UnorderedElementsAre(0, 1));
 }
 
 }  // namespace moab
