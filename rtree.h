@@ -3,8 +3,10 @@
 
 #include <cstdint>
 #include <initializer_list>
+#include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
