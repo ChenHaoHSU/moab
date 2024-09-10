@@ -563,7 +563,7 @@ TEST(RtreeBoxMapTest, QueryIntersectsKeyBox1) {
   rtree.Insert({Box2_i(2, 2, 3, 3), 1});
   rtree.Insert({Box2_i(4, 4, 5, 5), 2});
 
-  std::vector<Box2_i> boxes = rtree.QueryIntersectsKey(Box2_i(1, 1, 2, 2));
+  std::vector<Box2_i> boxes = rtree.QueryIntersects<0>(Box2_i(1, 1, 2, 2));
 
   EXPECT_THAT(boxes,
               UnorderedElementsAre(Box2_i(0, 0, 1, 1), Box2_i(2, 2, 3, 3)));
@@ -575,7 +575,7 @@ TEST(RtreeBoxMapTest, QueryIntersectsValueBox1) {
   rtree.Insert(Box2_i(2, 2, 3, 3), 1);
   rtree.Insert(Box2_i(4, 4, 5, 5), 2);
 
-  std::vector<int> boxes = rtree.QueryIntersectsValue(Box2_i(1, 1, 2, 2));
+  std::vector<int> boxes = rtree.QueryIntersects<1>(Box2_i(1, 1, 2, 2));
 
   EXPECT_THAT(boxes, UnorderedElementsAre(0, 1));
 }
@@ -610,7 +610,7 @@ TEST(RtreePointMapTest, QueryIntersectsKeyBox) {
   RtreePointMap2_i<int> rtree;
   rtree.Insert(point_values);
 
-  std::vector<Point2_i> points = rtree.QueryIntersectsKey(Box2_i(0, 0, 2, 2));
+  std::vector<Point2_i> points = rtree.QueryIntersects<0>(Box2_i(0, 0, 2, 2));
 
   EXPECT_THAT(points, UnorderedElementsAre(Point2_i(0, 0), Point2_i(2, 2)));
 }
@@ -621,7 +621,7 @@ TEST(RtreePointMapTest, QueryIntersectsValueBox) {
   rtree.Insert(Point2_i(2, 2), 1);
   rtree.Insert(Point2_i(4, 4), 2);
 
-  std::vector<int> points = rtree.QueryIntersectsValue(Box2_i(0, 0, 2, 2));
+  std::vector<int> points = rtree.QueryIntersects<1>(Box2_i(0, 0, 2, 2));
 
   EXPECT_THAT(points, UnorderedElementsAre(0, 1));
 }

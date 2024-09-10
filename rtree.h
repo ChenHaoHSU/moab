@@ -155,12 +155,12 @@ class Rtree {
     return Query(index::Disjoint(indexable));
   }
   template <typename Indexable>
-  std::vector<T> QueryOverlaps(const Indexable& indexable) const {
-    return Query(index::Overlaps(indexable));
-  }
-  template <typename Indexable>
   std::vector<T> QueryIntersects(const Indexable& indexable) const {
     return Query(index::Intersects(indexable));
+  }
+  template <typename Indexable>
+  std::vector<T> QueryOverlaps(const Indexable& indexable) const {
+    return Query(index::Overlaps(indexable));
   }
   template <typename Indexable>
   std::vector<T> QueryWithin(const Indexable& indexable) const {
@@ -168,6 +168,7 @@ class Rtree {
   }
 
   // Key/Value queries (only for R-tree maps).
+  // TODO(chenhaoh): Extend to support tuple.
   template <std::size_t I, typename Predicates>
   auto Query(const Predicates& predicates) const {
     static_assert(is_pair<T>::value, "T is not a std::pair");
@@ -181,63 +182,34 @@ class Rtree {
       return result;
     }
   }
-  // Keys queries (only for R-tree maps).
-  template <typename Indexable>
-  auto QueryContainsKey(const Indexable& indexable) const {
-    return Query<0>(index::Contains(indexable));
+  // Key<0>/value<1> queries (only for R-tree maps).
+  template <std::size_t I, typename Indexable>
+  auto QueryContains(const Indexable& indexable) const {
+    return Query<I>(index::Contains(indexable));
   }
-  template <typename Indexable>
-  auto QueryCoveredByKey(const Indexable& indexable) const {
-    return Query<0>(index::CoveredBy(indexable));
+  template <std::size_t I, typename Indexable>
+  auto QueryCoveredBy(const Indexable& indexable) const {
+    return Query<I>(index::CoveredBy(indexable));
   }
-  template <typename Indexable>
-  auto QueryCoversKey(const Indexable& indexable) const {
-    return Query<0>(index::Covers(indexable));
+  template <std::size_t I, typename Indexable>
+  auto QueryCovers(const Indexable& indexable) const {
+    return Query<I>(index::Covers(indexable));
   }
-  template <typename Indexable>
-  auto QueryDisjointKey(const Indexable& indexable) const {
-    return Query<0>(index::Disjoint(indexable));
+  template <std::size_t I, typename Indexable>
+  auto QueryDisjoint(const Indexable& indexable) const {
+    return Query<I>(index::Disjoint(indexable));
   }
-  template <typename Indexable>
-  auto QueryOverlapsKey(const Indexable& indexable) const {
-    return Query<0>(index::Overlaps(indexable));
+  template <std::size_t I, typename Indexable>
+  auto QueryIntersects(const Indexable& indexable) const {
+    return Query<I>(index::Intersects(indexable));
   }
-  template <typename Indexable>
-  auto QueryIntersectsKey(const Indexable& indexable) const {
-    return Query<0>(index::Intersects(indexable));
+  template <std::size_t I, typename Indexable>
+  auto QueryOverlaps(const Indexable& indexable) const {
+    return Query<I>(index::Overlaps(indexable));
   }
-  template <typename Indexable>
-  auto QueryWithinKey(const Indexable& indexable) const {
-    return Query<0>(index::Within(indexable));
-  }
-  // Value queries (only for R-tree maps).
-  template <typename Indexable>
-  auto QueryContainsValue(const Indexable& indexable) const {
-    return Query<1>(index::Contains(indexable));
-  }
-  template <typename Indexable>
-  auto QueryCoveredByValue(const Indexable& indexable) const {
-    return Query<1>(index::CoveredBy(indexable));
-  }
-  template <typename Indexable>
-  auto QueryCoversValue(const Indexable& indexable) const {
-    return Query<1>(index::Covers(indexable));
-  }
-  template <typename Indexable>
-  auto QueryDisjointValue(const Indexable& indexable) const {
-    return Query<1>(index::Disjoint(indexable));
-  }
-  template <typename Indexable>
-  auto QueryOverlapsValue(const Indexable& indexable) const {
-    return Query<1>(index::Overlaps(indexable));
-  }
-  template <typename Indexable>
-  auto QueryIntersectsValue(const Indexable& indexable) const {
-    return Query<1>(index::Intersects(indexable));
-  }
-  template <typename Indexable>
-  auto QueryWithinValue(const Indexable& indexable) const {
-    return Query<1>(index::Within(indexable));
+  template <std::size_t I, typename Indexable>
+  auto QueryWithin(const Indexable& indexable) const {
+    return Query<I>(index::Within(indexable));
   }
 
   // String conversion.
