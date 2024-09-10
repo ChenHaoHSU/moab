@@ -6,6 +6,8 @@
 #include "operation.h"
 #include "point2.h"
 #include "point3.h"
+#include "ring2.h"
+#include "rtree.h"
 #include "segment2.h"
 #include "segment3.h"
 

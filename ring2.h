@@ -23,8 +23,6 @@ class Ring2 {
   using iterator_type = typename base_type::iterator;
   using const_iterator_type = typename base_type::const_iterator;
   using mutable_iterator_type = typename base_type::iterator;
-  using compact_iterator_type =
-      boost::polygon::iterator_points_to_compact<iterator_type, point_type>;
 
   // Constructors.
   Ring2() = default;
@@ -208,7 +206,6 @@ struct geometry_concept<moab::Ring2<int>> {
 template <>
 struct polygon_traits<moab::Ring2<int>> {
   using coordinate_type = int;
-  using point_type = typename moab::Ring2<int>::point_type;
   using iterator_type = typename moab::Ring2<int>::const_iterator_type;
 
   static inline iterator_type begin_points(const moab::Ring2<int>& r) {
