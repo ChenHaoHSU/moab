@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <initializer_list>
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -34,11 +35,29 @@ constexpr auto Within = [](const auto& g) { return bgi::within(g); };
 
 }  // namespace index
 
-template <typename>
+// Primary template for std::pair, which is false for all types
+template <typename T>
 struct is_pair : std::false_type {};
 
-template <typename T, typename U>
-struct is_pair<std::pair<T, U>> : std::true_type {};
+// Specialization for std::pair
+template <typename T1, typename T2>
+struct is_pair<std::pair<T1, T2>> : std::true_type {};
+
+// Helper variable template for easier usage (C++14 and later)
+template <typename T>
+constexpr bool is_pair_v = is_pair<T>::value;
+
+// Primary template for std::tuple, which is false for all types
+template <typename T>
+struct is_tuple : std::false_type {};
+
+// Specialization for std::tuple
+template <typename... Args>
+struct is_tuple<std::tuple<Args...>> : std::true_type {};
+
+// Helper variable template for easier usage (C++14 and later)
+template <typename T>
+constexpr bool is_tuple_v = is_tuple<T>::value;
 
 template <typename T>
 class Rtree {
@@ -108,10 +127,15 @@ class Rtree {
     rtree_.insert(conv_or_rng);
   }
   // Insert a key-value pair (only for R-tree maps).
-  template <typename P = T>
-  std::enable_if_t<is_pair<P>::value> Insert(const typename P::first_type& k,
-                                             const typename P::second_type& v) {
+  template <typename U = T>
+  std::enable_if_t<is_pair_v<U>> Insert(const typename U::first_type& k,
+                                        const typename U::second_type& v) {
     rtree_.insert(std::make_pair(k, v));
+  }
+  // Insert a key-value pair (only for R-tree maps).
+  template <typename U = T, typename... Args>
+  std::enable_if_t<is_tuple_v<U>> Insert(Args&&... args) {
+    rtree_.insert(std::make_tuple(std::forward<Args>(args)...));
   }
 
   // Removes only one value, not all equal values.
@@ -122,8 +146,8 @@ class Rtree {
   void Remove(Iterator first, Iterator last) {
     rtree_.remove(first, last);
   }
-  // Removes only one value for each one passed in the range, not
-  // all equal values.
+  // Removes only one value for each one passed in the range, not all equal
+  // values.
   template <typename ConvertibleOrRange>
   void Remove(const ConvertibleOrRange& conv_or_rng) {
     rtree_.remove(conv_or_rng);
@@ -167,13 +191,21 @@ class Rtree {
     return Query(index::Within(indexable));
   }
 
-  // Key/Value queries (only for R-tree maps).
-  // TODO(chenhaoh): Extend to support tuple.
+  // Pair/tuple queries (only for R-tree maps).
   template <std::size_t I, typename Predicates>
   auto Query(const Predicates& predicates) const {
-    static_assert(is_pair<T>::value, "T is not a std::pair");
-    if constexpr (is_pair<T>::value) {
+    static_assert(is_pair_v<T> || is_tuple_v<T>,
+                  "T is neither a pair nor a tuple");
+    if constexpr (is_pair_v<T>) {
       static_assert(I < 2, "I is out of bounds");
+      std::vector<std::tuple_element_t<I, T>> result;
+      rtree_.query(predicates,
+                   boost::make_function_output_iterator([&result](const T& v) {
+                     result.push_back(std::get<I>(v));
+                   }));
+      return result;
+    } else if constexpr (is_tuple_v<T>) {
+      static_assert(I < std::tuple_size_v<T>, "I is out of bounds");
       std::vector<std::tuple_element_t<I, T>> result;
       rtree_.query(predicates,
                    boost::make_function_output_iterator([&result](const T& v) {
@@ -182,7 +214,9 @@ class Rtree {
       return result;
     }
   }
-  // Key<0>/value<1> queries (only for R-tree maps).
+  // Queries (only for R-tree maps).
+  // For std::pair, I = 0: key, I = 1: value.
+  // For std::tuple, I = 0, 1, 2, ...: element.
   template <std::size_t I, typename Indexable>
   auto QueryContains(const Indexable& indexable) const {
     return Query<I>(index::Contains(indexable));
@@ -233,24 +267,38 @@ class Rtree {
 using RtreeBox2_i = Rtree<Box2<int>>;
 using RtreeBox2_i32 = Rtree<Box2<int32_t>>;
 using RtreeBox2_i64 = Rtree<Box2<int64_t>>;
-// Box R-tree map.
+// Box R-tree map (pair).
 template <typename T>
 using RtreeBoxMap2_i = Rtree<std::pair<Box2<int>, T>>;
 template <typename T>
 using RtreeBoxMap2_i32 = Rtree<std::pair<Box2<int32_t>, T>>;
 template <typename T>
 using RtreeBoxMap2_i64 = Rtree<std::pair<Box2<int64_t>, T>>;
+// Box R-tree map (tuple).
+template <typename... Args>
+using RtreeBoxMultiMap2_i = Rtree<std::tuple<Box2<int>, Args...>>;
+template <typename... Args>
+using RtreeBoxMultiMap2_i32 = Rtree<std::tuple<Box2<int32_t>, Args...>>;
+template <typename... Args>
+using RtreeBoxMultiMap2_i64 = Rtree<std::tuple<Box2<int64_t>, Args...>>;
 // Point R-tree.
 using RtreePoint2_i = Rtree<Point2<int>>;
 using RtreePoint2_i32 = Rtree<Point2<int32_t>>;
 using RtreePoint2_i64 = Rtree<Point2<int64_t>>;
-// Point R-tree map.
+// Point R-tree map (pair).
 template <typename T>
 using RtreePointMap2_i = Rtree<std::pair<Point2<int>, T>>;
 template <typename T>
 using RtreePointMap2_i32 = Rtree<std::pair<Point2<int32_t>, T>>;
 template <typename T>
 using RtreePointMap2_i64 = Rtree<std::pair<Point2<int64_t>, T>>;
+// Point R-tree map (tuple).
+template <typename... Args>
+using RtreePointMultiMap2_i = Rtree<std::tuple<Point2<int>, Args...>>;
+template <typename... Args>
+using RtreePointMultiMap2_i32 = Rtree<std::tuple<Point2<int32_t>, Args...>>;
+template <typename... Args>
+using RtreePointMultiMap2_i64 = Rtree<std::tuple<Point2<int64_t>, Args...>>;
 
 }  // namespace moab
 
