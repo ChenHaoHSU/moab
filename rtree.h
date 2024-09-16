@@ -191,20 +191,12 @@ class Rtree {
     return Query(index::Within(indexable));
   }
 
-  // Pair/tuple queries (only for R-tree maps).
+  // Rtree map / multi-map queries.
   template <std::size_t I, typename Predicates>
   auto Query(const Predicates& predicates) const {
     static_assert(is_pair_v<T> || is_tuple_v<T>,
                   "T is neither a pair nor a tuple");
-    if constexpr (is_pair_v<T>) {
-      static_assert(I < 2, "I is out of bounds");
-      std::vector<std::tuple_element_t<I, T>> result;
-      rtree_.query(predicates,
-                   boost::make_function_output_iterator([&result](const T& v) {
-                     result.push_back(std::get<I>(v));
-                   }));
-      return result;
-    } else if constexpr (is_tuple_v<T>) {
+    if constexpr (is_pair_v<T> || is_tuple_v<T>) {
       static_assert(I < std::tuple_size_v<T>, "I is out of bounds");
       std::vector<std::tuple_element_t<I, T>> result;
       rtree_.query(predicates,
@@ -214,7 +206,7 @@ class Rtree {
       return result;
     }
   }
-  // Queries (only for R-tree maps).
+  // Queries (only for R-tree maps / multi-maps).
   // For std::pair, I = 0: key, I = 1: value.
   // For std::tuple, I = 0, 1, 2, ...: element.
   template <std::size_t I, typename Indexable>
@@ -274,7 +266,7 @@ template <typename T>
 using RtreeBoxMap2_i32 = Rtree<std::pair<Box2<int32_t>, T>>;
 template <typename T>
 using RtreeBoxMap2_i64 = Rtree<std::pair<Box2<int64_t>, T>>;
-// Box R-tree map (tuple).
+// Box R-tree multi-map (tuple).
 template <typename... Args>
 using RtreeBoxMultiMap2_i = Rtree<std::tuple<Box2<int>, Args...>>;
 template <typename... Args>
@@ -292,7 +284,7 @@ template <typename T>
 using RtreePointMap2_i32 = Rtree<std::pair<Point2<int32_t>, T>>;
 template <typename T>
 using RtreePointMap2_i64 = Rtree<std::pair<Point2<int64_t>, T>>;
-// Point R-tree map (tuple).
+// Point R-tree multi-map (tuple).
 template <typename... Args>
 using RtreePointMultiMap2_i = Rtree<std::tuple<Point2<int>, Args...>>;
 template <typename... Args>
