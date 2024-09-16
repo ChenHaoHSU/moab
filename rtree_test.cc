@@ -15,6 +15,7 @@
 namespace moab {
 
 using ::testing::ElementsAre;
+using ::testing::FieldsAre;
 using ::testing::Pair;
 using ::testing::StrEq;
 using ::testing::UnorderedElementsAre;
@@ -589,6 +590,54 @@ TEST(RtreePointTest, QueryIntersectsPoint) {
   std::vector<Point2_i> points = rtree.QueryIntersects(Box2_i(0, 0, 2, 2));
 
   EXPECT_THAT(points, UnorderedElementsAre(Point2_i(0, 0), Point2_i(2, 2)));
+}
+
+TEST(RtreeBoxMapTupleTest, QueryIntersectsBox1) {
+  RtreeBoxMultiMap2_i<int, std::string> rtree;
+  rtree.Insert({Box2_i(0, 0, 1, 1), 0, "zero"});
+  rtree.Insert({Box2_i(2, 2, 3, 3), 1, "one"});
+  rtree.Insert({Box2_i(4, 4, 5, 5), 2, "two"});
+
+  std::vector<std::tuple<Box2_i, int, std::string>> boxes =
+      rtree.QueryIntersects(Box2_i(0, 0, 2, 2));
+
+  EXPECT_THAT(boxes,
+              UnorderedElementsAre(FieldsAre(Box2_i(0, 0, 1, 1), 0, "zero"),
+                                   FieldsAre(Box2_i(2, 2, 3, 3), 1, "one")));
+}
+
+TEST(RtreeBoxMapTupleTest, QueryIntersectsBox2) {
+  RtreeBoxMultiMap2_i<int, std::string> rtree;
+  rtree.Insert(Box2_i(0, 0, 1, 1), 0, "zero");
+  rtree.Insert(Box2_i(2, 2, 3, 3), 1, "one");
+  rtree.Insert(Box2_i(4, 4, 5, 5), 2, "two");
+
+  std::vector<Box2_i> boxes = rtree.QueryIntersects<0>(Box2_i(0, 0, 2, 2));
+
+  EXPECT_THAT(boxes,
+              UnorderedElementsAre(Box2_i(0, 0, 1, 1), Box2_i(2, 2, 3, 3)));
+}
+
+TEST(RtreeBoxMapTupleTest, QueryIntersectsBox3) {
+  RtreeBoxMultiMap2_i<int, std::string> rtree;
+  rtree.Insert(Box2_i(0, 0, 1, 1), 0, "zero");
+  rtree.Insert(Box2_i(2, 2, 3, 3), 1, "one");
+  rtree.Insert(Box2_i(4, 4, 5, 5), 2, "two");
+
+  std::vector<int> boxes = rtree.QueryIntersects<1>(Box2_i(0, 0, 2, 2));
+
+  EXPECT_THAT(boxes, UnorderedElementsAre(0, 1));
+}
+
+TEST(RtreeBoxMapTupleTest, QueryIntersectsBox4) {
+  RtreeBoxMultiMap2_i<int, std::string> rtree;
+  rtree.Insert(Box2_i(0, 0, 1, 1), 0, "zero");
+  rtree.Insert(Box2_i(2, 2, 3, 3), 1, "one");
+  rtree.Insert(Box2_i(4, 4, 5, 5), 2, "two");
+
+  std::vector<std::string> boxes = rtree.QueryIntersects<2>(Box2_i(0, 0, 2, 2));
+
+  EXPECT_THAT(boxes, UnorderedElementsAre("zero", "one"));
 }
 
 TEST(RtreePointMapTest, QueryIntersectsBox) {
