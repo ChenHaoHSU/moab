@@ -1,3 +1,3 @@
-common --enable_bzlmod
+common --noenable_bzlmod
 
-build --cxxopt="-std=c++17" --cxxopt=-Wno-sign-compare --host_cxxopt="-std=c++17" --host_cxxopt=-Wno-sign-compare
+build --cxxopt="-std=c++17" --host_cxxopt="-std=c++17"
