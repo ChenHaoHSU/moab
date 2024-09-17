@@ -126,13 +126,13 @@ class Rtree {
   void Insert(const ConvertibleOrRange& conv_or_rng) {
     rtree_.insert(conv_or_rng);
   }
-  // Insert a key-value pair (only for R-tree maps).
+  // Inserts a key-value pair (only for R-tree maps).
   template <typename U = T>
   std::enable_if_t<is_pair_v<U>> Insert(const typename U::first_type& k,
                                         const typename U::second_type& v) {
     rtree_.insert(std::make_pair(k, v));
   }
-  // Insert a key-value pair (only for R-tree maps).
+  // Inserts a key-values tuple (only for R-tree multi-maps).
   template <typename U = T, typename... Args>
   std::enable_if_t<is_tuple_v<U>> Insert(Args&&... args) {
     rtree_.insert(std::make_tuple(std::forward<Args>(args)...));

@@ -1,10 +1,13 @@
+"""
+This module file configures external dependencies for the project using Bazel's Bzlmod.
+"""
+
 ###############################################################################
 # Bazel now uses Bzlmod by default to manage external dependencies.
 # Please consider migrating your external dependencies from WORKSPACE to MODULE.bazel.
 #
 # For more details, please check https://github.com/bazelbuild/bazel/issues/18958
 ###############################################################################
-
 # Boost
 # Famous C++ library that has given rise to many new additions to the C++ Standard Library
 # Makes @boost available for use: For example, add `@boost//:algorithm` to your deps.
