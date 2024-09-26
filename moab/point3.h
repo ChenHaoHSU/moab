@@ -29,10 +29,13 @@ class Point3 {
   // Constructors.
   Point3() : d_({0, 0, 0}) {}
   explicit Point3(T x, T y, T z) : d_({x, y, z}) {}
-  Point3(const Point3& p) = default;
-  Point3(Point3&& p) = default;
-  // Destructors.
+  Point3(const Point3&) = default;
+  Point3(Point3&&) = default;
   ~Point3() = default;
+
+  // Assignment operators.
+  Point3& operator=(const Point3&) = default;
+  Point3& operator=(Point3&&) = default;
 
   // Accessors.
   T x() const { return d_[0]; }
@@ -81,14 +84,6 @@ class Point3 {
   }
 
   // Operators.
-  Point3& operator=(const Point3& p) {
-    d_ = p.d_;
-    return *this;
-  }
-  Point3& operator=(Point3&& p) {
-    d_ = std::move(p.d_);
-    return *this;
-  }
   // Operators - Subscript
   T& operator[](std::size_t i) { return d_[i]; }
   const T& operator[](std::size_t i) const { return d_.at(i); }

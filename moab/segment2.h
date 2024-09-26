@@ -34,10 +34,13 @@ class Segment2 {
   Segment2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
   explicit Segment2(const Point2<T>& p0, const Point2<T>& p1) { Set(p0, p1); }
   explicit Segment2(T x0, T y0, T x1, T y1) { Set(x0, y0, x1, y1); }
-  Segment2(const Segment2& s) = default;
-  Segment2(Segment2&& s) = default;
-  // Destructors.
+  Segment2(const Segment2&) = default;
+  Segment2(Segment2&&) = default;
   ~Segment2() = default;
+
+  // Assignment operators.
+  Segment2& operator=(const Segment2&) = default;
+  Segment2& operator=(Segment2&&) = default;
 
   // Accessors.
   Point2<T>& p0() { return d_[0]; }
@@ -97,15 +100,6 @@ class Segment2 {
   }
 
   // Operators.
-  // Operators - Assignment
-  Segment2& operator=(const Segment2& p) {
-    d_ = p.d_;
-    return *this;
-  }
-  Segment2& operator=(Segment2&& p) {
-    d_ = std::move(p.d_);
-    return *this;
-  }
   // Operators - Subscript
   Point2<T>& operator[](std::size_t i) { return d_[i]; }
   const Point2<T>& operator[](std::size_t i) const { return d_.at(i); }

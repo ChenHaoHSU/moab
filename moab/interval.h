@@ -25,6 +25,9 @@ class Interval {
   Interval(Interval&& i) = default;
   ~Interval() = default;
 
+  // Assignment operators.
+  Interval& operator=(const Interval&) = default;
+  Interval& operator=(Interval&&) = default;
   // Accessors.
   T lo() const { return d_[0]; }
   T hi() const { return d_[1]; }
@@ -63,15 +66,6 @@ class Interval {
   }
 
   // Operators.
-  // Operators - Assignment.
-  Interval& operator=(const Interval& i) {
-    d_ = i.d_;
-    return *this;
-  }
-  Interval& operator=(Interval&& i) {
-    d_ = std::move(i.d_);
-    return *this;
-  }
   // Operators - Subscript.
   T& operator[](std::size_t i) { return d_[i]; }
   const T& operator[](std::size_t i) const { return d_.at(i); }

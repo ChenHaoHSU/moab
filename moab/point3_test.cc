@@ -47,6 +47,28 @@ TEST(Constructor, Move) {
   EXPECT_EQ(p2.z(), 3);
 }
 
+TEST(AssignmentOperators, Copy) {
+  Point3_i p1(1, 2, 3);
+  Point3_i p2;
+
+  p2 = p1;
+
+  EXPECT_EQ(p2.x(), 1);
+  EXPECT_EQ(p2.y(), 2);
+  EXPECT_EQ(p2.z(), 3);
+}
+
+TEST(AssignmentOperators, Move) {
+  Point3_i p1(1, 2, 3);
+  Point3_i p2;
+
+  p2 = std::move(p1);
+
+  EXPECT_EQ(p2.x(), 1);
+  EXPECT_EQ(p2.y(), 2);
+  EXPECT_EQ(p2.z(), 3);
+}
+
 TEST(Accessors, Data) {
   Point3_i p(1, 2, 3);
   const int* d = p.data();
@@ -198,28 +220,6 @@ TEST(Operations, Rotate180ZX) {
   EXPECT_EQ(p.x(), -1);
   EXPECT_EQ(p.y(), 2);
   EXPECT_EQ(p.z(), -3);
-}
-
-TEST(Operators, AssignmentCopy) {
-  Point3_i p1(1, 2, 3);
-  Point3_i p2;
-
-  p2 = p1;
-
-  EXPECT_EQ(p2.x(), 1);
-  EXPECT_EQ(p2.y(), 2);
-  EXPECT_EQ(p2.z(), 3);
-}
-
-TEST(Operators, AssignmentMove) {
-  Point3_i p1(1, 2, 3);
-  Point3_i p2;
-
-  p2 = std::move(p1);
-
-  EXPECT_EQ(p2.x(), 1);
-  EXPECT_EQ(p2.y(), 2);
-  EXPECT_EQ(p2.z(), 3);
 }
 
 TEST(Operators, SubscriptAccess) {

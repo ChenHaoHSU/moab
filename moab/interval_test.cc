@@ -43,6 +43,26 @@ TEST(Constructors, Move) {
   EXPECT_EQ(i2.hi(), 2);
 }
 
+TEST(AssignmentOperators, Copy) {
+  Interval_i i1(1, 2);
+  Interval_i i2;
+
+  i2 = i1;
+
+  EXPECT_EQ(i2.lo(), 1);
+  EXPECT_EQ(i2.hi(), 2);
+}
+
+TEST(AssignmentOperators, Move) {
+  Interval_i i1(1, 2);
+  Interval_i i2;
+
+  i2 = std::move(i1);
+
+  EXPECT_EQ(i2.lo(), 1);
+  EXPECT_EQ(i2.hi(), 2);
+}
+
 TEST(Accessors, LoHi) {
   Interval_i i(1, 2);
 
@@ -159,26 +179,6 @@ TEST(Operations, Shift) {
 
   EXPECT_EQ(i.lo(), 4);
   EXPECT_EQ(i.hi(), 5);
-}
-
-TEST(Operators, AssignmentCopy) {
-  Interval_i i1(1, 2);
-  Interval_i i2;
-
-  i2 = i1;
-
-  EXPECT_EQ(i2.lo(), 1);
-  EXPECT_EQ(i2.hi(), 2);
-}
-
-TEST(Operators, AssignmentMove) {
-  Interval_i i1(1, 2);
-  Interval_i i2;
-
-  i2 = std::move(i1);
-
-  EXPECT_EQ(i2.lo(), 1);
-  EXPECT_EQ(i2.hi(), 2);
 }
 
 TEST(Operators, Equality) {

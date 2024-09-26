@@ -33,9 +33,13 @@ class Ring2 {
             Point2<T>(b.MaxX(), b.MaxY()), Point2<T>(b.MinX(), b.MaxY()),
             Point2<T>(b.MinX(), b.MinY())}) {}
   Ring2(std::initializer_list<Point2<T>> il) : d_(il) {}
-  Ring2(const Ring2& r) = default;
-  Ring2(Ring2&& r) = default;
+  Ring2(const Ring2&) = default;
+  Ring2(Ring2&&) = default;
   ~Ring2() = default;
+
+  // Assignment operators.
+  Ring2& operator=(const Ring2&) = default;
+  Ring2& operator=(Ring2&&) = default;
 
   // Accessors.
   std::vector<Point2<T>>& Points() { return d_; }

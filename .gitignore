@@ -1,3 +1,5 @@
 bazel-*
 MODULE.bazel.lock
 .vscode
+
+coverage*

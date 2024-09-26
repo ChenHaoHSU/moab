@@ -51,6 +51,26 @@ TEST(Constructors, Move) {
   EXPECT_EQ(b2.ur(), Point2_i(3, 4));
 }
 
+TEST(AssignmentOperators, Copy) {
+  Box2_i b1(Point2_i(1, 2), Point2_i(3, 4));
+  Box2_i b2;
+
+  b2 = b1;
+
+  EXPECT_EQ(b2.ll(), Point2_i(1, 2));
+  EXPECT_EQ(b2.ur(), Point2_i(3, 4));
+}
+
+TEST(AssignmentOperators, Move) {
+  Box2_i b1(Point2_i(1, 2), Point2_i(3, 4));
+  Box2_i b2;
+
+  b2 = std::move(b1);
+
+  EXPECT_EQ(b2.ll(), Point2_i(1, 2));
+  EXPECT_EQ(b2.ur(), Point2_i(3, 4));
+}
+
 TEST(Accessors, LLCornerURCorner) {
   Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
 
@@ -269,26 +289,6 @@ TEST(Operations, ExpandY) {
 
   EXPECT_EQ(b.ll(), Point2_i(1, 0));
   EXPECT_EQ(b.ur(), Point2_i(3, 6));
-}
-
-TEST(Operators, AssignmentCopy) {
-  Box2_i b1(Point2_i(1, 2), Point2_i(3, 4));
-  Box2_i b2;
-
-  b2 = b1;
-
-  EXPECT_EQ(b2.ll(), Point2_i(1, 2));
-  EXPECT_EQ(b2.ur(), Point2_i(3, 4));
-}
-
-TEST(Operators, AssignmentMove) {
-  Box2_i b1(Point2_i(1, 2), Point2_i(3, 4));
-  Box2_i b2;
-
-  b2 = std::move(b1);
-
-  EXPECT_EQ(b2.ll(), Point2_i(1, 2));
-  EXPECT_EQ(b2.ur(), Point2_i(3, 4));
 }
 
 TEST(Operators, SubscriptAccess) {

@@ -35,10 +35,13 @@ class Segment3 {
   explicit Segment3(T xl, T yl, T zl, T xh, T yh, T zh) {
     Set(xl, yl, zl, xh, yh, zh);
   }
-  Segment3(const Segment3& s) = default;
-  Segment3(Segment3&& s) = default;
-  // Destructors.
+  Segment3(const Segment3&) = default;
+  Segment3(Segment3&&) = default;
   ~Segment3() = default;
+
+  // Assignment operators.
+  Segment3& operator=(const Segment3&) = default;
+  Segment3& operator=(Segment3&&) = default;
 
   // Accessors.
   Point3<T>& p0() { return d_[0]; }
@@ -107,15 +110,6 @@ class Segment3 {
   }
 
   // Operators.
-  // Operators - Assignment
-  Segment3& operator=(const Segment3& p) {
-    d_ = p.d_;
-    return *this;
-  }
-  Segment3& operator=(Segment3&& p) {
-    d_ = std::move(p.d_);
-    return *this;
-  }
   // Operators - Subscript
   Point3<T>& operator[](std::size_t i) { return d_[i]; }
   const Point3<T>& operator[](std::size_t i) const { return d_.at(i); }
