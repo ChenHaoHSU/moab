@@ -30,19 +30,20 @@ class Point2 {
   // Constructors.
   Point2() : d_({0, 0}) {}
   explicit Point2(T x, T y) : d_({x, y}) {}
-  Point2(const Point2& p) = default;
-  Point2(Point2&& p) = default;
-  // Destructors.
+  Point2(const Point2&) = default;
+  Point2(Point2&&) = default;
   ~Point2() = default;
+
+  // Assignment operators.
+  Point2& operator=(const Point2&) = default;
+  Point2& operator=(Point2&&) = default;
 
   // Accessors.
   T x() const { return d_[0]; }
   T y() const { return d_[1]; }
   T* data() { return d_.data(); }
   const T* data() const { return d_.data(); }
-
   constexpr std::size_t Size() const { return d_.size(); }
-
   std::pair<T, T> ToPair() const { return {d_[0], d_[1]}; }
 
   // Mutators.
@@ -74,15 +75,6 @@ class Point2 {
   }
 
   // Operators.
-  // Operators - Assignment
-  Point2& operator=(const Point2& p) {
-    d_ = p.d_;
-    return *this;
-  }
-  Point2& operator=(Point2&& p) {
-    d_ = std::move(p.d_);
-    return *this;
-  }
   // Operators - Subscript
   T& operator[](std::size_t i) { return d_[i]; }
   const T& operator[](std::size_t i) const { return d_.at(i); }

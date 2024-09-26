@@ -29,9 +29,13 @@ class Box2 {
   Box2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
   explicit Box2(const Point2<T>& p1, const Point2<T>& p2) { Set(p1, p2); }
   explicit Box2(T xl, T yl, T xh, T yh) { Set(xl, yl, xh, yh); }
-  Box2(const Box2& b) = default;
-  Box2(Box2&& b) = default;
+  Box2(const Box2&) = default;
+  Box2(Box2&&) = default;
   ~Box2() = default;
+
+  // Assignment operators.
+  Box2& operator=(const Box2&) = default;
+  Box2& operator=(Box2&&) = default;
 
   // Accessors.
   Point2<T>& ll() { return d_[0]; }
@@ -106,15 +110,6 @@ class Box2 {
   void ExpandY(T dy) { Set(xl(), yl() - dy, xh(), yh() + dy); }
 
   // Operators.
-  // Operators - Assignment
-  Box2& operator=(const Box2& b) {
-    d_ = b.d_;
-    return *this;
-  }
-  Box2& operator=(Box2&& b) {
-    d_ = std::move(b.d_);
-    return *this;
-  }
   // Operators - Subscript
   Point2<T>& operator[](std::size_t i) { return d_[i]; }
   const Point2<T>& operator[](std::size_t i) const { return d_.at(i); }

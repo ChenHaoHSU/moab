@@ -51,6 +51,26 @@ TEST(Constructors, Move) {
   EXPECT_EQ(s2.p1(), Point3_i(4, 5, 6));
 }
 
+TEST(AssignmentOperators, Copy) {
+  Segment3_i s1(Point3_i(1, 2, 3), Point3_i(4, 5, 6));
+  Segment3_i s2;
+
+  s2 = s1;
+
+  EXPECT_EQ(s2.p0(), Point3_i(1, 2, 3));
+  EXPECT_EQ(s2.p1(), Point3_i(4, 5, 6));
+}
+
+TEST(AssignmentOperators, Move) {
+  Segment3_i s1(Point3_i(1, 2, 3), Point3_i(4, 5, 6));
+  Segment3_i s2;
+
+  s2 = std::move(s1);
+
+  EXPECT_EQ(s2.p0(), Point3_i(1, 2, 3));
+  EXPECT_EQ(s2.p1(), Point3_i(4, 5, 6));
+}
+
 TEST(Accessors, P0P1) {
   Segment3_i s(Point3_i(1, 2, 3), Point3_i(4, 5, 6));
 
@@ -204,26 +224,6 @@ TEST(Operations, ShiftZ) {
 
   EXPECT_EQ(s.p0(), Point3_i(1, 2, 4));
   EXPECT_EQ(s.p1(), Point3_i(4, 5, 7));
-}
-
-TEST(Operators, AssignmentCopy) {
-  Segment3_i s1(Point3_i(1, 2, 3), Point3_i(4, 5, 6));
-  Segment3_i s2;
-
-  s2 = s1;
-
-  EXPECT_EQ(s2.p0(), Point3_i(1, 2, 3));
-  EXPECT_EQ(s2.p1(), Point3_i(4, 5, 6));
-}
-
-TEST(Operators, AssignmentMove) {
-  Segment3_i s1(Point3_i(1, 2, 3), Point3_i(4, 5, 6));
-  Segment3_i s2;
-
-  s2 = std::move(s1);
-
-  EXPECT_EQ(s2.p0(), Point3_i(1, 2, 3));
-  EXPECT_EQ(s2.p1(), Point3_i(4, 5, 6));
 }
 
 TEST(Operators, SubscriptAccess) {

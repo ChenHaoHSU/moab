@@ -79,23 +79,15 @@ class Rtree {
   // Initializer list constructor.
   Rtree(std::initializer_list<T> il) : rtree_(il) {}
   // Copy constructor.
-  Rtree(const Rtree& r) = default;
+  Rtree(const Rtree&) = default;
   // Move constructor.
-  Rtree(Rtree&& r) = default;
+  Rtree(Rtree&&) = default;
   // Destructor.
   ~Rtree() = default;
 
-  // Operators.
-  // Copy assignment.
-  Rtree& operator=(const Rtree& r) {
-    rtree_ = r.rtree_;
-    return *this;
-  }
-  // Move assignment.
-  Rtree& operator=(Rtree&& r) {
-    rtree_ = std::move(r.rtree_);
-    return *this;
-  }
+  // Assignment operators.
+  Rtree& operator=(const Rtree&) = default;
+  Rtree& operator=(Rtree&&) = default;
 
   // Iterators.
   // Returns a const iterator to the first value.
