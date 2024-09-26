@@ -581,6 +581,64 @@ TEST(RtreeBoxMapTest, QueryIntersectsValueBox1) {
   EXPECT_THAT(boxes, UnorderedElementsAre(0, 1));
 }
 
+TEST(RtreeBoxMapTest, QueryTouchesValueBox1) {
+  RtreeBoxMap2_i<int> rtree;
+  rtree.Insert(Box2_i(0, 0, 1, 1), 0);
+  rtree.Insert(Box2_i(2, 2, 3, 3), 1);
+  rtree.Insert(Box2_i(4, 4, 5, 5), 2);
+
+  std::vector<int> boxes =
+      rtree.Query<1>(moab::index::Touches(Box2_i(0, 1, 3, 2)));
+
+  EXPECT_THAT(boxes, UnorderedElementsAre(0, 1));
+}
+
+TEST(RtreeBoxMapTest, QueryTouchesValueBox2) {
+  RtreeBoxMap2_i<int> rtree;
+  rtree.Insert(Box2_i(0, 0, 1, 1), 0);
+  rtree.Insert(Box2_i(2, 2, 3, 3), 1);
+  rtree.Insert(Box2_i(4, 4, 5, 5), 2);
+
+  std::vector<int> boxes = rtree.QueryTouches<1>(Box2_i(0, 0, 3, 2));
+
+  EXPECT_THAT(boxes, UnorderedElementsAre(1));
+}
+
+TEST(RtreeBoxMapTest, QueryTouchesKeyBox) {
+  RtreeBoxMap2_i<int> rtree;
+  rtree.Insert(Box2_i(0, 0, 1, 1), 0);
+  rtree.Insert(Box2_i(2, 2, 3, 3), 1);
+  rtree.Insert(Box2_i(4, 4, 5, 5), 2);
+
+  std::vector<Box2_i> boxes = rtree.QueryTouches<0>(Box2_i(1, 1, 2, 2));
+
+  EXPECT_THAT(boxes,
+              UnorderedElementsAre(Box2_i(0, 0, 1, 1), Box2_i(2, 2, 3, 3)));
+}
+
+TEST(RtreeBoxMapTest, QueryStrictlyIntersectsValueBox1) {
+  RtreeBoxMap2_i<int> rtree;
+  rtree.Insert(Box2_i(0, 0, 1, 1), 0);
+  rtree.Insert(Box2_i(2, 2, 3, 3), 1);
+  rtree.Insert(Box2_i(4, 4, 5, 5), 2);
+
+  std::vector<int> boxes = rtree.QueryStrictlyIntersects<1>(Box2_i(1, 1, 2, 2));
+
+  EXPECT_THAT(boxes, UnorderedElementsAre());
+}
+
+TEST(RtreeBoxMapTest, QueryStrictlyIntersectsValueBox2) {
+  RtreeBoxMap2_i<int> rtree;
+  rtree.Insert(Box2_i(0, 0, 1, 1), 0);
+  rtree.Insert(Box2_i(2, 2, 3, 3), 1);
+  rtree.Insert(Box2_i(4, 4, 5, 5), 2);
+
+  std::vector<int> boxes =
+      rtree.QueryStrictlyIntersects<1>(Box2_i(0, -1, 3, 2));
+
+  EXPECT_THAT(boxes, UnorderedElementsAre(0));
+}
+
 TEST(RtreePointTest, QueryIntersectsPoint) {
   RtreePoint2_i rtree;
   rtree.Insert(Point2_i(0, 0));
