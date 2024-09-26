@@ -17,23 +17,12 @@
 #include "boost/geometry/index/rtree.hpp"
 #include "boost/iterator/function_output_iterator.hpp"
 #include "box2.h"
+#include "operation.h"
 #include "point2.h"
 
 namespace moab {
 
 namespace bgi = boost::geometry::index;
-
-namespace index {
-
-constexpr auto Contains = [](const auto& g) { return bgi::contains(g); };
-constexpr auto CoveredBy = [](const auto& g) { return bgi::covered_by(g); };
-constexpr auto Covers = [](const auto& g) { return bgi::covers(g); };
-constexpr auto Disjoint = [](const auto& g) { return bgi::disjoint(g); };
-constexpr auto Intersects = [](const auto& g) { return bgi::intersects(g); };
-constexpr auto Overlaps = [](const auto& g) { return bgi::overlaps(g); };
-constexpr auto Within = [](const auto& g) { return bgi::within(g); };
-
-}  // namespace index
 
 // Primary template for std::pair, which is false for all types
 template <typename T>
@@ -58,6 +47,46 @@ struct is_tuple<std::tuple<Args...>> : std::true_type {};
 // Helper variable template for easier usage (C++14 and later)
 template <typename T>
 constexpr bool is_tuple_v = is_tuple<T>::value;
+
+namespace index {
+
+constexpr auto Contains = [](const auto& g) { return bgi::contains(g); };
+constexpr auto CoveredBy = [](const auto& g) { return bgi::covered_by(g); };
+constexpr auto Covers = [](const auto& g) { return bgi::covers(g); };
+constexpr auto Disjoint = [](const auto& g) { return bgi::disjoint(g); };
+constexpr auto Intersects = [](const auto& g) { return bgi::intersects(g); };
+constexpr auto Overlaps = [](const auto& g) { return bgi::overlaps(g); };
+constexpr auto Within = [](const auto& g) { return bgi::within(g); };
+
+// Touches is not part of Boost.Geometry.Index, so we need to implement it.
+// Boost.Geometry has a touches function, but it is not part of the index
+// module.
+constexpr auto Touches = [](const auto& g) constexpr {
+  return bgi::satisfies([&g](const auto& v) {
+    using T = std::decay_t<decltype(v)>;
+    if constexpr (is_pair_v<T> || is_tuple_v<T>) {
+      return moab::IsTouch(std::get<0>(v), g);
+    } else {
+      return moab::IsTouch(v, g);
+    }
+  });
+};
+
+// StrictlyIntersects is not part of Boost.Geometry, so we need to implement it.
+// It is similar to Intersects, but it returns true only if the geometries have
+// a non-empty intersection, i.e., intersects && !touches.
+constexpr auto StrictlyIntersects = [](const auto& g) constexpr {
+  return bgi::satisfies([&g](const auto& v) {
+    using T = std::decay_t<decltype(v)>;
+    if constexpr (is_pair_v<T> || is_tuple_v<T>) {
+      return moab::IsStrictlyIntersect(std::get<0>(v), g);
+    } else {
+      return moab::IsStrictlyIntersect(v, g);
+    }
+  });
+};
+
+}  // namespace index
 
 template <typename T>
 class Rtree {
@@ -182,6 +211,14 @@ class Rtree {
   std::vector<T> QueryWithin(const Indexable& indexable) const {
     return Query(index::Within(indexable));
   }
+  template <typename Indexable>
+  std::vector<T> QueryTouches(const Indexable& indexable) const {
+    return Query(index::Touches(indexable));
+  }
+  template <typename Indexable>
+  std::vector<T> QueryStrictlyIntersects(const Indexable& indexable) const {
+    return Query(index::StrictlyIntersects(indexable));
+  }
 
   // Rtree map / multi-map queries.
   template <std::size_t I, typename Predicates>
@@ -228,6 +265,14 @@ class Rtree {
   template <std::size_t I, typename Indexable>
   auto QueryWithin(const Indexable& indexable) const {
     return Query<I>(index::Within(indexable));
+  }
+  template <std::size_t I, typename Indexable>
+  auto QueryTouches(const Indexable& indexable) const {
+    return Query<I>(index::Touches(indexable));
+  }
+  template <std::size_t I, typename Indexable>
+  auto QueryStrictlyIntersects(const Indexable& indexable) const {
+    return Query<I>(index::StrictlyIntersects(indexable));
   }
 
   // String conversion.

@@ -223,6 +223,7 @@ cc_library(
     deps = [
         ":box2",
         ":point2",
+        ":operation",
         "@boost//:geometry",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/strings",

@@ -673,4 +673,30 @@ TEST(GeometryFunctions, IsEqualRingRing) {
   EXPECT_FALSE(IsEqual(r1, r3));
 }
 
+TEST(GeometryFunctions, IsStrictlyIntersectBoxBox) {
+  Box2_i b1(0, 0, 10, 10);
+  Box2_i b2(0, 0, 1, 1);
+  Box2_i b3(1, 1, 2, 2);
+  Box2_i b4(-1, 0, 11, 10);
+  Box2_i b5(0, 10, 10, 11);
+  Box2_i b6(-1, 4, 11, 6);
+  Box2_i b7(10, 10, 20, 20);
+  Box2_i b8(0, 10, 0, 20);
+  Box2_i b9(0, 0, 0, 0);
+  Box2_i b10(100, 100, 200, 200);
+  Box2_i b11(0, 10, 200, 10);
+
+  EXPECT_TRUE(IsStrictlyIntersect(b1, b1));
+  EXPECT_TRUE(IsStrictlyIntersect(b1, b2));
+  EXPECT_TRUE(IsStrictlyIntersect(b1, b3));
+  EXPECT_TRUE(IsStrictlyIntersect(b1, b4));
+  EXPECT_FALSE(IsStrictlyIntersect(b1, b5));
+  EXPECT_TRUE(IsStrictlyIntersect(b1, b6));
+  EXPECT_FALSE(IsStrictlyIntersect(b1, b7));
+  EXPECT_FALSE(IsStrictlyIntersect(b1, b8));
+  EXPECT_FALSE(IsStrictlyIntersect(b1, b9));
+  EXPECT_FALSE(IsStrictlyIntersect(b1, b10));
+  EXPECT_FALSE(IsStrictlyIntersect(b1, b11));
+}
+
 }  // namespace moab

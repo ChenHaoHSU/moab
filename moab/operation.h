@@ -128,6 +128,13 @@ constexpr auto IsEqual = [](const auto& g1, const auto& g2) constexpr -> bool {
   return boost::geometry::equals(g1, g2);
 };
 
+// Checks if two geometries have a non-empty intersection.
+// Box-Box
+constexpr auto IsStrictlyIntersect = [](const auto& g1,
+                                        const auto& g2) constexpr -> bool {
+  return IsIntersect(g1, g2) && !IsTouch(g1, g2);
+};
+
 }  // namespace moab
 
 #endif  // MOAB_OPERATION_H_
