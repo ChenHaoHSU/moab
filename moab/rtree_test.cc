@@ -537,7 +537,7 @@ TEST(RtreeBoxTest, SupportsStreamOutput) {
 }
 
 TEST(RtreeBoxMapTest, InsertKeyValuePair) {
-  RtreeBoxMap2_i<int> rtree;
+  RtreeMapBox2_i<int> rtree;
   rtree.Insert(Box2_i(0, 0, 1, 1), 0);
   rtree.Insert(Box2_i(2, 2, 3, 3), 1);
   rtree.Insert(Box2_i(4, 4, 5, 5), 2);
@@ -546,7 +546,7 @@ TEST(RtreeBoxMapTest, InsertKeyValuePair) {
 }
 
 TEST(RtreeBoxMapTest, QueryIntersectsBox1) {
-  RtreeBoxMap2_i<int> rtree;
+  RtreeMapBox2_i<int> rtree;
   rtree.Insert({Box2_i(0, 0, 1, 1), 0});
   rtree.Insert({Box2_i(2, 2, 3, 3), 1});
   rtree.Insert({Box2_i(4, 4, 5, 5), 2});
@@ -559,7 +559,7 @@ TEST(RtreeBoxMapTest, QueryIntersectsBox1) {
 }
 
 TEST(RtreeBoxMapTest, QueryIntersectsKeyBox1) {
-  RtreeBoxMap2_i<int> rtree;
+  RtreeMapBox2_i<int> rtree;
   rtree.Insert({Box2_i(0, 0, 1, 1), 0});
   rtree.Insert({Box2_i(2, 2, 3, 3), 1});
   rtree.Insert({Box2_i(4, 4, 5, 5), 2});
@@ -571,7 +571,7 @@ TEST(RtreeBoxMapTest, QueryIntersectsKeyBox1) {
 }
 
 TEST(RtreeBoxMapTest, QueryIntersectsValueBox1) {
-  RtreeBoxMap2_i<int> rtree;
+  RtreeMapBox2_i<int> rtree;
   rtree.Insert(Box2_i(0, 0, 1, 1), 0);
   rtree.Insert(Box2_i(2, 2, 3, 3), 1);
   rtree.Insert(Box2_i(4, 4, 5, 5), 2);
@@ -582,7 +582,7 @@ TEST(RtreeBoxMapTest, QueryIntersectsValueBox1) {
 }
 
 TEST(RtreeBoxMapTest, QueryTouchesValueBox1) {
-  RtreeBoxMap2_i<int> rtree;
+  RtreeMapBox2_i<int> rtree;
   rtree.Insert(Box2_i(0, 0, 1, 1), 0);
   rtree.Insert(Box2_i(2, 2, 3, 3), 1);
   rtree.Insert(Box2_i(4, 4, 5, 5), 2);
@@ -594,7 +594,7 @@ TEST(RtreeBoxMapTest, QueryTouchesValueBox1) {
 }
 
 TEST(RtreeBoxMapTest, QueryTouchesValueBox2) {
-  RtreeBoxMap2_i<int> rtree;
+  RtreeMapBox2_i<int> rtree;
   rtree.Insert(Box2_i(0, 0, 1, 1), 0);
   rtree.Insert(Box2_i(2, 2, 3, 3), 1);
   rtree.Insert(Box2_i(4, 4, 5, 5), 2);
@@ -605,7 +605,7 @@ TEST(RtreeBoxMapTest, QueryTouchesValueBox2) {
 }
 
 TEST(RtreeBoxMapTest, QueryTouchesKeyBox) {
-  RtreeBoxMap2_i<int> rtree;
+  RtreeMapBox2_i<int> rtree;
   rtree.Insert(Box2_i(0, 0, 1, 1), 0);
   rtree.Insert(Box2_i(2, 2, 3, 3), 1);
   rtree.Insert(Box2_i(4, 4, 5, 5), 2);
@@ -617,7 +617,7 @@ TEST(RtreeBoxMapTest, QueryTouchesKeyBox) {
 }
 
 TEST(RtreeBoxMapTest, QueryStrictlyIntersectsValueBox1) {
-  RtreeBoxMap2_i<int> rtree;
+  RtreeMapBox2_i<int> rtree;
   rtree.Insert(Box2_i(0, 0, 1, 1), 0);
   rtree.Insert(Box2_i(2, 2, 3, 3), 1);
   rtree.Insert(Box2_i(4, 4, 5, 5), 2);
@@ -628,7 +628,7 @@ TEST(RtreeBoxMapTest, QueryStrictlyIntersectsValueBox1) {
 }
 
 TEST(RtreeBoxMapTest, QueryStrictlyIntersectsValueBox2) {
-  RtreeBoxMap2_i<int> rtree;
+  RtreeMapBox2_i<int> rtree;
   rtree.Insert(Box2_i(0, 0, 1, 1), 0);
   rtree.Insert(Box2_i(2, 2, 3, 3), 1);
   rtree.Insert(Box2_i(4, 4, 5, 5), 2);
@@ -651,7 +651,7 @@ TEST(RtreePointTest, QueryIntersectsPoint) {
 }
 
 TEST(RtreeBoxMapTupleTest, QueryIntersectsBox1) {
-  RtreeBoxMultiMap2_i<int, std::string> rtree;
+  RtreeMultiMapBox2_i<int, std::string> rtree;
   rtree.Insert({Box2_i(0, 0, 1, 1), 0, "zero"});
   rtree.Insert({Box2_i(2, 2, 3, 3), 1, "one"});
   rtree.Insert({Box2_i(4, 4, 5, 5), 2, "two"});
@@ -665,7 +665,7 @@ TEST(RtreeBoxMapTupleTest, QueryIntersectsBox1) {
 }
 
 TEST(RtreeBoxMapTupleTest, QueryIntersectsBox2) {
-  RtreeBoxMultiMap2_i<int, std::string> rtree;
+  RtreeMultiMapBox2_i<int, std::string> rtree;
   rtree.Insert(Box2_i(0, 0, 1, 1), 0, "zero");
   rtree.Insert(Box2_i(2, 2, 3, 3), 1, "one");
   rtree.Insert(Box2_i(4, 4, 5, 5), 2, "two");
@@ -677,7 +677,7 @@ TEST(RtreeBoxMapTupleTest, QueryIntersectsBox2) {
 }
 
 TEST(RtreeBoxMapTupleTest, QueryIntersectsBox3) {
-  RtreeBoxMultiMap2_i<int, std::string> rtree;
+  RtreeMultiMapBox2_i<int, std::string> rtree;
   rtree.Insert(Box2_i(0, 0, 1, 1), 0, "zero");
   rtree.Insert(Box2_i(2, 2, 3, 3), 1, "one");
   rtree.Insert(Box2_i(4, 4, 5, 5), 2, "two");
@@ -688,7 +688,7 @@ TEST(RtreeBoxMapTupleTest, QueryIntersectsBox3) {
 }
 
 TEST(RtreeBoxMapTupleTest, QueryIntersectsBox4) {
-  RtreeBoxMultiMap2_i<int, std::string> rtree;
+  RtreeMultiMapBox2_i<int, std::string> rtree;
   rtree.Insert(Box2_i(0, 0, 1, 1), 0, "zero");
   rtree.Insert(Box2_i(2, 2, 3, 3), 1, "one");
   rtree.Insert(Box2_i(4, 4, 5, 5), 2, "two");
@@ -699,7 +699,7 @@ TEST(RtreeBoxMapTupleTest, QueryIntersectsBox4) {
 }
 
 TEST(RtreePointMapTest, QueryIntersectsBox) {
-  RtreePointMap2_i<int> rtree;
+  RtreeMapPoint2_i<int> rtree;
   rtree.Insert({Point2_i(0, 0), 0});
   rtree.Insert({Point2_i(2, 2), 1});
   rtree.Insert({Point2_i(4, 4), 2});
@@ -714,7 +714,7 @@ TEST(RtreePointMapTest, QueryIntersectsBox) {
 TEST(RtreePointMapTest, QueryIntersectsKeyBox) {
   std::vector<std::pair<Point2_i, int>> point_values = {
       {Point2_i(0, 0), 0}, {Point2_i(2, 2), 1}, {Point2_i(4, 4), 2}};
-  RtreePointMap2_i<int> rtree;
+  RtreeMapPoint2_i<int> rtree;
   rtree.Insert(point_values);
 
   std::vector<Point2_i> points = rtree.QueryIntersects<0>(Box2_i(0, 0, 2, 2));
@@ -723,7 +723,7 @@ TEST(RtreePointMapTest, QueryIntersectsKeyBox) {
 }
 
 TEST(RtreePointMapTest, QueryIntersectsValueBox) {
-  RtreePointMap2_i<int> rtree;
+  RtreeMapPoint2_i<int> rtree;
   rtree.Insert(Point2_i(0, 0), 0);
   rtree.Insert(Point2_i(2, 2), 1);
   rtree.Insert(Point2_i(4, 4), 2);

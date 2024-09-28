@@ -298,36 +298,36 @@ using RtreeBox2_i32 = Rtree<Box2<int32_t>>;
 using RtreeBox2_i64 = Rtree<Box2<int64_t>>;
 // Box R-tree map (pair).
 template <typename T>
-using RtreeBoxMap2_i = Rtree<std::pair<Box2<int>, T>>;
+using RtreeMapBox2_i = Rtree<std::pair<Box2<int>, T>>;
 template <typename T>
-using RtreeBoxMap2_i32 = Rtree<std::pair<Box2<int32_t>, T>>;
+using RtreeMapBox2_i32 = Rtree<std::pair<Box2<int32_t>, T>>;
 template <typename T>
-using RtreeBoxMap2_i64 = Rtree<std::pair<Box2<int64_t>, T>>;
+using RtreeMapBox2_i64 = Rtree<std::pair<Box2<int64_t>, T>>;
 // Box R-tree multi-map (tuple).
 template <typename... Args>
-using RtreeBoxMultiMap2_i = Rtree<std::tuple<Box2<int>, Args...>>;
+using RtreeMultiMapBox2_i = Rtree<std::tuple<Box2<int>, Args...>>;
 template <typename... Args>
-using RtreeBoxMultiMap2_i32 = Rtree<std::tuple<Box2<int32_t>, Args...>>;
+using RtreeMultiMapBox2_i32 = Rtree<std::tuple<Box2<int32_t>, Args...>>;
 template <typename... Args>
-using RtreeBoxMultiMap2_i64 = Rtree<std::tuple<Box2<int64_t>, Args...>>;
+using RtreeMultiMapBox2_i64 = Rtree<std::tuple<Box2<int64_t>, Args...>>;
 // Point R-tree.
 using RtreePoint2_i = Rtree<Point2<int>>;
 using RtreePoint2_i32 = Rtree<Point2<int32_t>>;
 using RtreePoint2_i64 = Rtree<Point2<int64_t>>;
 // Point R-tree map (pair).
 template <typename T>
-using RtreePointMap2_i = Rtree<std::pair<Point2<int>, T>>;
+using RtreeMapPoint2_i = Rtree<std::pair<Point2<int>, T>>;
 template <typename T>
-using RtreePointMap2_i32 = Rtree<std::pair<Point2<int32_t>, T>>;
+using RtreeMapPoint2_i32 = Rtree<std::pair<Point2<int32_t>, T>>;
 template <typename T>
-using RtreePointMap2_i64 = Rtree<std::pair<Point2<int64_t>, T>>;
+using RtreeMapPoint2_i64 = Rtree<std::pair<Point2<int64_t>, T>>;
 // Point R-tree multi-map (tuple).
 template <typename... Args>
-using RtreePointMultiMap2_i = Rtree<std::tuple<Point2<int>, Args...>>;
+using RtreeMultiMapPoint2_i = Rtree<std::tuple<Point2<int>, Args...>>;
 template <typename... Args>
-using RtreePointMultiMap2_i32 = Rtree<std::tuple<Point2<int32_t>, Args...>>;
+using RtreeMultiMapPoint2_i32 = Rtree<std::tuple<Point2<int32_t>, Args...>>;
 template <typename... Args>
-using RtreePointMultiMap2_i64 = Rtree<std::tuple<Point2<int64_t>, Args...>>;
+using RtreeMultiMapPoint2_i64 = Rtree<std::tuple<Point2<int64_t>, Args...>>;
 
 }  // namespace moab
 
