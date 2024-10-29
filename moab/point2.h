@@ -2,6 +2,7 @@
 #define MOAB_POINT2_H_
 
 #include <array>
+#include <cmath>
 #include <cstdint>
 #include <ostream>
 #include <string>
@@ -135,6 +136,11 @@ class Point2 {
   Point2 operator*(T v) const { return Point2(d_[0] * v, d_[1] * v); }
   Point2 operator/(T v) const { return Point2(d_[0] / v, d_[1] / v); }
 
+  // Distance.
+  T Distance(const Point2& p) const {
+    return std::abs(d_[0] - p.d_[0]) + std::abs(d_[1] - p.d_[1]);
+  }
+
   // String conversion.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const Point2& p) {
@@ -154,7 +160,7 @@ class Point2 {
 
  private:
   std::array<T, 2> d_;  // <x, y>
-};  // class Point2
+};                      // class Point2
 
 // Aliases.
 using Point2_i = Point2<int>;

@@ -55,6 +55,8 @@ class Segment3 {
 
   std::pair<Point3<T>, Point3<T>> ToPair() const { return {d_[0], d_[1]}; }
 
+  T Length() const { return d_[0].Distance(d_[1]); }
+  
   T xl() const { return d_[0].x() < d_[1].x() ? d_[0].x() : d_[1].x(); }
   T yl() const { return d_[0].y() < d_[1].y() ? d_[0].y() : d_[1].y(); }
   T zl() const { return d_[0].z() < d_[1].z() ? d_[0].z() : d_[1].z(); }
@@ -73,6 +75,7 @@ class Segment3 {
   const Point3<T>& MinPoint() const { return d_[0] < d_[1] ? d_[0] : d_[1]; }
   Point3<T>& MaxPoint() { return d_[0] > d_[1] ? d_[0] : d_[1]; }
   const Point3<T>& MaxPoint() const { return d_[0] > d_[1] ? d_[0] : d_[1]; }
+
 
   // Mutators.
   void Set(T x0, T y0, T z0, T x1, T y1, T z1) {
