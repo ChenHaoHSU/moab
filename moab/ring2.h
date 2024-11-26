@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "absl/strings/str_join.h"
+
 #include "box2.h"
 #include "operation.h"
 #include "point2.h"

@@ -9,6 +9,7 @@
 
 #include "absl/log/log.h"
 #include "boost/geometry.hpp"
+
 #include "box2.h"
 #include "point2.h"
 

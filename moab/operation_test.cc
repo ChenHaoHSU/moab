@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "absl/log/log.h"
+
 #include "box2.h"
 #include "point2.h"
 #include "ring2.h"

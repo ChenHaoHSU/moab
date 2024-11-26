@@ -60,8 +60,8 @@ constexpr auto Assign = [](auto& lhs, const auto& rhs) constexpr {
 
 // Polygon set equivalence.
 // Returns true if lhs and rhs are equivalent.
-constexpr auto Equivalence = [](const auto& lhs,
-                                const auto& rhs) constexpr -> bool {
+constexpr auto Equivalence =
+    [](const auto& lhs, const auto& rhs) constexpr -> bool {
   return boost::polygon::equivalence(lhs, rhs);
 };
 
@@ -76,8 +76,8 @@ constexpr auto Area = [](const auto& set) constexpr {
 // ==================================
 
 // Checks if the first geometry is inside or on border the second geometry.
-constexpr auto IsCoveredBy = [](const auto& g1,
-                                const auto& g2) constexpr -> bool {
+constexpr auto IsCoveredBy =
+    [](const auto& g1, const auto& g2) constexpr -> bool {
   return boost::geometry::covered_by(g1, g2);
 };
 
@@ -85,8 +85,8 @@ constexpr auto IsCoveredBy = [](const auto& g1,
 // Point/edge touch is considered as intersection.
 // Point-Box: Point must be inside or on the border of the box.
 // Box-Box
-constexpr auto IsIntersect = [](const auto& g1,
-                                const auto& g2) constexpr -> bool {
+constexpr auto IsIntersect =
+    [](const auto& g1, const auto& g2) constexpr -> bool {
   return boost::geometry::intersects(g1, g2);
 };
 
@@ -102,8 +102,8 @@ constexpr auto IsWithin = [](const auto& g1, const auto& g2) constexpr -> bool {
 // Checks if two geometries overlap.
 // Box-Box: the intersection of two boxes is not empty and not equal to either
 // of the boxes.
-constexpr auto IsOverlap = [](const auto& g1,
-                              const auto& g2) constexpr -> bool {
+constexpr auto IsOverlap =
+    [](const auto& g1, const auto& g2) constexpr -> bool {
   return boost::geometry::overlaps(g1, g2);
 };
 
@@ -116,8 +116,8 @@ constexpr auto IsTouch = [](const auto& g1, const auto& g2) constexpr -> bool {
 };
 
 // Checks if two geometries are disjoint.
-constexpr auto IsDisjoint = [](const auto& g1,
-                               const auto& g2) constexpr -> bool {
+constexpr auto IsDisjoint =
+    [](const auto& g1, const auto& g2) constexpr -> bool {
   return boost::geometry::disjoint(g1, g2);
 };
 
@@ -130,8 +130,8 @@ constexpr auto IsEqual = [](const auto& g1, const auto& g2) constexpr -> bool {
 
 // Checks if two geometries have a non-empty intersection.
 // Box-Box
-constexpr auto IsStrictlyIntersect = [](const auto& g1,
-                                        const auto& g2) constexpr -> bool {
+constexpr auto IsStrictlyIntersect =
+    [](const auto& g1, const auto& g2) constexpr -> bool {
   return IsIntersect(g1, g2) && !IsTouch(g1, g2);
 };
 
