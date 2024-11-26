@@ -139,6 +139,28 @@ TEST(Accessors, Empty2) {
   EXPECT_FALSE(r.Empty());
 }
 
+TEST(Accessors, Centroid1) {
+  Ring2_i r = {Point2_i(0, 0), Point2_i(2, 0), Point2_i(2, 2), Point2_i(0, 2),
+               Point2_i(0, 0)};
+
+  EXPECT_EQ(r.Centroid(), Point2_i(1, 1));
+}
+
+TEST(Accessors, Centroid2) {
+  Ring2_i r = {Point2_i(0, 0), Point2_i(4, 0), Point2_i(4, 4), Point2_i(2, 4),
+               Point2_i(2, 2), Point2_i(0, 2), Point2_i(0, 0)};
+
+  EXPECT_EQ(r.Centroid(), Point2_i(2, 1));
+}
+
+TEST(Accessors, Centroid3) {
+  Ring2_i r = {Point2_i(0, 0),   Point2_i(40, 0),  Point2_i(40, 40),
+               Point2_i(20, 40), Point2_i(20, 20), Point2_i(0, 20),
+               Point2_i(0, 0)};
+
+  EXPECT_EQ(r.Centroid(), Point2_i(23, 16));
+}
+
 TEST(Mutators, Clear) {
   Ring2_i r = {Point2_i(0, 0), Point2_i(2, 0), Point2_i(2, 2), Point2_i(0, 2),
                Point2_i(0, 0)};
@@ -218,6 +240,30 @@ TEST(Mutators, AssignInitializer) {
   EXPECT_THAT(r.Points(),
               ElementsAre(Point2_i(0, 0), Point2_i(2, 0), Point2_i(2, 2),
                           Point2_i(0, 2), Point2_i(0, 0)));
+}
+
+TEST(Operators, Subscript) {
+  Ring2_i r = {Point2_i(0, 0), Point2_i(2, 0), Point2_i(2, 2), Point2_i(0, 2),
+               Point2_i(0, 0)};
+
+  EXPECT_EQ(r.Size(), 5);
+  EXPECT_EQ(r[0], Point2_i(0, 0));
+  EXPECT_EQ(r[1], Point2_i(2, 0));
+  EXPECT_EQ(r[2], Point2_i(2, 2));
+  EXPECT_EQ(r[3], Point2_i(0, 2));
+  EXPECT_EQ(r[4], Point2_i(0, 0));
+
+  r[0] = Point2_i(1, 1);
+  r[1] = Point2_i(2, 1);
+  r[2] = Point2_i(2, 2);
+  r[3] = Point2_i(1, 2);
+  r[4] = Point2_i(1, 1);
+
+  EXPECT_EQ(r[0], Point2_i(1, 1));
+  EXPECT_EQ(r[1], Point2_i(2, 1));
+  EXPECT_EQ(r[2], Point2_i(2, 2));
+  EXPECT_EQ(r[3], Point2_i(1, 2));
+  EXPECT_EQ(r[4], Point2_i(1, 1));
 }
 
 TEST(Operators, SubscriptConst) {

@@ -14,6 +14,8 @@
 
 namespace moab {
 
+namespace bg = boost::geometry;
+
 template <typename T>
 class Ring2 {
  public:
@@ -47,6 +49,12 @@ class Ring2 {
   const std::vector<Point2<T>>& Points() const { return d_; }
   size_t Size() const { return d_.size(); }
   bool Empty() const { return d_.empty(); }
+
+  Point2<T> Centroid() {
+    Point2<T> p;
+    bg::centroid(*this, p);
+    return p;
+  }
 
   // Mutators.
   // Avoid using these methods if possible. It is designed for Boost
