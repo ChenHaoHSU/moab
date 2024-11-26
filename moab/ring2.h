@@ -50,7 +50,7 @@ class Ring2 {
   size_t Size() const { return d_.size(); }
   bool Empty() const { return d_.empty(); }
 
-  Point2<T> Centroid() {
+  Point2<T> Centroid() const {
     Point2<T> p;
     bg::centroid(*this, p);
     return p;
