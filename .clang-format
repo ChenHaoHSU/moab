@@ -4,6 +4,25 @@ BasedOnStyle:  Google
 # Force pointer to align on the type for C++
 DerivePointerAlignment: false
 PointerAlignment: Left
+IncludeCategories:
+  # Related headers
+  - Regex: '^[.]'
+    Priority: 1
+  # C standard library headers
+  - Regex: '^<.*\.h>'
+    Priority: 2
+  # C++ standard library headers
+  - Regex: '^<.*>'
+    Priority: 3
+  # Third-party library headers
+  - Regex: '^.*/.*'
+    Priority: 4
+  # Project headers
+  - Regex: '^.*'
+    Priority: 5
+  # Catch-all for any other headers
+  - Regex: '.*'
+    Priority: 6
 ---
 Language:        Java
 BasedOnStyle:  Google
@@ -12,6 +31,6 @@ Language:      CSharp
 BasedOnStyle:  Microsoft
 NamespaceIndentation: None
 ---
-Language:       Proto
+Language:      Proto
 BasedOnStyle:  Google
-...
+ColumnLimit:   200

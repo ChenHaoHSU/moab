@@ -7,6 +7,7 @@
 
 #include "absl/hash/hash_testing.h"
 #include "absl/strings/str_format.h"
+
 #include "point2.h"
 
 namespace moab {
@@ -110,11 +111,20 @@ TEST(Accessors, WidthHeight) {
   EXPECT_EQ(b.Height(), 3);
 }
 
-TEST(Accessors, CenterXCenterY) {
+TEST(Accessors, Center1) {
   Box2_i b(Point2_i(1, 2), Point2_i(3, 6));
 
   EXPECT_EQ(b.CenterX(), 2);
   EXPECT_EQ(b.CenterY(), 4);
+  EXPECT_EQ(b.Center(), Point2_i(2, 4));
+}
+
+TEST(Accessors, Center2) {
+  Box2_i b(Point2_i(10, 20), Point2_i(15, 25));
+
+  EXPECT_EQ(b.CenterX(), 12);
+  EXPECT_EQ(b.CenterY(), 22);
+  EXPECT_EQ(b.Center(), Point2_i(12, 22));
 }
 
 TEST(Accessors, Area) {
@@ -239,56 +249,108 @@ TEST(Operations, ShiftY) {
   EXPECT_EQ(b.ur(), Point2_i(3, 5));
 }
 
-TEST(Operations, Expand) {
+TEST(Operations, Bloat) {
   Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
-  b.Expand(5);
+  b.Bloat(5);
 
   EXPECT_EQ(b.ll(), Point2_i(-4, -3));
   EXPECT_EQ(b.ur(), Point2_i(8, 9));
 
-  b.Expand(-3);
+  b.Bloat(-3);
 
   EXPECT_EQ(b.ll(), Point2_i(-1, 0));
   EXPECT_EQ(b.ur(), Point2_i(5, 6));
 }
 
-TEST(Operations, ExpandXY) {
+TEST(Operations, BloatXY) {
   Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
-  b.Expand(5, 6);
+  b.Bloat(5, 6);
 
   EXPECT_EQ(b.ll(), Point2_i(-4, -4));
   EXPECT_EQ(b.ur(), Point2_i(8, 10));
 
-  b.Expand(-3, -2);
+  b.Bloat(-3, -2);
 
   EXPECT_EQ(b.ll(), Point2_i(-1, -2));
   EXPECT_EQ(b.ur(), Point2_i(5, 8));
 }
 
-TEST(Operations, ExpandX) {
+TEST(Operations, BloatX) {
   Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
-  b.ExpandX(5);
+  b.BloatX(5);
 
   EXPECT_EQ(b.ll(), Point2_i(-4, 2));
   EXPECT_EQ(b.ur(), Point2_i(8, 4));
 
-  b.ExpandX(-3);
+  b.BloatX(-3);
 
   EXPECT_EQ(b.ll(), Point2_i(-1, 2));
   EXPECT_EQ(b.ur(), Point2_i(5, 4));
 }
 
-TEST(Operations, ExpandY) {
+TEST(Operations, BloatY) {
   Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
-  b.ExpandY(5);
+  b.BloatY(5);
 
   EXPECT_EQ(b.ll(), Point2_i(1, -3));
   EXPECT_EQ(b.ur(), Point2_i(3, 9));
 
-  b.ExpandY(-3);
+  b.BloatY(-3);
 
   EXPECT_EQ(b.ll(), Point2_i(1, 0));
   EXPECT_EQ(b.ur(), Point2_i(3, 6));
+}
+
+TEST(Operations, Shrink) {
+  Box2_i b(Point2_i(0, 1), Point2_i(10, 20));
+  b.Shrink(1);
+
+  EXPECT_EQ(b.ll(), Point2_i(1, 2));
+  EXPECT_EQ(b.ur(), Point2_i(9, 19));
+
+  b.Shrink(-1);
+
+  EXPECT_EQ(b.ll(), Point2_i(0, 1));
+  EXPECT_EQ(b.ur(), Point2_i(10, 20));
+}
+
+TEST(Operations, ShrinkXY) {
+  Box2_i b(Point2_i(0, 1), Point2_i(10, 20));
+  b.Shrink(1, 2);
+
+  EXPECT_EQ(b.ll(), Point2_i(1, 3));
+  EXPECT_EQ(b.ur(), Point2_i(9, 18));
+
+  b.Shrink(-1, -2);
+
+  EXPECT_EQ(b.ll(), Point2_i(0, 1));
+  EXPECT_EQ(b.ur(), Point2_i(10, 20));
+}
+
+TEST(Operations, ShrinkX) {
+  Box2_i b(Point2_i(0, 1), Point2_i(10, 20));
+  b.ShrinkX(1);
+
+  EXPECT_EQ(b.ll(), Point2_i(1, 1));
+  EXPECT_EQ(b.ur(), Point2_i(9, 20));
+
+  b.ShrinkX(-1);
+
+  EXPECT_EQ(b.ll(), Point2_i(0, 1));
+  EXPECT_EQ(b.ur(), Point2_i(10, 20));
+}
+
+TEST(Operations, ShrinkY) {
+  Box2_i b(Point2_i(0, 1), Point2_i(10, 20));
+  b.ShrinkY(1);
+
+  EXPECT_EQ(b.ll(), Point2_i(0, 2));
+  EXPECT_EQ(b.ur(), Point2_i(10, 19));
+
+  b.ShrinkY(-1);
+
+  EXPECT_EQ(b.ll(), Point2_i(0, 1));
+  EXPECT_EQ(b.ur(), Point2_i(10, 20));
 }
 
 TEST(Operators, SubscriptAccess) {

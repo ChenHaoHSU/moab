@@ -222,8 +222,8 @@ cc_library(
     hdrs = ["rtree.h"],
     deps = [
         ":box2",
-        ":point2",
         ":operation",
+        ":point2",
         "@boost//:geometry",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/strings",

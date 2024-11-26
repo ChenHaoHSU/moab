@@ -18,6 +18,7 @@
 #include "boost/geometry/core/cs.hpp"
 #include "boost/geometry/core/tag.hpp"
 #include "boost/geometry/geometries/concepts/segment_concept.hpp"
+
 #include "point3.h"
 
 namespace moab {
@@ -54,6 +55,8 @@ class Segment3 {
   constexpr std::size_t Size() const { return d_.size(); }
 
   std::pair<Point3<T>, Point3<T>> ToPair() const { return {d_[0], d_[1]}; }
+
+  T Length() const { return d_[0].Distance(d_[1]); }
 
   T xl() const { return d_[0].x() < d_[1].x() ? d_[0].x() : d_[1].x(); }
   T yl() const { return d_[0].y() < d_[1].y() ? d_[0].y() : d_[1].y(); }
@@ -145,7 +148,7 @@ class Segment3 {
 
  private:
   std::array<Point3<T>, 2> d_;  // <p0, p1>
-};  // class Segment3
+};                              // class Segment3
 
 // Aliases.
 using Segment3_i = Segment3<int>;

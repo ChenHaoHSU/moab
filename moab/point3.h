@@ -2,6 +2,7 @@
 #define MOAB_POINT3_H_
 
 #include <array>
+#include <cmath>
 #include <cstdint>
 #include <ostream>
 #include <string>
@@ -94,9 +95,9 @@ class Point3 {
   bool operator!=(const Point3& p) const { return !(*this == p); }
   // Operators - Inequality
   bool operator<(const Point3& p) const {
-    return d_[0] != p.d_[0]   ? d_[0] < p.d_[0]
-           : d_[1] != p.d_[1] ? d_[1] < p.d_[1]
-                              : d_[2] < p.d_[2];
+    return d_[0] != p.d_[0]
+               ? d_[0] < p.d_[0]
+               : d_[1] != p.d_[1] ? d_[1] < p.d_[1] : d_[2] < p.d_[2];
   }
   bool operator>(const Point3& p) const { return p < *this; }
   bool operator<=(const Point3& p) const { return !(*this > p); }
@@ -159,6 +160,12 @@ class Point3 {
   }
   Point3 operator/(T v) const {
     return Point3(d_[0] / v, d_[1] / v, d_[2] / v);
+  }
+
+  // Distance.
+  T Distance(const Point3& p) const {
+    return std::abs(d_[0] - p.d_[0]) + std::abs(d_[1] - p.d_[1]) +
+           std::abs(d_[2] - p.d_[2]);
   }
 
   // String conversion.

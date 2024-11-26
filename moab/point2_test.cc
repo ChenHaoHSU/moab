@@ -376,6 +376,22 @@ TEST(Operators, IntegerDivision) {
   EXPECT_EQ(p2.y(), 2);
 }
 
+TEST(Distance, Distance) {
+  Point2_i p1(0, 0);
+  Point2_i p2(10, 0);
+  Point2_i p3(-1, -2);
+
+  EXPECT_EQ(p1.Distance(p1), 0);
+  EXPECT_EQ(p1.Distance(p2), 10);
+  EXPECT_EQ(p1.Distance(p3), 3);
+  EXPECT_EQ(p2.Distance(p1), 10);
+  EXPECT_EQ(p2.Distance(p2), 0);
+  EXPECT_EQ(p2.Distance(p3), 13);
+  EXPECT_EQ(p3.Distance(p1), 3);
+  EXPECT_EQ(p3.Distance(p2), 13);
+  EXPECT_EQ(p3.Distance(p3), 0);
+}
+
 TEST(StringConversion, ToString) {
   Point2_i p(1, 2);
 

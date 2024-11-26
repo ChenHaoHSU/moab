@@ -7,6 +7,7 @@
 
 #include "absl/hash/hash_testing.h"
 #include "absl/strings/str_format.h"
+
 #include "point2.h"
 
 namespace moab {
@@ -114,6 +115,12 @@ TEST(Accessors, ToPair) {
   std::pair<Point2_i, Point2_i> p = s.ToPair();
 
   EXPECT_THAT(p, Pair(Point2_i(1, 2), Point2_i(3, 4)));
+}
+
+TEST(Accessors, Length) {
+  Segment2_i s(Point2_i(1, 2), Point2_i(3, 4));
+
+  EXPECT_EQ(s.Length(), 4);
 }
 
 TEST(Accessors, XLYLXHYH1) {

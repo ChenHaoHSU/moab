@@ -12,10 +12,13 @@
 #include "boost/geometry/core/tag.hpp"
 #include "boost/geometry/geometries/concepts/box_concept.hpp"
 #include "boost/polygon/polygon.hpp"
+
 #include "interval.h"
 #include "point2.h"
 
 namespace moab {
+
+namespace bp = boost::polygon;
 
 template <typename T>
 class Box2 {
@@ -61,8 +64,14 @@ class Box2 {
   T Width() const { return d_[1].x() - d_[0].x(); }
   T Height() const { return d_[1].y() - d_[0].y(); }
 
-  T CenterX() const { return (d_[0].x() + d_[1].x()) / 2; }
-  T CenterY() const { return (d_[0].y() + d_[1].y()) / 2; }
+  // Center.
+  T CenterX() const { return Center().x(); }
+  T CenterY() const { return Center().y(); }
+  Point2<T> Center() const {
+    Point2<T> p;
+    boost::polygon::center(p, *this);
+    return p;
+  }
 
   T Area() const { return Width() * Height(); }
   T HalfPerimeter() const { return (Width() + Height()); }
@@ -103,11 +112,22 @@ class Box2 {
     d_[0].ShiftY(dy);
     d_[1].ShiftY(dy);
   }
-  // Operations - Expand (It's unsafe. Need to check for validity.)
-  void Expand(T d) { Set(xl() - d, yl() - d, xh() + d, yh() + d); }
-  void Expand(T dx, T dy) { Set(xl() - dx, yl() - dy, xh() + dx, yh() + dy); }
-  void ExpandX(T dx) { Set(xl() - dx, yl(), xh() + dx, yh()); }
-  void ExpandY(T dy) { Set(xl(), yl() - dy, xh(), yh() + dy); }
+  // Operations - Bloat
+  void Bloat(T d) { bp::bloat(*this, d); }
+  void Bloat(T dx, T dy) {
+    BloatX(dx);
+    BloatY(dy);
+  }
+  void BloatX(T dx) { bp::bloat(*this, bp::HORIZONTAL, dx); }
+  void BloatY(T dy) { bp::bloat(*this, bp::VERTICAL, dy); }
+  // Operations - Shrink
+  void Shrink(T d) { bp::shrink(*this, d); }
+  void Shrink(T dx, T dy) {
+    ShrinkX(dx);
+    ShrinkY(dy);
+  }
+  void ShrinkX(T dx) { bp::shrink(*this, bp::HORIZONTAL, dx); }
+  void ShrinkY(T dy) { bp::shrink(*this, bp::VERTICAL, dy); }
 
   // Operators.
   // Operators - Subscript

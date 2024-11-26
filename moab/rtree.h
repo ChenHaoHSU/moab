@@ -16,6 +16,7 @@
 #include "boost/geometry/index/parameters.hpp"
 #include "boost/geometry/index/rtree.hpp"
 #include "boost/iterator/function_output_iterator.hpp"
+
 #include "box2.h"
 #include "operation.h"
 #include "point2.h"

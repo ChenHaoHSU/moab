@@ -120,7 +120,7 @@ class Interval {
 
  private:
   std::array<T, 2> d_;  // <low, high>
-};  // class Interval
+};                      // class Interval
 
 using Interval_i = Interval<int>;
 using Interval_i32 = Interval<int32_t>;
