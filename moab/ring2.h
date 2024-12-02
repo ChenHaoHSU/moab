@@ -55,6 +55,11 @@ class Ring2 {
     bg::centroid(*this, p);
     return p;
   }
+  Box2<T> BoundingBox() const {
+    Box2<T> b;
+    bg::envelope(*this, b);
+    return b;
+  }
 
   // Mutators.
   // Avoid using these methods if possible. It is designed for Boost
