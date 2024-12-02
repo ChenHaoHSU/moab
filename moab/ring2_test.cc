@@ -161,6 +161,28 @@ TEST(Accessors, Centroid3) {
   EXPECT_EQ(r.Centroid(), Point2_i(23, 16));
 }
 
+TEST(Accessors, BoundingBox1) {
+  Ring2_i r = {Point2_i(0, 0), Point2_i(2, 0), Point2_i(2, 2), Point2_i(0, 2),
+               Point2_i(0, 0)};
+
+  EXPECT_EQ(r.BoundingBox(), Box2_i(0, 0, 2, 2));
+}
+
+TEST(Accessors, BoundingBox2) {
+  Ring2_i r = {Point2_i(0, 0), Point2_i(4, 0), Point2_i(4, 4), Point2_i(2, 4),
+               Point2_i(2, 2), Point2_i(0, 2), Point2_i(0, 0)};
+
+  EXPECT_EQ(r.BoundingBox(), Box2_i(0, 0, 4, 4));
+}
+
+TEST(Accessors, BoundingBox3) {
+  Ring2_i r = {Point2_i(0, 0),   Point2_i(40, 0),  Point2_i(40, 40),
+               Point2_i(20, 40), Point2_i(20, 20), Point2_i(0, 20),
+               Point2_i(0, 0)};
+
+  EXPECT_EQ(r.BoundingBox(), Box2_i(0, 0, 40, 40));
+}
+
 TEST(Mutators, Clear) {
   Ring2_i r = {Point2_i(0, 0), Point2_i(2, 0), Point2_i(2, 2), Point2_i(0, 2),
                Point2_i(0, 0)};
