@@ -128,6 +128,9 @@ class Box2 {
   }
   void ShrinkX(T dx) { bp::shrink(*this, bp::HORIZONTAL, dx); }
   void ShrinkY(T dy) { bp::shrink(*this, bp::VERTICAL, dy); }
+  // Operations - Encompass
+  void Encompass(const Point2<T>& p) { bp::encompass(*this, p); }
+  void Encompass(const Box2& b) { bp::encompass(*this, b); }
 
   // Operators.
   // Operators - Subscript

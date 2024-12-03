@@ -353,6 +353,63 @@ TEST(Operations, ShrinkY) {
   EXPECT_EQ(b.ur(), Point2_i(10, 20));
 }
 
+TEST(Operations, EncompassPoint1) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
+
+  b.Encompass(Point2_i(0, 1));
+
+  EXPECT_EQ(b.ll(), Point2_i(0, 1));
+  EXPECT_EQ(b.ur(), Point2_i(3, 4));
+}
+
+TEST(Operations, EncompassPoint2) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
+
+  b.Encompass(Point2_i(1, 2));
+
+  EXPECT_EQ(b.ll(), Point2_i(1, 2));
+  EXPECT_EQ(b.ur(), Point2_i(3, 4));
+}
+
+TEST(Operations, EncompassPoint3) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
+
+  b.Encompass(Point2_i(100, -100));
+
+  EXPECT_EQ(b.ll(), Point2_i(1, -100));
+  EXPECT_EQ(b.ur(), Point2_i(100, 4));
+}
+
+TEST(Operations, EncompassBox1) {
+  Box2_i b1(Point2_i(1, 2), Point2_i(3, 4));
+  Box2_i b2(Point2_i(0, 1), Point2_i(5, 6));
+
+  b1.Encompass(b2);
+
+  EXPECT_EQ(b1.ll(), Point2_i(0, 1));
+  EXPECT_EQ(b1.ur(), Point2_i(5, 6));
+}
+
+TEST(Operations, EncompassBox2) {
+  Box2_i b1(Point2_i(1, 2), Point2_i(3, 4));
+  Box2_i b2(Point2_i(1, 2), Point2_i(3, 4));
+
+  b1.Encompass(b2);
+
+  EXPECT_EQ(b1.ll(), Point2_i(1, 2));
+  EXPECT_EQ(b1.ur(), Point2_i(3, 4));
+}
+
+TEST(Operations, EncompassBox3) {
+  Box2_i b1(Point2_i(1, 2), Point2_i(3, 4));
+  Box2_i b2(Point2_i(100, -100), Point2_i(200, -50));
+
+  b1.Encompass(b2);
+
+  EXPECT_EQ(b1.ll(), Point2_i(1, -100));
+  EXPECT_EQ(b1.ur(), Point2_i(200, 4));
+}
+
 TEST(Operators, SubscriptAccess) {
   Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
 
