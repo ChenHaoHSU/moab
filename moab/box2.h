@@ -18,7 +18,7 @@
 
 namespace moab {
 
-namespace bp = boost::polygon;
+namespace gtl = boost::polygon;
 
 template <typename T>
 class Box2 {
@@ -113,24 +113,24 @@ class Box2 {
     d_[1].ShiftY(dy);
   }
   // Operations - Bloat
-  void Bloat(T d) { bp::bloat(*this, d); }
+  void Bloat(T d) { gtl::bloat(*this, d); }
   void Bloat(T dx, T dy) {
     BloatX(dx);
     BloatY(dy);
   }
-  void BloatX(T dx) { bp::bloat(*this, bp::HORIZONTAL, dx); }
-  void BloatY(T dy) { bp::bloat(*this, bp::VERTICAL, dy); }
+  void BloatX(T dx) { gtl::bloat(*this, gtl::HORIZONTAL, dx); }
+  void BloatY(T dy) { gtl::bloat(*this, gtl::VERTICAL, dy); }
   // Operations - Shrink
-  void Shrink(T d) { bp::shrink(*this, d); }
+  void Shrink(T d) { gtl::shrink(*this, d); }
   void Shrink(T dx, T dy) {
     ShrinkX(dx);
     ShrinkY(dy);
   }
-  void ShrinkX(T dx) { bp::shrink(*this, bp::HORIZONTAL, dx); }
-  void ShrinkY(T dy) { bp::shrink(*this, bp::VERTICAL, dy); }
+  void ShrinkX(T dx) { gtl::shrink(*this, gtl::HORIZONTAL, dx); }
+  void ShrinkY(T dy) { gtl::shrink(*this, gtl::VERTICAL, dy); }
   // Operations - Encompass
-  void Encompass(const Point2<T>& p) { bp::encompass(*this, p); }
-  void Encompass(const Box2& b) { bp::encompass(*this, b); }
+  void Encompass(const Point2<T>& p) { gtl::encompass(*this, p); }
+  void Encompass(const Box2& b) { gtl::encompass(*this, b); }
 
   // Operators.
   // Operators - Subscript
