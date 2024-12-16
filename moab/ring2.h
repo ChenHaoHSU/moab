@@ -15,6 +15,7 @@
 namespace moab {
 
 namespace bg = boost::geometry;
+namespace gtl = boost::polygon;
 
 template <typename T>
 class Ring2 {
@@ -60,6 +61,13 @@ class Ring2 {
     bg::envelope(*this, b);
     return b;
   }
+  // Get max boxes.
+  std::vector<Box2<T>> MaxBoxes() const {
+    std::vector<Box2<T>> boxes;
+    gtl::get_max_rectangles(boxes,
+                            gtl::view_as<gtl::polygon_90_set_concept>(*this));
+    return boxes;
+  }
 
   // Mutators.
   // Avoid using these methods if possible. It is designed for Boost
@@ -83,15 +91,6 @@ class Ring2 {
   mutable_iterator_type rend() { return d_.rend(); }
   const_iterator_type rbegin() const { return d_.rbegin(); }
   const_iterator_type rend() const { return d_.rend(); }
-
-  // get boxes
-  std::vector<Box2<T>> MaxBoxes() const {
-    std::vector<Box2<T>> boxes;
-    boost::polygon::get_max_rectangles(
-      boxes,
-      boost::polygon::view_as<boost::polygon::polygon_90_set_concept>(*this));
-    return boxes;
-  }
 
   // Operators.
   // Operator - Subscript
