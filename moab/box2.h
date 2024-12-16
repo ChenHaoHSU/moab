@@ -69,7 +69,7 @@ class Box2 {
   T CenterY() const { return Center().y(); }
   Point2<T> Center() const {
     Point2<T> p;
-    boost::polygon::center(p, *this);
+    gtl::center(p, *this);
     return p;
   }
 
@@ -242,9 +242,8 @@ struct rectangle_mutable_traits<moab::Box2<T>> {
     rectangle[1][orient.to_int()] = interval_traits<T2>::get(interval, HIGH);
   }
   template <typename T2, typename T3>
-  static inline moab::Box2<T> construct(
-      const T2& interval_horizontal,
-      const T3& interval_vertical) {
+  static inline moab::Box2<T> construct(const T2& interval_horizontal,
+                                        const T3& interval_vertical) {
     return moab::Box2<T>(interval_traits<T2>::get(interval_horizontal, LOW),
                          interval_traits<T3>::get(interval_vertical, LOW),
                          interval_traits<T2>::get(interval_horizontal, HIGH),
