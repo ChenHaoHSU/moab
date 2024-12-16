@@ -16,6 +16,7 @@ namespace moab {
 using ::testing::ElementsAre;
 using ::testing::Pair;
 using ::testing::StrEq;
+using ::testing::UnorderedElementsAre;
 
 TEST(Constructor, Default) {
   Ring2_i r;
@@ -181,6 +182,18 @@ TEST(Accessors, BoundingBox3) {
                Point2_i(0, 0)};
 
   EXPECT_EQ(r.BoundingBox(), Box2_i(0, 0, 40, 40));
+}
+
+TEST(Operations, MaxBoxes) {
+  Ring2_i r = {Point2_i(0, 0),   Point2_i(40, 0),  Point2_i(40, 40),
+               Point2_i(20, 40), Point2_i(20, 20), Point2_i(0, 20),
+               Point2_i(0, 0)};
+
+  std::vector<Box2_i> boxes;
+  boxes = r.MaxBoxes();
+
+  EXPECT_THAT(
+      boxes, UnorderedElementsAre(Box2_i(20, 0, 40, 40), Box2_i(0, 0, 40, 20)));
 }
 
 TEST(Mutators, Clear) {
