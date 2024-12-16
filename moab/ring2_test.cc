@@ -14,6 +14,7 @@
 namespace moab {
 
 using ::testing::ElementsAre;
+using ::testing::UnorderedElementsAre;
 using ::testing::Pair;
 using ::testing::StrEq;
 
@@ -344,6 +345,18 @@ TEST(Hash, SupportsAbslHash) {
       Ring2_i({Point2_i(0, 0), Point2_i(20, 0), Point2_i(20, 20),
                Point2_i(0, 20), Point2_i(0, 0)}),
   }));
+}
+
+TEST(Operations, MaxBoxes) {
+  Ring2_i r = {Point2_i(0, 0),   Point2_i(40, 0),  Point2_i(40, 40),
+               Point2_i(20, 40), Point2_i(20, 20), Point2_i(0, 20),
+               Point2_i(0, 0)};
+
+  std::vector<Box2_i> boxes;
+  boxes = r.MaxBoxes();
+
+  EXPECT_THAT(boxes,
+              UnorderedElementsAre(Box2_i(20, 0, 40, 40), Box2_i(0, 0, 40, 20)));
 }
 
 }  // namespace moab

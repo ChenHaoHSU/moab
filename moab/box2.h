@@ -243,8 +243,8 @@ struct rectangle_mutable_traits<moab::Box2<T>> {
   }
   template <typename T2, typename T3>
   static inline moab::Box2<T> construct(
-      const interval_type& interval_horizontal,
-      const interval_type& interval_vertical) {
+      const T2& interval_horizontal,
+      const T3& interval_vertical) {
     return moab::Box2<T>(interval_traits<T2>::get(interval_horizontal, LOW),
                          interval_traits<T3>::get(interval_vertical, LOW),
                          interval_traits<T2>::get(interval_horizontal, HIGH),
