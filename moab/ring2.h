@@ -90,7 +90,7 @@ class Ring2 {
     boost::polygon::get_max_rectangles(
       boxes,
       boost::polygon::view_as<boost::polygon::polygon_90_set_concept>(*this));
-    return std::move(boxes);
+    return boxes;
   }
 
   // Operators.

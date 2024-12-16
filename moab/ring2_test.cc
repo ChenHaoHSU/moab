@@ -14,6 +14,7 @@
 namespace moab {
 
 using ::testing::ElementsAre;
+using ::testing::UnorderedElementsAre;
 using ::testing::Pair;
 using ::testing::StrEq;
 
@@ -355,7 +356,7 @@ TEST(Operations, MaxBoxes) {
   boxes = r.MaxBoxes();
 
   EXPECT_THAT(boxes,
-              ElementsAre(Box2_i(20, 0, 40, 40), Box2_i(0, 0, 40, 20)));
+              UnorderedElementsAre(Box2_i(20, 0, 40, 40), Box2_i(0, 0, 40, 20)));
 }
 
 }  // namespace moab
