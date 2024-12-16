@@ -84,6 +84,15 @@ class Ring2 {
   const_iterator_type rbegin() const { return d_.rbegin(); }
   const_iterator_type rend() const { return d_.rend(); }
 
+  // get boxes
+  std::vector<Box2<T>> MaxBoxes() const {
+    std::vector<Box2<T>> boxes;
+    boost::polygon::get_max_rectangles(
+      boxes,
+      boost::polygon::view_as<boost::polygon::polygon_90_set_concept>(*this));
+    return std::move(boxes);
+  }
+
   // Operators.
   // Operator - Subscript
   Point2<T>& operator[](std::size_t i) { return d_[i]; }

@@ -346,4 +346,16 @@ TEST(Hash, SupportsAbslHash) {
   }));
 }
 
+TEST(Operations, MaxBoxes) {
+  Ring2_i r = {Point2_i(0, 0),   Point2_i(40, 0),  Point2_i(40, 40),
+               Point2_i(20, 40), Point2_i(20, 20), Point2_i(0, 20),
+               Point2_i(0, 0)};
+
+  std::vector<Box2_i> boxes;
+  boxes = r.MaxBoxes();
+
+  EXPECT_THAT(boxes,
+              ElementsAre(Box2_i(20, 0, 40, 40), Box2_i(0, 0, 40, 20)));
+}
+
 }  // namespace moab
