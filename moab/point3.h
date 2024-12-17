@@ -19,6 +19,8 @@
 #include "boost/geometry/core/tag.hpp"
 #include "boost/geometry/geometries/concepts/point_concept.hpp"
 
+#include "point2.h"
+
 namespace moab {
 
 template <typename T>
@@ -45,6 +47,8 @@ class Point3 {
   T* data() { return d_.data(); }
   const T* data() const { return d_.data(); }
   constexpr std::size_t Size() const { return d_.size(); }
+
+  Point2<T> To2D() const { return Point2<T>(d_[0], d_[1]); }
 
   // Mutators.
   void Set(T x, T y, T z) {

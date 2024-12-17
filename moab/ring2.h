@@ -61,7 +61,7 @@ class Ring2 {
     bg::envelope(*this, b);
     return b;
   }
-  // Get max boxes.
+  // Returns the maximum boxes that cover the ring.
   std::vector<Box2<T>> MaxBoxes() const {
     std::vector<Box2<T>> boxes;
     gtl::get_max_rectangles(boxes,
