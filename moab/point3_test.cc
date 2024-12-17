@@ -8,6 +8,8 @@
 #include "absl/hash/hash_testing.h"
 #include "absl/strings/str_format.h"
 
+#include "point2.h"
+
 namespace moab {
 
 using ::testing::Pair;
@@ -83,6 +85,12 @@ TEST(Accessors, Size) {
   Point3_i p;
 
   EXPECT_EQ(p.Size(), 3);
+}
+
+TEST(Accessors, To2D) {
+  Point3_i p(1, 2, 3);
+
+  EXPECT_EQ(p.To2D(), Point2_i(1, 2));
 }
 
 TEST(Mutators, Set) {
