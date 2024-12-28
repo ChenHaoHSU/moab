@@ -7,6 +7,7 @@
 
 #include "absl/hash/hash_testing.h"
 #include "absl/strings/str_format.h"
+#include "moab/point3.pb.h"
 
 #include "point2.h"
 
@@ -25,6 +26,19 @@ TEST(Constructor, Default) {
 
 TEST(Constructor, XYZ) {
   Point3_i p(1, 2, 3);
+
+  EXPECT_EQ(p.x(), 1);
+  EXPECT_EQ(p.y(), 2);
+  EXPECT_EQ(p.z(), 3);
+}
+
+TEST(Constructor, Proto) {
+  Point3Proto proto;
+  proto.mutable_point_int32()->set_x(1);
+  proto.mutable_point_int32()->set_y(2);
+  proto.mutable_point_int32()->set_z(3);
+
+  Point3_i p(proto);
 
   EXPECT_EQ(p.x(), 1);
   EXPECT_EQ(p.y(), 2);
@@ -518,6 +532,30 @@ TEST(Hash, SupportsAbslHash) {
       Point3_i(2, 3, 4),
       Point3_i(0, -1, -2),
   }));
+}
+
+TEST(Protobuf, ToProto) {
+  Point3_i p(1, 2, 3);
+  Point3Proto proto = p.ToProto();
+
+  EXPECT_TRUE(proto.has_point_int32());
+  EXPECT_EQ(proto.point_int32().x(), 1);
+  EXPECT_EQ(proto.point_int32().y(), 2);
+  EXPECT_EQ(proto.point_int32().z(), 3);
+}
+
+TEST(Protobuf, SetFromProto) {
+  Point3Proto proto;
+  proto.mutable_point_int32()->set_x(1);
+  proto.mutable_point_int32()->set_y(2);
+  proto.mutable_point_int32()->set_z(3);
+
+  Point3_i p;
+  p.SetFromProto(proto);
+
+  EXPECT_EQ(p.x(), 1);
+  EXPECT_EQ(p.y(), 2);
+  EXPECT_EQ(p.z(), 3);
 }
 
 }  // namespace moab

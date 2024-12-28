@@ -9,9 +9,20 @@ proto_library(
     visibility = ["//visibility:public"],
 )
 
+proto_library(
+    name = "point3_proto",
+    srcs = ["point3.proto"],
+    visibility = ["//visibility:public"],
+)
+
 cc_proto_library(
     name = "point2_cc_proto",
     deps = [":point2_proto"],
+)
+
+cc_proto_library(
+    name = "point3_cc_proto",
+    deps = [":point3_proto"],
 )
 
 cc_library(
@@ -34,6 +45,7 @@ cc_test(
     srcs = ["point2_test.cc"],
     deps = [
         ":point2",
+        ":point2_cc_proto",
         "@com_google_absl//absl/hash:hash_testing",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_googletest//:gtest",
@@ -46,6 +58,7 @@ cc_library(
     hdrs = ["point3.h"],
     deps = [
         ":point2",
+        ":point3_cc_proto",
         "@boost//:geometry",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
@@ -60,6 +73,7 @@ cc_test(
     srcs = ["point3_test.cc"],
     deps = [
         ":point3",
+        ":point3_cc_proto",
         "@com_google_absl//absl/hash:hash_testing",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_googletest//:gtest",

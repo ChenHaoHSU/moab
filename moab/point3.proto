@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package moab;
+
+message Point3ProtoInt32 {
+  int32 x = 1;
+  int32 y = 2;
+  int32 z = 3;
+}
+
+message Point3ProtoInt64 {
+  int64 x = 1;
+  int64 y = 2;
+  int64 z = 3;
+}
+
+message Point3ProtoFloat {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}
+
+message Point3ProtoDouble {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+}
+
+message Point3Proto {
+  oneof type_variant {
+    Point3ProtoInt32 point_int32 = 1;
+    Point3ProtoInt64 point_int64 = 2;
+    Point3ProtoFloat point_float = 3;
+    Point3ProtoDouble point_double = 4;
+  }
+}
