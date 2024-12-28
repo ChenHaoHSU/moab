@@ -107,6 +107,15 @@ TEST(Mutators, SetLoHi) {
   EXPECT_EQ(i.hi(), 2);
 }
 
+TEST(Mutators, SetLoHiAutoSwap) {
+  Interval_i i;
+
+  i.Set(2, 1);  // Automatically swaps.
+
+  EXPECT_EQ(i.lo(), 1);
+  EXPECT_EQ(i.hi(), 2);
+}
+
 TEST(Mutators, SetLo) {
   Interval_i i(1, 2);
 

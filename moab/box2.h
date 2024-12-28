@@ -79,10 +79,9 @@ class Box2 {
 
   // Mutators.
   void Set(T xl, T yl, T xh, T yh) {
-    DCHECK(xl <= xh && yl <= yh) << "Invalid box. xl: " << xl << ", yl: " << yl
-                                 << ", xh: " << xh << ", yh: " << yh;
-    d_[0].Set(xl, yl);
-    d_[1].Set(xh, yh);
+    // Ensure that the box is valid. Automatically swap if necessary.
+    d_[0].Set((xl < xh ? xl : xh), (yl < yh ? yl : yh));
+    d_[1].Set((xl < xh ? xh : xl), (yl < yh ? yh : yl));
   }
   void Set(const Point2<T>& ll, const Point2<T>& ur) {
     Set(ll.x(), ll.y(), ur.x(), ur.y());

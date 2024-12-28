@@ -42,9 +42,9 @@ class Interval {
 
   // Mutators.
   void Set(T lo, T hi) {
-    DCHECK(lo <= hi) << "Invalid interval. low: " << lo << ", high: " << hi;
-    d_[0] = lo;
-    d_[1] = hi;
+    // Ensure the interval is valid. Automatically swap if lo > hi.
+    d_[0] = lo < hi ? lo : hi;
+    d_[1] = lo < hi ? hi : lo;
   }
 
   void set_lo(T v) { Set(v, hi()); }
