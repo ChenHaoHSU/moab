@@ -1,9 +1,24 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_proto//proto:defs.bzl", "proto_library")
+
 package(default_visibility = ["//visibility:public"])
+
+proto_library(
+    name = "point2_proto",
+    srcs = ["point2.proto"],
+    visibility = ["//visibility:public"],
+)
+
+cc_proto_library(
+    name = "point2_cc_proto",
+    deps = [":point2_proto"],
+)
 
 cc_library(
     name = "point2",
     hdrs = ["point2.h"],
     deps = [
+        ":point2_cc_proto",
         "@boost//:geometry",
         "@boost//:polygon",
         "@com_google_absl//absl/log",
