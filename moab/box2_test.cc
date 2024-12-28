@@ -7,6 +7,7 @@
 
 #include "absl/hash/hash_testing.h"
 #include "absl/strings/str_format.h"
+#include "moab/box2.pb.h"
 
 #include "point2.h"
 
@@ -31,6 +32,19 @@ TEST(Constructors, TwoPoints) {
 
 TEST(Constructors, MinMaxXY) {
   Box2_i b(1, 2, 3, 4);
+
+  EXPECT_EQ(b.ll(), Point2_i(1, 2));
+  EXPECT_EQ(b.ur(), Point2_i(3, 4));
+}
+
+TEST(Constructors, Proto) {
+  Box2Proto proto;
+  proto.mutable_box_int32()->set_xl(1);
+  proto.mutable_box_int32()->set_yl(2);
+  proto.mutable_box_int32()->set_xh(3);
+  proto.mutable_box_int32()->set_yh(4);
+
+  Box2_i b(proto);
 
   EXPECT_EQ(b.ll(), Point2_i(1, 2));
   EXPECT_EQ(b.ur(), Point2_i(3, 4));
@@ -517,6 +531,31 @@ TEST(Hash, SupportsAbslHash) {
       Box2_i(Point2_i(1, 2), Point2_i(3, 4)),
       Box2_i(Point2_i(4, 5), Point2_i(7, 6)),
   }));
+}
+
+TEST(Protobuf, ToProto) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
+  Box2Proto proto = b.ToProto();
+
+  EXPECT_TRUE(proto.has_box_int32());
+  EXPECT_EQ(proto.box_int32().xl(), 1);
+  EXPECT_EQ(proto.box_int32().yl(), 2);
+  EXPECT_EQ(proto.box_int32().xh(), 3);
+  EXPECT_EQ(proto.box_int32().yh(), 4);
+}
+
+TEST(Protobuf, SetFromProto) {
+  Box2Proto proto;
+  proto.mutable_box_int32()->set_xl(1);
+  proto.mutable_box_int32()->set_yl(2);
+  proto.mutable_box_int32()->set_xh(3);
+  proto.mutable_box_int32()->set_yh(4);
+
+  Box2_i b;
+  b.SetFromProto(proto);
+
+  EXPECT_EQ(b.ll(), Point2_i(1, 2));
+  EXPECT_EQ(b.ur(), Point2_i(3, 4));
 }
 
 }  // namespace moab

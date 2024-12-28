@@ -15,6 +15,13 @@ proto_library(
     visibility = ["//visibility:public"],
 )
 
+proto_library(
+    name = "box2_proto",
+    srcs = ["box2.proto"],
+    visibility = ["//visibility:public"],
+    deps = [":point2_proto"],
+)
+
 cc_proto_library(
     name = "point2_cc_proto",
     deps = [":point2_proto"],
@@ -23,6 +30,11 @@ cc_proto_library(
 cc_proto_library(
     name = "point3_cc_proto",
     deps = [":point3_proto"],
+)
+
+cc_proto_library(
+    name = "box2_cc_proto",
+    deps = [":box2_proto"],
 )
 
 cc_library(
@@ -165,6 +177,7 @@ cc_library(
     name = "box2",
     hdrs = ["box2.h"],
     deps = [
+        ":box2_cc_proto",
         ":interval",
         ":point2",
         "@boost//:geometry",
@@ -182,6 +195,7 @@ cc_test(
     srcs = ["box2_test.cc"],
     deps = [
         ":box2",
+        ":box2_cc_proto",
         ":point2",
         "@com_google_absl//absl/hash:hash_testing",
         "@com_google_absl//absl/strings:str_format",

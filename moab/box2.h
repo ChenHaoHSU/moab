@@ -12,6 +12,7 @@
 #include "boost/geometry/core/tag.hpp"
 #include "boost/geometry/geometries/concepts/box_concept.hpp"
 #include "boost/polygon/polygon.hpp"
+#include "moab/box2.pb.h"
 
 #include "interval.h"
 #include "point2.h"
@@ -32,6 +33,7 @@ class Box2 {
   Box2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
   explicit Box2(const Point2<T>& p1, const Point2<T>& p2) { Set(p1, p2); }
   explicit Box2(T xl, T yl, T xh, T yh) { Set(xl, yl, xh, yh); }
+  explicit Box2(const Box2Proto& proto) { SetFromProto(proto); }
   Box2(const Box2&) = default;
   Box2(Box2&&) = default;
   ~Box2() = default;
@@ -165,9 +167,64 @@ class Box2 {
     return H::combine(std::move(h), b.d_[0], b.d_[1]);
   }
 
+  // Protobuf.
+  // Returns a Box2Proto.
+  Box2Proto ToProto() const;
+  // Sets the Box2 from a Box2Proto.
+  void SetFromProto(const Box2Proto& proto);
+
  private:
   std::array<Point2<T>, 2> d_;
 };  // class Box2
+
+// Protobuf.
+template <typename T>
+Box2Proto Box2<T>::ToProto() const {
+  Box2Proto proto;
+  if (std::is_same_v<T, int> || std::is_same_v<T, int32_t>) {
+    proto.mutable_box_int32()->set_xl(d_[0].x());
+    proto.mutable_box_int32()->set_yl(d_[0].y());
+    proto.mutable_box_int32()->set_xh(d_[1].x());
+    proto.mutable_box_int32()->set_yh(d_[1].y());
+  } else if (std::is_same_v<T, int64_t>) {
+    proto.mutable_box_int64()->set_xl(d_[0].x());
+    proto.mutable_box_int64()->set_yl(d_[0].y());
+    proto.mutable_box_int64()->set_xh(d_[1].x());
+    proto.mutable_box_int64()->set_yh(d_[1].y());
+  } else if (std::is_same_v<T, float>) {
+    proto.mutable_box_float()->set_xl(d_[0].x());
+    proto.mutable_box_float()->set_yl(d_[0].y());
+    proto.mutable_box_float()->set_xh(d_[1].x());
+    proto.mutable_box_float()->set_yh(d_[1].y());
+  } else if (std::is_same_v<T, double>) {
+    proto.mutable_box_double()->set_xl(d_[0].x());
+    proto.mutable_box_double()->set_yl(d_[0].y());
+    proto.mutable_box_double()->set_xh(d_[1].x());
+    proto.mutable_box_double()->set_yh(d_[1].y());
+  } else {
+    static_assert(std::is_same_v<T, int>, "Unsupported type.");
+  }
+  return proto;
+}
+
+template <typename T>
+void Box2<T>::SetFromProto(const Box2Proto& proto) {
+  if (proto.has_box_int32()) {
+    Set(proto.box_int32().xl(), proto.box_int32().yl(), proto.box_int32().xh(),
+        proto.box_int32().yh());
+  } else if (proto.has_box_int64()) {
+    Set(proto.box_int64().xl(), proto.box_int64().yl(), proto.box_int64().xh(),
+        proto.box_int64().yh());
+  } else if (proto.has_box_float()) {
+    Set(proto.box_float().xl(), proto.box_float().yl(), proto.box_float().xh(),
+        proto.box_float().yh());
+  } else if (proto.has_box_double()) {
+    Set(proto.box_double().xl(), proto.box_double().yl(),
+        proto.box_double().xh(), proto.box_double().yh());
+  } else {
+    LOG(FATAL) << "Unsupported type.";
+  }
+}
 
 // Aliases.
 using Box2_i = Box2<int>;
