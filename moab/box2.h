@@ -13,9 +13,8 @@
 #include "boost/geometry/geometries/concepts/box_concept.hpp"
 #include "boost/polygon/polygon.hpp"
 #include "moab/box2.pb.h"
-
-#include "interval.h"
-#include "point2.h"
+#include "moab/interval.h"
+#include "moab/point2.h"
 
 namespace moab {
 

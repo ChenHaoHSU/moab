@@ -1,14 +1,14 @@
 #ifndef MOAB_MOAB_H_
 #define MOAB_MOAB_H_
 
-#include "box2.h"
-#include "interval.h"
-#include "operation.h"
-#include "point2.h"
-#include "point3.h"
-#include "ring2.h"
-#include "rtree.h"
-#include "segment2.h"
-#include "segment3.h"
+#include "moab/box2.h"
+#include "moab/interval.h"
+#include "moab/operation.h"
+#include "moab/point2.h"
+#include "moab/point3.h"
+#include "moab/ring2.h"
+#include "moab/rtree.h"
+#include "moab/segment2.h"
+#include "moab/segment3.h"
 
 #endif  // MOAB_MOAB_H_

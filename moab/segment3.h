@@ -18,8 +18,7 @@
 #include "boost/geometry/core/cs.hpp"
 #include "boost/geometry/core/tag.hpp"
 #include "boost/geometry/geometries/concepts/segment_concept.hpp"
-
-#include "point3.h"
+#include "moab/point3.h"
 
 namespace moab {
 

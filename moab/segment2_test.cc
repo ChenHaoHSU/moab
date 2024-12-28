@@ -7,8 +7,7 @@
 
 #include "absl/hash/hash_testing.h"
 #include "absl/strings/str_format.h"
-
-#include "point2.h"
+#include "moab/point2.h"
 
 namespace moab {
 

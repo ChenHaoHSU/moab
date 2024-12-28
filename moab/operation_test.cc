@@ -7,10 +7,9 @@
 #include <vector>
 
 #include "absl/log/log.h"
-
-#include "box2.h"
-#include "point2.h"
-#include "ring2.h"
+#include "moab/box2.h"
+#include "moab/point2.h"
+#include "moab/ring2.h"
 
 namespace moab {
 
