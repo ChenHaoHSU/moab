@@ -153,9 +153,25 @@ TEST(Mutators, SetByFourCoordinates) {
   EXPECT_EQ(b.ur(), Point2_i(7, 8));
 }
 
+TEST(Mutators, SetByFourCoordinatesAutoSwap) {
+  Box2_i b(Point2_i(3, 4), Point2_i(1, 2));
+  b.Set(7, 8, 5, 6);  // Automatically swaps.
+
+  EXPECT_EQ(b.ll(), Point2_i(5, 6));
+  EXPECT_EQ(b.ur(), Point2_i(7, 8));
+}
+
 TEST(Mutators, SetByTwoPoints) {
   Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
   b.Set(Point2_i(5, 6), Point2_i(7, 8));
+
+  EXPECT_EQ(b.ll(), Point2_i(5, 6));
+  EXPECT_EQ(b.ur(), Point2_i(7, 8));
+}
+
+TEST(Mutators, SetByTwoPointsAutoSwap) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
+  b.Set(Point2_i(7, 8), Point2_i(5, 6));  // Automatically swaps.
 
   EXPECT_EQ(b.ll(), Point2_i(5, 6));
   EXPECT_EQ(b.ur(), Point2_i(7, 8));
