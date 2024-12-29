@@ -1,9 +1,71 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_proto//proto:defs.bzl", "proto_library")
+
 package(default_visibility = ["//visibility:public"])
+
+proto_library(
+    name = "point2_proto",
+    srcs = ["point2.proto"],
+    visibility = ["//visibility:public"],
+)
+
+proto_library(
+    name = "point3_proto",
+    srcs = ["point3.proto"],
+    visibility = ["//visibility:public"],
+)
+
+proto_library(
+    name = "box2_proto",
+    srcs = ["box2.proto"],
+    visibility = ["//visibility:public"],
+    deps = [":point2_proto"],
+)
+
+proto_library(
+    name = "segment2_proto",
+    srcs = ["segment2.proto"],
+    visibility = ["//visibility:public"],
+    deps = [":point2_proto"],
+)
+
+proto_library(
+    name = "segment3_proto",
+    srcs = ["segment3.proto"],
+    visibility = ["//visibility:public"],
+    deps = [":point3_proto"],
+)
+
+cc_proto_library(
+    name = "point2_cc_proto",
+    deps = [":point2_proto"],
+)
+
+cc_proto_library(
+    name = "point3_cc_proto",
+    deps = [":point3_proto"],
+)
+
+cc_proto_library(
+    name = "box2_cc_proto",
+    deps = [":box2_proto"],
+)
+
+cc_proto_library(
+    name = "segment2_cc_proto",
+    deps = [":segment2_proto"],
+)
+
+cc_proto_library(
+    name = "segment3_cc_proto",
+    deps = [":segment3_proto"],
+)
 
 cc_library(
     name = "point2",
     hdrs = ["point2.h"],
     deps = [
+        ":point2_cc_proto",
         "@boost//:geometry",
         "@boost//:polygon",
         "@com_google_absl//absl/log",
@@ -19,6 +81,7 @@ cc_test(
     srcs = ["point2_test.cc"],
     deps = [
         ":point2",
+        ":point2_cc_proto",
         "@com_google_absl//absl/hash:hash_testing",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_googletest//:gtest",
@@ -31,6 +94,7 @@ cc_library(
     hdrs = ["point3.h"],
     deps = [
         ":point2",
+        ":point3_cc_proto",
         "@boost//:geometry",
         "@com_google_absl//absl/log",
         "@com_google_absl//absl/log:check",
@@ -45,6 +109,7 @@ cc_test(
     srcs = ["point3_test.cc"],
     deps = [
         ":point3",
+        ":point3_cc_proto",
         "@com_google_absl//absl/hash:hash_testing",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_googletest//:gtest",
@@ -56,7 +121,8 @@ cc_library(
     name = "segment2",
     hdrs = ["segment2.h"],
     deps = [
-        "point2",
+        ":point2",
+        ":segment2_cc_proto",
         "@boost//:geometry",
         "@boost//:polygon",
         "@com_google_absl//absl/log",
@@ -72,6 +138,7 @@ cc_test(
     srcs = ["segment2_test.cc"],
     deps = [
         ":segment2",
+        ":segment2_cc_proto",
         "@com_google_absl//absl/hash:hash_testing",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_googletest//:gtest",
@@ -83,7 +150,8 @@ cc_library(
     name = "segment3",
     hdrs = ["segment3.h"],
     deps = [
-        "point3",
+        ":point3",
+        ":segment3_cc_proto",
         "@boost//:geometry",
         "@boost//:polygon",
         "@com_google_absl//absl/log",
@@ -99,6 +167,7 @@ cc_test(
     srcs = ["segment3_test.cc"],
     deps = [
         ":segment3",
+        ":segment3_cc_proto",
         "@com_google_absl//absl/hash:hash_testing",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_googletest//:gtest",
@@ -136,8 +205,10 @@ cc_library(
     name = "box2",
     hdrs = ["box2.h"],
     deps = [
+        ":box2_cc_proto",
         ":interval",
         ":point2",
+        ":point2_cc_proto",
         "@boost//:geometry",
         "@boost//:polygon",
         "@com_google_absl//absl/log",
@@ -153,7 +224,9 @@ cc_test(
     srcs = ["box2_test.cc"],
     deps = [
         ":box2",
+        ":box2_cc_proto",
         ":point2",
+        ":point2_cc_proto",
         "@com_google_absl//absl/hash:hash_testing",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_googletest//:gtest",

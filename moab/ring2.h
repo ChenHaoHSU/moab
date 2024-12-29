@@ -7,10 +7,9 @@
 #include <vector>
 
 #include "absl/strings/str_join.h"
-
-#include "box2.h"
-#include "operation.h"
-#include "point2.h"
+#include "moab/box2.h"
+#include "moab/operation.h"
+#include "moab/point2.h"
 
 namespace moab {
 

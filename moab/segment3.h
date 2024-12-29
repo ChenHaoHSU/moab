@@ -18,8 +18,8 @@
 #include "boost/geometry/core/cs.hpp"
 #include "boost/geometry/core/tag.hpp"
 #include "boost/geometry/geometries/concepts/segment_concept.hpp"
-
-#include "point3.h"
+#include "moab/point3.h"
+#include "moab/segment3.pb.h"
 
 namespace moab {
 
@@ -36,6 +36,7 @@ class Segment3 {
   explicit Segment3(T xl, T yl, T zl, T xh, T yh, T zh) {
     Set(xl, yl, zl, xh, yh, zh);
   }
+  explicit Segment3(const Segment3Proto& proto) { SetFromProto(proto); }
   Segment3(const Segment3&) = default;
   Segment3(Segment3&&) = default;
   ~Segment3() = default;
@@ -146,9 +147,76 @@ class Segment3 {
     return H::combine(std::move(h), s.d_.at(0), s.d_.at(1));
   }
 
+  // Protobuf.
+  // Returns a Segment3Proto.
+  Segment3Proto ToProto() const;
+  // Sets the Segment3 from a Segment3Proto.
+  void SetFromProto(const Segment3Proto& proto);
+
  private:
   std::array<Point3<T>, 2> d_;  // <p0, p1>
-};                              // class Segment3
+};
+
+// Protobuf.
+template <typename T>
+Segment3Proto Segment3<T>::ToProto() const {
+  Segment3Proto proto;
+  if constexpr (std::is_same_v<T, int> || std::is_same_v<T, int32_t>) {
+    proto.mutable_segment_int32()->mutable_p0()->set_x(d_[0].x());
+    proto.mutable_segment_int32()->mutable_p0()->set_y(d_[0].y());
+    proto.mutable_segment_int32()->mutable_p0()->set_z(d_[0].z());
+    proto.mutable_segment_int32()->mutable_p1()->set_x(d_[1].x());
+    proto.mutable_segment_int32()->mutable_p1()->set_y(d_[1].y());
+    proto.mutable_segment_int32()->mutable_p1()->set_z(d_[1].z());
+  } else if constexpr (std::is_same_v<T, int64_t>) {
+    proto.mutable_segment_int64()->mutable_p0()->set_x(d_[0].x());
+    proto.mutable_segment_int64()->mutable_p0()->set_y(d_[0].y());
+    proto.mutable_segment_int64()->mutable_p0()->set_z(d_[0].z());
+    proto.mutable_segment_int64()->mutable_p1()->set_x(d_[1].x());
+    proto.mutable_segment_int64()->mutable_p1()->set_y(d_[1].y());
+    proto.mutable_segment_int64()->mutable_p1()->set_z(d_[1].z());
+  } else if constexpr (std::is_same_v<T, float>) {
+    proto.mutable_segment_float()->mutable_p0()->set_x(d_[0].x());
+    proto.mutable_segment_float()->mutable_p0()->set_y(d_[0].y());
+    proto.mutable_segment_float()->mutable_p0()->set_z(d_[0].z());
+    proto.mutable_segment_float()->mutable_p1()->set_x(d_[1].x());
+    proto.mutable_segment_float()->mutable_p1()->set_y(d_[1].y());
+    proto.mutable_segment_float()->mutable_p1()->set_z(d_[1].z());
+  } else if constexpr (std::is_same_v<T, double>) {
+    proto.mutable_segment_double()->mutable_p0()->set_x(d_[0].x());
+    proto.mutable_segment_double()->mutable_p0()->set_y(d_[0].y());
+    proto.mutable_segment_double()->mutable_p0()->set_z(d_[0].z());
+    proto.mutable_segment_double()->mutable_p1()->set_x(d_[1].x());
+    proto.mutable_segment_double()->mutable_p1()->set_y(d_[1].y());
+    proto.mutable_segment_double()->mutable_p1()->set_z(d_[1].z());
+  } else {
+    static_assert(std::is_same_v<T, int>, "Unsupported type.");
+  }
+  return proto;
+}
+
+template <typename T>
+void Segment3<T>::SetFromProto(const Segment3Proto& proto) {
+  if (proto.has_segment_int32()) {
+    Set(proto.segment_int32().p0().x(), proto.segment_int32().p0().y(),
+        proto.segment_int32().p0().z(), proto.segment_int32().p1().x(),
+        proto.segment_int32().p1().y(), proto.segment_int32().p1().z());
+  } else if (proto.has_segment_int64()) {
+    Set(proto.segment_int64().p0().x(), proto.segment_int64().p0().y(),
+        proto.segment_int64().p0().z(), proto.segment_int64().p1().x(),
+        proto.segment_int64().p1().y(), proto.segment_int64().p1().z());
+  } else if (proto.has_segment_float()) {
+    Set(proto.segment_float().p0().x(), proto.segment_float().p0().y(),
+        proto.segment_float().p0().z(), proto.segment_float().p1().x(),
+        proto.segment_float().p1().y(), proto.segment_float().p1().z());
+  } else if (proto.has_segment_double()) {
+    Set(proto.segment_double().p0().x(), proto.segment_double().p0().y(),
+        proto.segment_double().p0().z(), proto.segment_double().p1().x(),
+        proto.segment_double().p1().y(), proto.segment_double().p1().z());
+  } else {
+    LOG(FATAL) << "Unsupported type.";
+  }
+}
 
 // Aliases.
 using Segment3_i = Segment3<int>;

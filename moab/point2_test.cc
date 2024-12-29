@@ -7,6 +7,7 @@
 
 #include "absl/hash/hash_testing.h"
 #include "absl/strings/str_format.h"
+#include "moab/point2.pb.h"
 
 namespace moab {
 
@@ -22,6 +23,17 @@ TEST(Constructors, Default) {
 
 TEST(Constructors, XY) {
   Point2_i p(1, 2);
+
+  EXPECT_EQ(p.x(), 1);
+  EXPECT_EQ(p.y(), 2);
+}
+
+TEST(Constructors, Proto) {
+  Point2Proto proto;
+  proto.mutable_point_int32()->set_x(1);
+  proto.mutable_point_int32()->set_y(2);
+
+  Point2_i p(proto);
 
   EXPECT_EQ(p.x(), 1);
   EXPECT_EQ(p.y(), 2);
@@ -413,6 +425,27 @@ TEST(Hash, SupportsAbslHash) {
       Point2_i(2, 3),
       Point2_i(0, -1),
   }));
+}
+
+TEST(Protobuf, ToProto) {
+  Point2_i p(1, 2);
+  Point2Proto proto = p.ToProto();
+
+  EXPECT_TRUE(proto.has_point_int32());
+  EXPECT_EQ(proto.point_int32().x(), 1);
+  EXPECT_EQ(proto.point_int32().y(), 2);
+}
+
+TEST(Protobuf, SetFromProto) {
+  Point2Proto proto;
+  proto.mutable_point_int32()->set_x(1);
+  proto.mutable_point_int32()->set_y(2);
+
+  Point2_i p;
+  p.SetFromProto(proto);
+
+  EXPECT_EQ(p.x(), 1);
+  EXPECT_EQ(p.y(), 2);
 }
 
 }  // namespace moab

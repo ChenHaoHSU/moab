@@ -16,10 +16,9 @@
 #include "boost/geometry/index/parameters.hpp"
 #include "boost/geometry/index/rtree.hpp"
 #include "boost/iterator/function_output_iterator.hpp"
-
-#include "box2.h"
-#include "operation.h"
-#include "point2.h"
+#include "moab/box2.h"
+#include "moab/operation.h"
+#include "moab/point2.h"
 
 namespace moab {
 

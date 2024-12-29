@@ -12,9 +12,10 @@
 #include "boost/geometry/core/tag.hpp"
 #include "boost/geometry/geometries/concepts/box_concept.hpp"
 #include "boost/polygon/polygon.hpp"
-
-#include "interval.h"
-#include "point2.h"
+#include "moab/box2.pb.h"
+#include "moab/interval.h"
+#include "moab/point2.h"
+#include "moab/point2.pb.h"
 
 namespace moab {
 
@@ -32,6 +33,7 @@ class Box2 {
   Box2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
   explicit Box2(const Point2<T>& p1, const Point2<T>& p2) { Set(p1, p2); }
   explicit Box2(T xl, T yl, T xh, T yh) { Set(xl, yl, xh, yh); }
+  explicit Box2(const Box2Proto& proto) { SetFromProto(proto); }
   Box2(const Box2&) = default;
   Box2(Box2&&) = default;
   ~Box2() = default;
@@ -165,9 +167,66 @@ class Box2 {
     return H::combine(std::move(h), b.d_[0], b.d_[1]);
   }
 
+  // Protobuf.
+  // Returns a Box2Proto.
+  Box2Proto ToProto() const;
+  // Sets the Box2 from a Box2Proto.
+  void SetFromProto(const Box2Proto& proto);
+
  private:
   std::array<Point2<T>, 2> d_;
 };  // class Box2
+
+// Protobuf.
+template <typename T>
+Box2Proto Box2<T>::ToProto() const {
+  Box2Proto proto;
+  if (std::is_same_v<T, int> || std::is_same_v<T, int32_t>) {
+    proto.mutable_box_int32()->mutable_min_corner()->set_x(d_[0].x());
+    proto.mutable_box_int32()->mutable_min_corner()->set_y(d_[0].y());
+    proto.mutable_box_int32()->mutable_max_corner()->set_x(d_[1].x());
+    proto.mutable_box_int32()->mutable_max_corner()->set_y(d_[1].y());
+  } else if (std::is_same_v<T, int64_t>) {
+    proto.mutable_box_int64()->mutable_min_corner()->set_x(d_[0].x());
+    proto.mutable_box_int64()->mutable_min_corner()->set_y(d_[0].y());
+    proto.mutable_box_int64()->mutable_max_corner()->set_x(d_[1].x());
+    proto.mutable_box_int64()->mutable_max_corner()->set_y(d_[1].y());
+  } else if (std::is_same_v<T, float>) {
+    proto.mutable_box_float()->mutable_min_corner()->set_x(d_[0].x());
+    proto.mutable_box_float()->mutable_min_corner()->set_y(d_[0].y());
+    proto.mutable_box_float()->mutable_max_corner()->set_x(d_[1].x());
+    proto.mutable_box_float()->mutable_max_corner()->set_y(d_[1].y());
+  } else if (std::is_same_v<T, double>) {
+    proto.mutable_box_double()->mutable_min_corner()->set_x(d_[0].x());
+    proto.mutable_box_double()->mutable_min_corner()->set_y(d_[0].y());
+    proto.mutable_box_double()->mutable_max_corner()->set_x(d_[1].x());
+    proto.mutable_box_double()->mutable_max_corner()->set_y(d_[1].y());
+  } else {
+    static_assert(std::is_same_v<T, int>, "Unsupported type.");
+  }
+  return proto;
+}
+
+template <typename T>
+void Box2<T>::SetFromProto(const Box2Proto& proto) {
+  if (proto.has_box_int32()) {
+    Set(proto.box_int32().min_corner().x(), proto.box_int32().min_corner().y(),
+        proto.box_int32().max_corner().x(), proto.box_int32().max_corner().y());
+  } else if (proto.has_box_int64()) {
+    Set(proto.box_int64().min_corner().x(), proto.box_int64().min_corner().y(),
+        proto.box_int64().max_corner().x(), proto.box_int64().max_corner().y());
+  } else if (proto.has_box_float()) {
+    Set(proto.box_float().min_corner().x(), proto.box_float().min_corner().y(),
+        proto.box_float().max_corner().x(), proto.box_float().max_corner().y());
+  } else if (proto.has_box_double()) {
+    Set(proto.box_double().min_corner().x(),
+        proto.box_double().min_corner().y(),
+        proto.box_double().max_corner().x(),
+        proto.box_double().max_corner().y());
+  } else {
+    LOG(FATAL) << "Unsupported type.";
+  }
+}
 
 // Aliases.
 using Box2_i = Box2<int>;

@@ -7,8 +7,8 @@
 
 #include "absl/hash/hash_testing.h"
 #include "absl/strings/str_format.h"
-
-#include "point3.h"
+#include "moab/point3.h"
+#include "moab/segment3.pb.h"
 
 namespace moab {
 
@@ -31,6 +31,21 @@ TEST(Constructors, TwoPoints) {
 
 TEST(Constructors, MinMaxXY) {
   Segment3_i s(1, 2, 3, 4, 5, 6);
+
+  EXPECT_EQ(s.p0(), Point3_i(1, 2, 3));
+  EXPECT_EQ(s.p1(), Point3_i(4, 5, 6));
+}
+
+TEST(Constructors, Proto) {
+  Segment3Proto proto;
+  proto.mutable_segment_int32()->mutable_p0()->set_x(1);
+  proto.mutable_segment_int32()->mutable_p0()->set_y(2);
+  proto.mutable_segment_int32()->mutable_p0()->set_z(3);
+  proto.mutable_segment_int32()->mutable_p1()->set_x(4);
+  proto.mutable_segment_int32()->mutable_p1()->set_y(5);
+  proto.mutable_segment_int32()->mutable_p1()->set_z(6);
+
+  Segment3_i s(proto);
 
   EXPECT_EQ(s.p0(), Point3_i(1, 2, 3));
   EXPECT_EQ(s.p1(), Point3_i(4, 5, 6));
@@ -325,4 +340,34 @@ TEST(Hash, SupportsAbslHash) {
       Segment3_i(Point3_i(7, 8, 9), Point3_i(10, 11, 12)),
   }));
 }
+
+TEST(Protobuf, ToProto) {
+  Segment3_i s(Point3_i(1, 2, 3), Point3_i(4, 5, 6));
+  Segment3Proto proto = s.ToProto();
+
+  EXPECT_TRUE(proto.has_segment_int32());
+  EXPECT_EQ(proto.segment_int32().p0().x(), 1);
+  EXPECT_EQ(proto.segment_int32().p0().y(), 2);
+  EXPECT_EQ(proto.segment_int32().p0().z(), 3);
+  EXPECT_EQ(proto.segment_int32().p1().x(), 4);
+  EXPECT_EQ(proto.segment_int32().p1().y(), 5);
+  EXPECT_EQ(proto.segment_int32().p1().z(), 6);
+}
+
+TEST(Protobuf, SetFromProto) {
+  Segment3Proto proto;
+  proto.mutable_segment_int32()->mutable_p0()->set_x(1);
+  proto.mutable_segment_int32()->mutable_p0()->set_y(2);
+  proto.mutable_segment_int32()->mutable_p0()->set_z(3);
+  proto.mutable_segment_int32()->mutable_p1()->set_x(4);
+  proto.mutable_segment_int32()->mutable_p1()->set_y(5);
+  proto.mutable_segment_int32()->mutable_p1()->set_z(6);
+
+  Segment3_i s;
+  s.SetFromProto(proto);
+
+  EXPECT_EQ(s.p0(), Point3_i(1, 2, 3));
+  EXPECT_EQ(s.p1(), Point3_i(4, 5, 6));
+}
+
 }  // namespace moab

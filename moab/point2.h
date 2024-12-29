@@ -19,6 +19,7 @@
 #include "boost/geometry/core/tag.hpp"
 #include "boost/geometry/geometries/concepts/point_concept.hpp"
 #include "boost/polygon/point_concept.hpp"
+#include "moab/point2.pb.h"
 
 namespace moab {
 
@@ -31,6 +32,7 @@ class Point2 {
   // Constructors.
   Point2() : d_({0, 0}) {}
   explicit Point2(T x, T y) : d_({x, y}) {}
+  explicit Point2(const Point2Proto& proto) { SetFromProto(proto); }
   Point2(const Point2&) = default;
   Point2(Point2&&) = default;
   ~Point2() = default;
@@ -158,9 +160,56 @@ class Point2 {
     return H::combine(std::move(h), p.d_[0], p.d_[1]);
   }
 
+  // Protobuf.
+  // Returns a Point2Proto.
+  Point2Proto ToProto() const;
+  // Sets the Point2 from a Point2Proto.
+  void SetFromProto(const Point2Proto& proto);
+
  private:
   std::array<T, 2> d_;  // <x, y>
 };                      // class Point2
+
+// Protobuf.
+template <typename T>
+Point2Proto Point2<T>::ToProto() const {
+  Point2Proto proto;
+  if constexpr (std::is_same_v<T, int> || std::is_same_v<T, int32_t>) {
+    proto.mutable_point_int32()->set_x(d_[0]);
+    proto.mutable_point_int32()->set_y(d_[1]);
+  } else if constexpr (std::is_same_v<T, int64_t>) {
+    proto.mutable_point_int64()->set_x(d_[0]);
+    proto.mutable_point_int64()->set_y(d_[1]);
+  } else if constexpr (std::is_same_v<T, float>) {
+    proto.mutable_point_float()->set_x(d_[0]);
+    proto.mutable_point_float()->set_y(d_[1]);
+  } else if constexpr (std::is_same_v<T, double>) {
+    proto.mutable_point_double()->set_x(d_[0]);
+    proto.mutable_point_double()->set_y(d_[1]);
+  } else {
+    static_assert(std::is_same_v<T, int>, "Unsupported type.");
+  }
+  return proto;
+}
+
+template <typename T>
+void Point2<T>::SetFromProto(const Point2Proto& proto) {
+  if (proto.has_point_int32()) {
+    d_[0] = proto.point_int32().x();
+    d_[1] = proto.point_int32().y();
+  } else if (proto.has_point_int64()) {
+    d_[0] = proto.point_int64().x();
+    d_[1] = proto.point_int64().y();
+  } else if (proto.has_point_float()) {
+    d_[0] = proto.point_float().x();
+    d_[1] = proto.point_float().y();
+  } else if (proto.has_point_double()) {
+    d_[0] = proto.point_double().x();
+    d_[1] = proto.point_double().y();
+  } else {
+    LOG(FATAL) << "Unsupported type.";
+  }
+}
 
 // Aliases.
 using Point2_i = Point2<int>;

@@ -9,9 +9,8 @@
 
 #include "absl/log/log.h"
 #include "boost/geometry.hpp"
-
-#include "box2.h"
-#include "point2.h"
+#include "moab/box2.h"
+#include "moab/point2.h"
 
 namespace moab {
 

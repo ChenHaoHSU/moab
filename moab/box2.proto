@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package moab;
+
+import "moab/point2.proto";
+
+message Box2ProtoInt32 {
+  Point2ProtoInt32 min_corner = 1;
+  Point2ProtoInt32 max_corner = 2;
+}
+
+message Box2ProtoInt64 {
+  Point2ProtoInt64 min_corner = 1;
+  Point2ProtoInt64 max_corner = 2;
+}
+
+message Box2ProtoFloat {
+  Point2ProtoFloat min_corner = 1;
+  Point2ProtoFloat max_corner = 2;
+}
+
+message Box2ProtoDouble {
+  Point2ProtoDouble min_corner = 1;
+  Point2ProtoDouble max_corner = 2;
+}
+
+message Box2Proto {
+  oneof type_variant {
+    Box2ProtoInt32 box_int32 = 1;
+    Box2ProtoInt64 box_int64 = 2;
+    Box2ProtoFloat box_float = 3;
+    Box2ProtoDouble box_double = 4;
+  }
+}

@@ -19,8 +19,8 @@
 #include "boost/geometry/core/tag.hpp"
 #include "boost/geometry/geometries/concepts/segment_concept.hpp"
 #include "boost/polygon/polygon.hpp"
-
-#include "point2.h"
+#include "moab/point2.h"
+#include "moab/segment2.pb.h"
 
 namespace moab {
 
@@ -35,6 +35,7 @@ class Segment2 {
   Segment2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
   explicit Segment2(const Point2<T>& p0, const Point2<T>& p1) { Set(p0, p1); }
   explicit Segment2(T x0, T y0, T x1, T y1) { Set(x0, y0, x1, y1); }
+  explicit Segment2(const Segment2Proto& proto) { SetFromProto(proto); }
   Segment2(const Segment2&) = default;
   Segment2(Segment2&&) = default;
   ~Segment2() = default;
@@ -136,9 +137,64 @@ class Segment2 {
     return H::combine(std::move(h), s.d_.at(0), s.d_.at(1));
   }
 
+  // Protobuf.
+  // Returns a Segment2Proto.
+  Segment2Proto ToProto() const;
+  // Sets the Segment2 from a Segment2Proto.
+  void SetFromProto(const Segment2Proto& proto);
+
  private:
   std::array<Point2<T>, 2> d_;  // <p0, p1>
-};                              // class Segment2
+};
+
+// Protobuf.
+template <typename T>
+Segment2Proto Segment2<T>::ToProto() const {
+  Segment2Proto proto;
+  if constexpr (std::is_same_v<T, int> || std::is_same_v<T, int32_t>) {
+    proto.mutable_segment_int32()->mutable_p0()->set_x(d_[0].x());
+    proto.mutable_segment_int32()->mutable_p0()->set_y(d_[0].y());
+    proto.mutable_segment_int32()->mutable_p1()->set_x(d_[1].x());
+    proto.mutable_segment_int32()->mutable_p1()->set_y(d_[1].y());
+  } else if constexpr (std::is_same_v<T, int64_t>) {
+    proto.mutable_segment_int64()->mutable_p0()->set_x(d_[0].x());
+    proto.mutable_segment_int64()->mutable_p0()->set_y(d_[0].y());
+    proto.mutable_segment_int64()->mutable_p1()->set_x(d_[1].x());
+    proto.mutable_segment_int64()->mutable_p1()->set_y(d_[1].y());
+  } else if constexpr (std::is_same_v<T, float>) {
+    proto.mutable_segment_float()->mutable_p0()->set_x(d_[0].x());
+    proto.mutable_segment_float()->mutable_p0()->set_y(d_[0].y());
+    proto.mutable_segment_float()->mutable_p1()->set_x(d_[1].x());
+    proto.mutable_segment_float()->mutable_p1()->set_y(d_[1].y());
+  } else if constexpr (std::is_same_v<T, double>) {
+    proto.mutable_segment_double()->mutable_p0()->set_x(d_[0].x());
+    proto.mutable_segment_double()->mutable_p0()->set_y(d_[0].y());
+    proto.mutable_segment_double()->mutable_p1()->set_x(d_[1].x());
+    proto.mutable_segment_double()->mutable_p1()->set_y(d_[1].y());
+  } else {
+    static_assert(std::is_same_v<T, int>, "Unsupported type.");
+  }
+  return proto;
+}
+
+template <typename T>
+void Segment2<T>::SetFromProto(const Segment2Proto& proto) {
+  if (proto.has_segment_int32()) {
+    Set(proto.segment_int32().p0().x(), proto.segment_int32().p0().y(),
+        proto.segment_int32().p1().x(), proto.segment_int32().p1().y());
+  } else if (proto.has_segment_int64()) {
+    Set(proto.segment_int64().p0().x(), proto.segment_int64().p0().y(),
+        proto.segment_int64().p1().x(), proto.segment_int64().p1().y());
+  } else if (proto.has_segment_float()) {
+    Set(proto.segment_float().p0().x(), proto.segment_float().p0().y(),
+        proto.segment_float().p1().x(), proto.segment_float().p1().y());
+  } else if (proto.has_segment_double()) {
+    Set(proto.segment_double().p0().x(), proto.segment_double().p0().y(),
+        proto.segment_double().p1().x(), proto.segment_double().p1().y());
+  } else {
+    LOG(FATAL) << "Unsupported type.";
+  }
+}
 
 // Aliases.
 using Segment2_i = Segment2<int>;

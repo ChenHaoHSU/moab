@@ -18,8 +18,8 @@
 #include "boost/geometry/core/cs.hpp"
 #include "boost/geometry/core/tag.hpp"
 #include "boost/geometry/geometries/concepts/point_concept.hpp"
-
-#include "point2.h"
+#include "moab/point2.h"
+#include "moab/point3.pb.h"
 
 namespace moab {
 
@@ -32,6 +32,7 @@ class Point3 {
   // Constructors.
   Point3() : d_({0, 0, 0}) {}
   explicit Point3(T x, T y, T z) : d_({x, y, z}) {}
+  explicit Point3(const Point3Proto& proto) { SetFromProto(proto); }
   Point3(const Point3&) = default;
   Point3(Point3&&) = default;
   ~Point3() = default;
@@ -189,9 +190,64 @@ class Point3 {
     return H::combine(std::move(h), p.d_[0], p.d_[1], p.d_[2]);
   }
 
+  // Protobuf.
+  // Returns a Point3Proto.
+  Point3Proto ToProto() const;
+  // Sets the Point2 from a Point3Proto.
+  void SetFromProto(const Point3Proto& proto);
+
  private:
   std::array<T, 3> d_;  // (x, y, z)
 };
+
+// Protobuf.
+template <typename T>
+Point3Proto Point3<T>::ToProto() const {
+  Point3Proto proto;
+  if constexpr (std::is_same_v<T, int> || std::is_same_v<T, int32_t>) {
+    proto.mutable_point_int32()->set_x(d_[0]);
+    proto.mutable_point_int32()->set_y(d_[1]);
+    proto.mutable_point_int32()->set_z(d_[2]);
+  } else if constexpr (std::is_same_v<T, int64_t>) {
+    proto.mutable_point_int64()->set_x(d_[0]);
+    proto.mutable_point_int64()->set_y(d_[1]);
+    proto.mutable_point_int64()->set_z(d_[2]);
+  } else if constexpr (std::is_same_v<T, float>) {
+    proto.mutable_point_float()->set_x(d_[0]);
+    proto.mutable_point_float()->set_y(d_[1]);
+    proto.mutable_point_float()->set_z(d_[2]);
+  } else if constexpr (std::is_same_v<T, double>) {
+    proto.mutable_point_double()->set_x(d_[0]);
+    proto.mutable_point_double()->set_y(d_[1]);
+    proto.mutable_point_double()->set_z(d_[2]);
+  } else {
+    static_assert(std::is_same_v<T, int>, "Unsupported type.");
+  }
+  return proto;
+}
+
+template <typename T>
+void Point3<T>::SetFromProto(const Point3Proto& proto) {
+  if (proto.has_point_int32()) {
+    d_[0] = proto.point_int32().x();
+    d_[1] = proto.point_int32().y();
+    d_[2] = proto.point_int32().z();
+  } else if (proto.has_point_int64()) {
+    d_[0] = proto.point_int64().x();
+    d_[1] = proto.point_int64().y();
+    d_[2] = proto.point_int64().z();
+  } else if (proto.has_point_float()) {
+    d_[0] = proto.point_float().x();
+    d_[1] = proto.point_float().y();
+    d_[2] = proto.point_float().z();
+  } else if (proto.has_point_double()) {
+    d_[0] = proto.point_double().x();
+    d_[1] = proto.point_double().y();
+    d_[2] = proto.point_double().z();
+  } else {
+    LOG(FATAL) << "Unsupported type.";
+  }
+}
 
 // Aliases.
 using Point3_i = Point3<int>;
