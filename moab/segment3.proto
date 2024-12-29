@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package moab;
+
+import "moab/point3.proto";
+
+message Segment3ProtoInt32 {
+  Point3ProtoInt32 p0 = 1;
+  Point3ProtoInt32 p1 = 2;
+}
+
+message Segment3ProtoInt64 {
+  Point3ProtoInt64 p0 = 1;
+  Point3ProtoInt64 p1 = 2;
+}
+
+message Segment3ProtoFloat {
+  Point3ProtoFloat p0 = 1;
+  Point3ProtoFloat p1 = 2;
+}
+
+message Segment3ProtoDouble {
+  Point3ProtoDouble p0 = 1;
+  Point3ProtoDouble p1 = 2;
+}
+
+message Segment3Proto {
+  oneof type_variant {
+    Segment3ProtoInt32 segment_int32 = 1;
+    Segment3ProtoInt64 segment_int64 = 2;
+    Segment3ProtoFloat segment_float = 3;
+    Segment3ProtoDouble segment_double = 4;
+  }
+}

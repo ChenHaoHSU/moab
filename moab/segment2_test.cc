@@ -8,6 +8,7 @@
 #include "absl/hash/hash_testing.h"
 #include "absl/strings/str_format.h"
 #include "moab/point2.h"
+#include "moab/segment2.pb.h"
 
 namespace moab {
 
@@ -30,6 +31,19 @@ TEST(Constructors, TwoPoints) {
 
 TEST(Constructors, MinMaxXY) {
   Segment2_i s(1, 2, 3, 4);
+
+  EXPECT_EQ(s.p0(), Point2_i(1, 2));
+  EXPECT_EQ(s.p1(), Point2_i(3, 4));
+}
+
+TEST(Constructors, Proto) {
+  Segment2Proto proto;
+  proto.mutable_segment_int32()->mutable_p0()->set_x(1);
+  proto.mutable_segment_int32()->mutable_p0()->set_y(2);
+  proto.mutable_segment_int32()->mutable_p1()->set_x(3);
+  proto.mutable_segment_int32()->mutable_p1()->set_y(4);
+
+  Segment2_i s(proto);
 
   EXPECT_EQ(s.p0(), Point2_i(1, 2));
   EXPECT_EQ(s.p1(), Point2_i(3, 4));
@@ -308,4 +322,30 @@ TEST(Hash, SupportsAbslHash) {
       Segment2_i(Point2_i(4, 5), Point2_i(7, 6)),
   }));
 }
+
+TEST(Protobuf, ToProto) {
+  Segment2_i s(Point2_i(1, 2), Point2_i(3, 4));
+  Segment2Proto proto = s.ToProto();
+
+  EXPECT_TRUE(proto.has_segment_int32());
+  EXPECT_EQ(proto.segment_int32().p0().x(), 1);
+  EXPECT_EQ(proto.segment_int32().p0().y(), 2);
+  EXPECT_EQ(proto.segment_int32().p1().x(), 3);
+  EXPECT_EQ(proto.segment_int32().p1().y(), 4);
+}
+
+TEST(Protobuf, SetFromProto) {
+  Segment2Proto proto;
+  proto.mutable_segment_int32()->mutable_p0()->set_x(1);
+  proto.mutable_segment_int32()->mutable_p0()->set_y(2);
+  proto.mutable_segment_int32()->mutable_p1()->set_x(3);
+  proto.mutable_segment_int32()->mutable_p1()->set_y(4);
+
+  Segment2_i s;
+  s.SetFromProto(proto);
+
+  EXPECT_EQ(s.p0(), Point2_i(1, 2));
+  EXPECT_EQ(s.p1(), Point2_i(3, 4));
+}
+
 }  // namespace moab
