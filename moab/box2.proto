@@ -2,32 +2,26 @@ syntax = "proto3";
 
 package moab;
 
+import "moab/point2.proto";
+
 message Box2ProtoInt32 {
-  int32 xl = 1;
-  int32 yl = 2;
-  int32 xh = 3;
-  int32 yh = 4;
+  Point2ProtoInt32 min_corner = 1;
+  Point2ProtoInt32 max_corner = 2;
 }
 
 message Box2ProtoInt64 {
-  int64 xl = 1;
-  int64 yl = 2;
-  int64 xh = 3;
-  int64 yh = 4;
+  Point2ProtoInt64 min_corner = 1;
+  Point2ProtoInt64 max_corner = 2;
 }
 
 message Box2ProtoFloat {
-  float xl = 1;
-  float yl = 2;
-  float xh = 3;
-  float yh = 4;
+  Point2ProtoFloat min_corner = 1;
+  Point2ProtoFloat max_corner = 2;
 }
 
 message Box2ProtoDouble {
-  double xl = 1;
-  double yl = 2;
-  double xh = 3;
-  double yh = 4;
+  Point2ProtoDouble min_corner = 1;
+  Point2ProtoDouble max_corner = 2;
 }
 
 message Box2Proto {

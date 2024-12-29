@@ -9,6 +9,7 @@
 #include "absl/strings/str_format.h"
 #include "moab/box2.pb.h"
 #include "moab/point2.h"
+#include "moab/point2.pb.h"
 
 namespace moab {
 
@@ -38,10 +39,10 @@ TEST(Constructors, MinMaxXY) {
 
 TEST(Constructors, Proto) {
   Box2Proto proto;
-  proto.mutable_box_int32()->set_xl(1);
-  proto.mutable_box_int32()->set_yl(2);
-  proto.mutable_box_int32()->set_xh(3);
-  proto.mutable_box_int32()->set_yh(4);
+  proto.mutable_box_int32()->mutable_min_corner()->set_x(1);
+  proto.mutable_box_int32()->mutable_min_corner()->set_y(2);
+  proto.mutable_box_int32()->mutable_max_corner()->set_x(3);
+  proto.mutable_box_int32()->mutable_max_corner()->set_y(4);
 
   Box2_i b(proto);
 
@@ -537,18 +538,18 @@ TEST(Protobuf, ToProto) {
   Box2Proto proto = b.ToProto();
 
   EXPECT_TRUE(proto.has_box_int32());
-  EXPECT_EQ(proto.box_int32().xl(), 1);
-  EXPECT_EQ(proto.box_int32().yl(), 2);
-  EXPECT_EQ(proto.box_int32().xh(), 3);
-  EXPECT_EQ(proto.box_int32().yh(), 4);
+  EXPECT_EQ(proto.box_int32().min_corner().x(), 1);
+  EXPECT_EQ(proto.box_int32().min_corner().y(), 2);
+  EXPECT_EQ(proto.box_int32().max_corner().x(), 3);
+  EXPECT_EQ(proto.box_int32().max_corner().y(), 4);
 }
 
 TEST(Protobuf, SetFromProto) {
   Box2Proto proto;
-  proto.mutable_box_int32()->set_xl(1);
-  proto.mutable_box_int32()->set_yl(2);
-  proto.mutable_box_int32()->set_xh(3);
-  proto.mutable_box_int32()->set_yh(4);
+  proto.mutable_box_int32()->mutable_min_corner()->set_x(1);
+  proto.mutable_box_int32()->mutable_min_corner()->set_y(2);
+  proto.mutable_box_int32()->mutable_max_corner()->set_x(3);
+  proto.mutable_box_int32()->mutable_max_corner()->set_y(4);
 
   Box2_i b;
   b.SetFromProto(proto);
