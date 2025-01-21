@@ -139,6 +139,28 @@ TEST(Accessors, Empty2) {
   EXPECT_FALSE(r.Empty());
 }
 
+TEST(Accessors, Area1) {
+  Ring2_i r = {Point2_i(0, 0), Point2_i(2, 0), Point2_i(2, 2), Point2_i(0, 2),
+               Point2_i(0, 0)};
+
+  EXPECT_EQ(r.Area(), 2 * 2);
+}
+
+TEST(Accessors, Area2) {
+  Ring2_i r = {Point2_i(0, 0), Point2_i(4, 0), Point2_i(4, 4), Point2_i(2, 4),
+               Point2_i(2, 2), Point2_i(0, 2), Point2_i(0, 0)};
+
+  EXPECT_EQ(r.Area(), 2 * 2 + 2 * 4);
+}
+
+TEST(Accessors, Area3) {
+  Ring2_i r = {Point2_i(0, 0),   Point2_i(40, 0),  Point2_i(40, 40),
+               Point2_i(20, 40), Point2_i(20, 20), Point2_i(0, 20),
+               Point2_i(0, 0)};
+
+  EXPECT_EQ(r.Area(), 20 * 20 + 20 * 40);
+}
+
 TEST(Accessors, Centroid1) {
   Ring2_i r = {Point2_i(0, 0), Point2_i(2, 0), Point2_i(2, 2), Point2_i(0, 2),
                Point2_i(0, 0)};
@@ -274,6 +296,18 @@ TEST(Mutators, AssignInitializer) {
   EXPECT_THAT(r.Points(),
               ElementsAre(Point2_i(0, 0), Point2_i(2, 0), Point2_i(2, 2),
                           Point2_i(0, 2), Point2_i(0, 0)));
+}
+
+TEST(Operations, BloatedRings1) {
+  Ring2_i r = {Point2_i(0, 0),   Point2_i(40, 0),  Point2_i(40, 40),
+               Point2_i(20, 40), Point2_i(20, 20), Point2_i(0, 20),
+               Point2_i(0, 0)};
+
+  std::vector<Ring2_i> rings = r.BloatedRings(5, 5);
+
+  EXPECT_EQ(rings.size(), 1);
+
+  EXPECT_EQ(rings[0].Area(), 20 * 30 + 30 * 50);
 }
 
 TEST(Operators, Subscript) {

@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/log/check.h"
 #include "absl/strings/str_join.h"
 #include "moab/box2.h"
 #include "moab/operation.h"
@@ -50,6 +51,7 @@ class Ring2 {
   size_t Size() const { return d_.size(); }
   bool Empty() const { return d_.empty(); }
 
+  T Area() const { return gtl::area(*this); }
   Point2<T> Centroid() const {
     Point2<T> p;
     bg::centroid(*this, p);
@@ -80,6 +82,10 @@ class Ring2 {
     d_.assign(first, last);
   }
   void Assign(std::initializer_list<Point2<T>> il) { d_.assign(il); }
+
+  // Operations.
+  // Operations - Bloat
+  std::vector<Ring2<T>> BloatedRings(T x, T y) const;
 
   // Iterators.
   mutable_iterator_type begin() { return d_.begin(); }
@@ -129,6 +135,18 @@ class Ring2 {
 using Ring2_i = Ring2<int>;
 using Ring2_i32 = Ring2<int32_t>;
 using Ring2_i64 = Ring2<int64_t>;
+
+template <typename T>
+std::vector<Ring2<T>> Ring2<T>::BloatedRings(T x, T y) const {
+  CHECK(x >= 0 && y >= 0) << "Bloat values must be non-negative.";
+  std::vector<Box2<T>> bloated_boxes;
+  for (moab::Box2<T> box : MaxBoxes()) {
+    bloated_boxes.push_back(box.Bloat(x, y));
+  }
+  std::vector<Ring2<T>> bloated_rings;
+  moab::Assign(bloated_rings, bloated_boxes);
+  return bloated_rings;
+}
 
 }  // namespace moab
 
