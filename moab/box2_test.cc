@@ -386,7 +386,7 @@ TEST(Operations, ShrinkY) {
 TEST(Operations, EncompassPoint1) {
   Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
 
-  b.Encompass(Point2_i(0, 1));
+  EXPECT_TRUE(b.Encompass(Point2_i(0, 1)));
 
   EXPECT_EQ(b.ll(), Point2_i(0, 1));
   EXPECT_EQ(b.ur(), Point2_i(3, 4));
@@ -395,7 +395,7 @@ TEST(Operations, EncompassPoint1) {
 TEST(Operations, EncompassPoint2) {
   Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
 
-  b.Encompass(Point2_i(1, 2));
+  EXPECT_FALSE(b.Encompass(Point2_i(1, 2)));
 
   EXPECT_EQ(b.ll(), Point2_i(1, 2));
   EXPECT_EQ(b.ur(), Point2_i(3, 4));

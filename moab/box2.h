@@ -114,24 +114,26 @@ class Box2 {
     d_[1].ShiftY(dy);
   }
   // Operations - Bloat
-  void Bloat(T d) { gtl::bloat(*this, d); }
-  void Bloat(T dx, T dy) {
+  Box2& Bloat(T d) { return gtl::bloat(*this, d); }
+  Box2& Bloat(T dx, T dy) {
     BloatX(dx);
     BloatY(dy);
+    return *this;
   }
-  void BloatX(T dx) { gtl::bloat(*this, gtl::HORIZONTAL, dx); }
-  void BloatY(T dy) { gtl::bloat(*this, gtl::VERTICAL, dy); }
+  Box2& BloatX(T dx) { return gtl::bloat(*this, gtl::HORIZONTAL, dx); }
+  Box2& BloatY(T dy) { return gtl::bloat(*this, gtl::VERTICAL, dy); }
   // Operations - Shrink
-  void Shrink(T d) { gtl::shrink(*this, d); }
-  void Shrink(T dx, T dy) {
+  Box2& Shrink(T d) { return gtl::shrink(*this, d); }
+  Box2& Shrink(T dx, T dy) {
     ShrinkX(dx);
     ShrinkY(dy);
+    return *this;
   }
-  void ShrinkX(T dx) { gtl::shrink(*this, gtl::HORIZONTAL, dx); }
-  void ShrinkY(T dy) { gtl::shrink(*this, gtl::VERTICAL, dy); }
+  Box2& ShrinkX(T dx) { return gtl::shrink(*this, gtl::HORIZONTAL, dx); }
+  Box2& ShrinkY(T dy) { return gtl::shrink(*this, gtl::VERTICAL, dy); }
   // Operations - Encompass
-  void Encompass(const Point2<T>& p) { gtl::encompass(*this, p); }
-  void Encompass(const Box2& b) { gtl::encompass(*this, b); }
+  bool Encompass(const Point2<T>& p) { return gtl::encompass(*this, p); }
+  bool Encompass(const Box2& b) { return gtl::encompass(*this, b); }
 
   // Operators.
   // Operators - Subscript
