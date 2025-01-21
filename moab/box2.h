@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cstdint>
+#include <tuple>
 
 #include "absl/log/check.h"
 #include "boost/geometry/core/access.hpp"
@@ -65,6 +66,10 @@ class Box2 {
 
   T Width() const { return d_[1].x() - d_[0].x(); }
   T Height() const { return d_[1].y() - d_[0].y(); }
+
+  std::tuple<T, T, T, T> ToTuple() const {
+    return std::make_tuple(d_[0].x(), d_[0].y(), d_[1].x(), d_[1].y());
+  }
 
   // Center.
   T CenterX() const { return Center().x(); }

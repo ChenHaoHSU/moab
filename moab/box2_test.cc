@@ -13,6 +13,7 @@
 
 namespace moab {
 
+using ::testing::FieldsAre;
 using ::testing::Pair;
 using ::testing::StrEq;
 
@@ -123,6 +124,12 @@ TEST(Accessors, WidthHeight) {
 
   EXPECT_EQ(b.Width(), 2);
   EXPECT_EQ(b.Height(), 3);
+}
+
+TEST(Accessors, ToTuple) {
+  Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
+
+  EXPECT_THAT(b.ToTuple(), FieldsAre(1, 2, 3, 4));
 }
 
 TEST(Accessors, Center1) {
