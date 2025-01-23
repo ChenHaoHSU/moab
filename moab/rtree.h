@@ -19,6 +19,7 @@
 #include "moab/box2.h"
 #include "moab/operation.h"
 #include "moab/point2.h"
+#include "moab/segment2.h"
 
 namespace moab {
 
@@ -310,6 +311,7 @@ template <typename... Args>
 using RtreeMultiMapBox2_i32 = Rtree<std::tuple<Box2<int32_t>, Args...>>;
 template <typename... Args>
 using RtreeMultiMapBox2_i64 = Rtree<std::tuple<Box2<int64_t>, Args...>>;
+
 // Point R-tree.
 using RtreePoint2_i = Rtree<Point2<int>>;
 using RtreePoint2_i32 = Rtree<Point2<int32_t>>;
@@ -328,6 +330,25 @@ template <typename... Args>
 using RtreeMultiMapPoint2_i32 = Rtree<std::tuple<Point2<int32_t>, Args...>>;
 template <typename... Args>
 using RtreeMultiMapPoint2_i64 = Rtree<std::tuple<Point2<int64_t>, Args...>>;
+
+// Segment R-tree.
+using RtreeSegment2_i = Rtree<Segment2<int>>;
+using RtreeSegment2_i32 = Rtree<Segment2<int32_t>>;
+using RtreeSegment2_i64 = Rtree<Segment2<int64_t>>;
+// Segment R-tree map (pair).
+template <typename T>
+using RtreeMapSegment2_i = Rtree<std::pair<Segment2<int>, T>>;
+template <typename T>
+using RtreeMapSegment2_i32 = Rtree<std::pair<Segment2<int32_t>, T>>;
+template <typename T>
+using RtreeMapSegment2_i64 = Rtree<std::pair<Segment2<int64_t>, T>>;
+// Segment R-tree multi-map (tuple).
+template <typename... Args>
+using RtreeMultiMapSegment2_i = Rtree<std::tuple<Segment2<int>, Args...>>;
+template <typename... Args>
+using RtreeMultiMapSegment2_i32 = Rtree<std::tuple<Segment2<int32_t>, Args...>>;
+template <typename... Args>
+using RtreeMultiMapSegment2_i64 = Rtree<std::tuple<Segment2<int64_t>, Args...>>;
 
 }  // namespace moab
 
