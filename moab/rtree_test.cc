@@ -644,6 +644,7 @@ TEST(RtreeBoxMapTest, QueryCoversValueBoxSegment) {
   RtreeMapBox2_i<int> rtree;
   rtree.Insert(Box2_i(Point2_i(0, 0), Point2_i(10, 0)), 0);
   rtree.Insert(Box2_i(Point2_i(0, 0), Point2_i(0, 10)), 1);
+  rtree.Insert(Box2_i(Point2_i(10, 10), Point2_i(10, 10)), 2);
 
   std::vector<int> values =
       rtree.QueryCovers<1>(Box2_i(Point2_i(0, 0), Point2_i(10, 0)));
@@ -669,6 +670,9 @@ TEST(RtreeBoxMapTest, QueryCoversValueBoxSegment) {
 
   values = rtree.QueryCovers<1>(Box2_i(Point2_i(-5, 0), Point2_i(15, 0)));
   EXPECT_THAT(values, UnorderedElementsAre());
+
+  values = rtree.QueryCovers<1>(Box2_i(Point2_i(10, 10), Point2_i(10, 10)));
+  EXPECT_THAT(values, UnorderedElementsAre(2));
 }
 
 TEST(RtreePointTest, QueryIntersectsPoint) {
