@@ -640,6 +640,41 @@ TEST(RtreeBoxMapTest, QueryStrictlyIntersectsValueBox2) {
   EXPECT_THAT(boxes, UnorderedElementsAre(0));
 }
 
+TEST(RtreeBoxMapTest, QueryCoversValueBoxSegment) {
+  RtreeMapBox2_i<int> rtree;
+  rtree.Insert(Box2_i(Point2_i(0, 0), Point2_i(10, 0)), 0);
+  rtree.Insert(Box2_i(Point2_i(0, 0), Point2_i(0, 10)), 1);
+  rtree.Insert(Box2_i(Point2_i(10, 10), Point2_i(10, 10)), 2);
+
+  std::vector<int> values =
+      rtree.QueryCovers<1>(Box2_i(Point2_i(0, 0), Point2_i(10, 0)));
+  EXPECT_THAT(values, UnorderedElementsAre(0));
+
+  values = rtree.QueryCovers<1>(Box2_i(Point2_i(1, 0), Point2_i(9, 0)));
+  EXPECT_THAT(values, UnorderedElementsAre(0));
+
+  values = rtree.QueryCovers<1>(Box2_i(Point2_i(0, 0), Point2_i(9, 0)));
+  EXPECT_THAT(values, UnorderedElementsAre(0));
+
+  values = rtree.QueryCovers<1>(Box2_i(Point2_i(5, 0), Point2_i(10, 0)));
+  EXPECT_THAT(values, UnorderedElementsAre(0));
+
+  values = rtree.QueryCovers<1>(Box2_i(Point2_i(5, 0), Point2_i(5, 0)));
+  EXPECT_THAT(values, UnorderedElementsAre(0));
+
+  values = rtree.QueryCovers<1>(Box2_i(Point2_i(5, 0), Point2_i(15, 0)));
+  EXPECT_THAT(values, UnorderedElementsAre());
+
+  values = rtree.QueryCovers<1>(Box2_i(Point2_i(10, 0), Point2_i(15, 0)));
+  EXPECT_THAT(values, UnorderedElementsAre());
+
+  values = rtree.QueryCovers<1>(Box2_i(Point2_i(-5, 0), Point2_i(15, 0)));
+  EXPECT_THAT(values, UnorderedElementsAre());
+
+  values = rtree.QueryCovers<1>(Box2_i(Point2_i(10, 10), Point2_i(10, 10)));
+  EXPECT_THAT(values, UnorderedElementsAre(2));
+}
+
 TEST(RtreePointTest, QueryIntersectsPoint) {
   RtreePoint2_i rtree;
   rtree.Insert(Point2_i(0, 0));
@@ -740,25 +775,25 @@ TEST(RtreeSegmentMapTest, QueryIntersectsValueSegment) {
   rtree.Insert(Segment2_i(Point2_i(0, 0), Point2_i(0, 10)), 1);
   rtree.Insert(Segment2_i(Point2_i(0, 0), Point2_i(10, 10)), 2);
 
-  std::vector<int> segments =
+  std::vector<int> values =
       rtree.QueryIntersects<1>(Segment2_i(Point2_i(0, 5), Point2_i(10, 5)));
-  EXPECT_THAT(segments, UnorderedElementsAre(1, 2));
+  EXPECT_THAT(values, UnorderedElementsAre(1, 2));
 
-  segments =
+  values =
       rtree.QueryIntersects<1>(Segment2_i(Point2_i(5, 0), Point2_i(5, 10)));
-  EXPECT_THAT(segments, UnorderedElementsAre(0, 2));
+  EXPECT_THAT(values, UnorderedElementsAre(0, 2));
 
-  segments =
+  values =
       rtree.QueryIntersects<1>(Segment2_i(Point2_i(-5, 0), Point2_i(0, 0)));
-  EXPECT_THAT(segments, UnorderedElementsAre(0, 1, 2));
+  EXPECT_THAT(values, UnorderedElementsAre(0, 1, 2));
 
-  segments =
+  values =
       rtree.QueryIntersects<1>(Segment2_i(Point2_i(10, 0), Point2_i(20, 0)));
-  EXPECT_THAT(segments, UnorderedElementsAre(0));
+  EXPECT_THAT(values, UnorderedElementsAre(0));
 
-  segments =
+  values =
       rtree.QueryIntersects<1>(Segment2_i(Point2_i(5, 0), Point2_i(15, 0)));
-  EXPECT_THAT(segments, UnorderedElementsAre(0));
+  EXPECT_THAT(values, UnorderedElementsAre(0));
 }
 
 TEST(RtreeSegmentMapTest, QueryIntersectsValueBox) {
@@ -767,9 +802,9 @@ TEST(RtreeSegmentMapTest, QueryIntersectsValueBox) {
   rtree.Insert(Segment2_i(Point2_i(0, 0), Point2_i(0, 10)), 1);
   rtree.Insert(Segment2_i(Point2_i(0, 0), Point2_i(10, 10)), 2);
 
-  std::vector<int> segments = rtree.QueryIntersects<1>(Box2_i(0, 5, 10, 10));
+  std::vector<int> values = rtree.QueryIntersects<1>(Box2_i(0, 5, 10, 10));
 
-  EXPECT_THAT(segments, UnorderedElementsAre(1, 2));
+  EXPECT_THAT(values, UnorderedElementsAre(1, 2));
 }
 
 }  // namespace moab
