@@ -12,6 +12,7 @@
 
 namespace moab {
 
+using ::testing::FieldsAre;
 using ::testing::Pair;
 using ::testing::StrEq;
 
@@ -104,6 +105,12 @@ TEST(Accessors, To2D) {
   Point3_i p(1, 2, 3);
 
   EXPECT_EQ(p.To2D(), Point2_i(1, 2));
+}
+
+TEST(Accessors, ToTuple) {
+  Point3_i p(1, 2, 3);
+
+  EXPECT_THAT(p.ToTuple(), FieldsAre(1, 2, 3));
 }
 
 TEST(Mutators, Set) {

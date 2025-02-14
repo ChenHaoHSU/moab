@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <ostream>
 #include <string>
+#include <tuple>
 #include <utility>
 
 #include "absl/hash/hash.h"
@@ -50,6 +51,10 @@ class Point3 {
   constexpr std::size_t Size() const { return d_.size(); }
 
   Point2<T> To2D() const { return Point2<T>(d_[0], d_[1]); }
+
+  std::tuple<T, T, T> ToTuple() const {
+    return std::make_tuple(d_[0], d_[1], d_[2]);
+  }
 
   // Mutators.
   void Set(T x, T y, T z) {
