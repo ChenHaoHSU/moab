@@ -9,14 +9,14 @@ module(name = "moab")
 #############################
 # Bazel rules.
 #############################
-bazel_dep(name = "rules_cc", version = "0.0.17")  # Should be >= 1.0.0 in the future.
-bazel_dep(name = "rules_proto", version = "7.0.2")
+bazel_dep(name = "rules_cc", version = "0.1.1")
+bazel_dep(name = "rules_proto", version = "7.1.0")
 
 #############################
 # External dependencies.
 #############################
 bazel_dep(name = "abseil-cpp", version = "20240722.0.bcr.2", repo_name = "com_google_absl")
-bazel_dep(name = "protobuf", version = "29.1", repo_name = "com_google_protobuf")
+bazel_dep(name = "protobuf", version = "29.3", repo_name = "com_google_protobuf")
 
 # Boost
 # Famous C++ library that has given rise to many new additions to the C++ Standard Library
