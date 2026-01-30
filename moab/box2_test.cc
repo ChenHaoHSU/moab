@@ -3,7 +3,11 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <array>
+#include <list>
+#include <set>
 #include <string>
+#include <vector>
 
 #include "absl/hash/hash_testing.h"
 #include "absl/strings/str_format.h"
@@ -22,6 +26,13 @@ TEST(Constructors, Default) {
 
   EXPECT_EQ(b.ll(), Point2_i(0, 0));
   EXPECT_EQ(b.ur(), Point2_i(0, 0));
+}
+
+TEST(Constructors, OnePoint) {
+  Box2_i b(Point2_i(1, 2));
+
+  EXPECT_EQ(b.ll(), Point2_i(1, 2));
+  EXPECT_EQ(b.ur(), Point2_i(1, 2));
 }
 
 TEST(Constructors, TwoPoints) {
@@ -515,6 +526,138 @@ TEST(Operators, Inequality2) {
   EXPECT_TRUE(b1 >= b2);
   EXPECT_TRUE(b2 >= b1);
   EXPECT_TRUE(b2 <= b1);
+}
+
+TEST(Utilities, BoundingBoxVector1) {
+  std::vector<Point2_i> points = {Point2_i(1, 2)};
+
+  Box2_i box = Box2_i::BoundingBox(points);
+
+  EXPECT_EQ(box.ll(), Point2_i(1, 2));
+  EXPECT_EQ(box.ur(), Point2_i(1, 2));
+}
+
+TEST(Utilities, BoundingBoxVector2) {
+  std::vector<Point2_i> points = {
+      Point2_i(1, 2),
+      Point2_i(3, 4),
+      Point2_i(-1, 5),
+      Point2_i(0, 0),
+  };
+
+  Box2_i box = Box2_i::BoundingBox(points);
+
+  EXPECT_EQ(box.ll(), Point2_i(-1, 0));
+  EXPECT_EQ(box.ur(), Point2_i(3, 5));
+}
+
+TEST(Utilities, BoundingBoxVector3) {
+  std::vector<Point2_i> points = {
+      Point2_i(1, 2),
+      Point2_i(1, 2),
+      Point2_i(1, 2),
+      Point2_i(1, 2),
+  };
+
+  Box2_i box = Box2_i::BoundingBox(points);
+
+  EXPECT_EQ(box.ll(), Point2_i(1, 2));
+  EXPECT_EQ(box.ur(), Point2_i(1, 2));
+}
+
+TEST(Utilities, BoundingBoxVector4) {
+  std::vector<Point2_i> points = {
+      Point2_i(-10, -20), Point2_i(10, 20), Point2_i(-5, 5),
+      Point2_i(5, -5),    Point2_i(0, 0),
+  };
+
+  Box2_i box = Box2_i::BoundingBox(points);
+
+  EXPECT_EQ(box.ll(), Point2_i(-10, -20));
+  EXPECT_EQ(box.ur(), Point2_i(10, 20));
+}
+
+TEST(Utilities, BoundingBoxVectorEmptyContainer) {
+  std::vector<Point2_i> points;
+
+  EXPECT_DEATH({ Box2_i box = Box2_i::BoundingBox(points); },
+               "Points container is empty.");
+}
+
+TEST(Utilities, BoundingBoxArray) {
+  std::array<Point2_i, 3> points = {
+      Point2_i(1, 2),
+      Point2_i(3, 4),
+      Point2_i(-1, 5),
+  };
+
+  Box2_i box = Box2_i::BoundingBox(points);
+
+  EXPECT_EQ(box.ll(), Point2_i(-1, 2));
+  EXPECT_EQ(box.ur(), Point2_i(3, 5));
+}
+
+TEST(Utilities, BoundingBoxArrayEmptyContainer) {
+  std::array<Point2_i, 0> points = {};
+
+  EXPECT_DEATH({ Box2_i box = Box2_i::BoundingBox(points); },
+               "Points container is empty.");
+}
+
+TEST(Utilities, BoundingBoxInitializerList) {
+  Box2_i box = Box2_i::BoundingBox({
+      Point2_i(1, 2),
+      Point2_i(3, 4),
+      Point2_i(-1, 5),
+  });
+
+  EXPECT_EQ(box.ll(), Point2_i(-1, 2));
+  EXPECT_EQ(box.ur(), Point2_i(3, 5));
+}
+
+TEST(Utilities, BoundingBoxInitializerListEmptyContainer) {
+  EXPECT_DEATH({ Box2_i box = Box2_i::BoundingBox({}); },
+               "Points container is empty.");
+}
+
+TEST(Utilities, BoundingBoxList) {
+  std::list<Point2_i> points = {
+      Point2_i(1, 2),
+      Point2_i(3, 4),
+      Point2_i(-1, 5),
+  };
+
+  Box2_i box = Box2_i::BoundingBox(points);
+
+  EXPECT_EQ(box.ll(), Point2_i(-1, 2));
+  EXPECT_EQ(box.ur(), Point2_i(3, 5));
+}
+
+TEST(Utilities, BoundingBoxListEmptyContainer) {
+  std::list<Point2_i> points;
+
+  EXPECT_DEATH({ Box2_i box = Box2_i::BoundingBox(points); },
+               "Points container is empty.");
+}
+
+TEST(Utilities, BoundingBoxSet) {
+  std::set<Point2_i> points = {
+      Point2_i(1, 2),
+      Point2_i(3, 4),
+      Point2_i(-1, 5),
+  };
+
+  Box2_i box = Box2_i::BoundingBox(points);
+
+  EXPECT_EQ(box.ll(), Point2_i(-1, 2));
+  EXPECT_EQ(box.ur(), Point2_i(3, 5));
+}
+
+TEST(Utilities, BoundingBoxSetEmptyContainer) {
+  std::set<Point2_i> points;
+
+  EXPECT_DEATH({ Box2_i box = Box2_i::BoundingBox(points); },
+               "Points container is empty.");
 }
 
 TEST(StringConversion, ToString) {

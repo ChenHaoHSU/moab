@@ -3,7 +3,10 @@
 
 #include <array>
 #include <cstdint>
+#include <initializer_list>
 #include <tuple>
+#include <type_traits>
+#include <utility>
 
 #include "absl/log/check.h"
 #include "boost/geometry/core/access.hpp"
@@ -32,6 +35,7 @@ class Box2 {
 
   // Constructors.
   Box2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
+  explicit Box2(const Point2<T>& p) { Set(p, p); }
   explicit Box2(const Point2<T>& p1, const Point2<T>& p2) { Set(p1, p2); }
   explicit Box2(T xl, T yl, T xh, T yh) { Set(xl, yl, xh, yh); }
   explicit Box2(const Box2Proto& proto) { SetFromProto(proto); }
@@ -157,6 +161,13 @@ class Box2 {
   bool operator<=(const Box2& b) const { return !(*this > b); }
   bool operator>=(const Box2& b) const { return !(*this < b); }
 
+  // Utilities.
+  template <typename Container>
+  static Box2 BoundingBox(const Container& points);
+  static Box2 BoundingBox(std::initializer_list<Point2<T>> points) {
+    return BoundingBox<std::initializer_list<Point2<T>>>(points);
+  }
+
   // String conversion.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const Box2& b) {
@@ -233,6 +244,19 @@ void Box2<T>::SetFromProto(const Box2Proto& proto) {
   } else {
     LOG(FATAL) << "Unsupported type.";
   }
+}
+
+template <typename T>
+template <typename Container>
+Box2<T> Box2<T>::BoundingBox(const Container& points) {
+  static_assert(std::is_same_v<typename Container::value_type, Point2<T>>,
+                "Container must hold Point2<T> elements.");
+  CHECK(points.begin() != points.end()) << "Points container is empty.";
+  Box2<T> box(*points.begin());
+  for (const Point2<T>& p : points) {
+    box.Encompass(p);
+  }
+  return box;
 }
 
 // Aliases.
