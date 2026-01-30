@@ -18,8 +18,8 @@ bazel_dep(name = "rules_proto", version = "7.1.0")
 #############################
 bazel_dep(name = "abseil-cpp", version = "20260107.0", repo_name = "com_google_absl")
 bazel_dep(name = "protobuf", version = "34.0-rc1", repo_name = "com_google_protobuf")
-bazel_dep(name = "boost.geometry", version = "1.89.0.bcr.2")
-bazel_dep(name = "boost.polygon", version = "1.89.0.bcr.2")
+bazel_dep(name = "boost.geometry", version = "1.87.0")
+bazel_dep(name = "boost.polygon", version = "1.87.0")
 
 ## Google test.
 bazel_dep(name = "googletest", version = "1.17.0.bcr.2", repo_name = "com_google_googletest")
