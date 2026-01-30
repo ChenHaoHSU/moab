@@ -28,13 +28,6 @@ TEST(Constructors, Default) {
   EXPECT_EQ(b.ur(), Point2_i(0, 0));
 }
 
-TEST(Constructors, OnePoint) {
-  Box2_i b(Point2_i(1, 2));
-
-  EXPECT_EQ(b.ll(), Point2_i(1, 2));
-  EXPECT_EQ(b.ur(), Point2_i(1, 2));
-}
-
 TEST(Constructors, TwoPoints) {
   Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
 

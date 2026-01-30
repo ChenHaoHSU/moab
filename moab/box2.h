@@ -35,7 +35,6 @@ class Box2 {
 
   // Constructors.
   Box2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
-  explicit Box2(const Point2<T>& p) { Set(p, p); }
   explicit Box2(const Point2<T>& p1, const Point2<T>& p2) { Set(p1, p2); }
   explicit Box2(T xl, T yl, T xh, T yh) { Set(xl, yl, xh, yh); }
   explicit Box2(const Box2Proto& proto) { SetFromProto(proto); }
@@ -252,7 +251,7 @@ Box2<T> Box2<T>::BoundingBox(const Container& points) {
   static_assert(std::is_same_v<typename Container::value_type, Point2<T>>,
                 "Container must hold Point2<T> elements.");
   CHECK(points.begin() != points.end()) << "Points container is empty.";
-  Box2<T> box(*points.begin());
+  Box2<T> box(*points.begin(), *points.begin());
   for (const Point2<T>& p : points) {
     box.Encompass(p);
   }
