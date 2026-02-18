@@ -4,8 +4,8 @@
 // Date: 2026-02-18
 /////////////////////
 
-#ifndef moab_Vector2_H_
-#define moab_Vector2_H_
+#ifndef MOAB_VECTOR2_H_
+#define MOAB_VECTOR2_H_
 
 #include <array>
 #include <cmath>
@@ -101,10 +101,10 @@ class Vector2 {
     d_[1] -= v.d_[1];
     return *this;
   }
-  Vector2 operator+(const Vector2& v) {
+  Vector2 operator+(const Vector2& v) const {
     return Vector2(d_[0] + v.d_[0], d_[1] + v.d_[1]);
   }
-  Vector2 operator-(const Vector2& v) {
+  Vector2 operator-(const Vector2& v) const {
     return Vector2(d_[0] - v.d_[0], d_[1] - v.d_[1]);
   }
   Vector2 operator+() const { return Vector2(d_[0], d_[1]); }
@@ -140,7 +140,7 @@ class Vector2 {
   // String conversion.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const Vector2& v) {
-    absl::Format(&sink, "(%d %d)", v.d_[0], v.d_[1]);
+    absl::Format(&sink, "(%v %v)", v.d_[0], v.d_[1]);
   }
   std::string ToString() const { return absl::StrCat(*this); }
   friend std::ostream& operator<<(std::ostream& os, const Vector2& v) {
@@ -238,4 +238,4 @@ struct vec_traits<moab::Vector2<T>> {
 };
 }  // namespace boost::qvm
 
-#endif  // moab_ANGLE_H_
+#endif  // MOAB_VECTOR2_H_
