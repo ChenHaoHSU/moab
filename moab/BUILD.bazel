@@ -36,6 +36,12 @@ proto_library(
     deps = [":point3_proto"],
 )
 
+proto_library(
+    name = "vector2_proto",
+    srcs = ["vector2.proto"],
+    visibility = ["//visibility:public"],
+)
+
 cc_proto_library(
     name = "point2_cc_proto",
     deps = [":point2_proto"],
@@ -59,6 +65,11 @@ cc_proto_library(
 cc_proto_library(
     name = "segment3_cc_proto",
     deps = [":segment3_proto"],
+)
+
+cc_proto_library(
+    name = "vector2_cc_proto",
+    deps = [":vector2_proto"],
 )
 
 cc_library(
@@ -168,6 +179,33 @@ cc_test(
     deps = [
         ":segment3",
         ":segment3_cc_proto",
+        "@com_google_absl//absl/hash:hash_testing",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "vector2",
+    hdrs = ["vector2.h"],
+    deps = [
+        ":vector2_cc_proto",
+        "@boost.qvm",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/log:check",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "vector2_test",
+    size = "small",
+    srcs = ["vector2_test.cc"],
+    deps = [
+        ":vector2",
+        ":vector2_cc_proto",
         "@com_google_absl//absl/hash:hash_testing",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_googletest//:gtest",

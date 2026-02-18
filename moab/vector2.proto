@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package moab;
+
+message Vector2ProtoInt32 {
+  int32 dx = 1;
+  int32 dy = 2;
+}
+
+message Vector2ProtoInt64 {
+  int64 dx = 1;
+  int64 dy = 2;
+}
+
+message Vector2ProtoFloat {
+  float dx = 1;
+  float dy = 2;
+}
+
+message Vector2ProtoDouble {
+  double dx = 1;
+  double dy = 2;
+}
+
+message Vector2Proto {
+  oneof type_variant {
+    Vector2ProtoInt32 vector_int32 = 1;
+    Vector2ProtoInt64 vector_int64 = 2;
+    Vector2ProtoFloat vector_float = 3;
+    Vector2ProtoDouble vector_double = 4;
+  }
+}
