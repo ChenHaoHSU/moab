@@ -66,6 +66,12 @@ TEST(VectorOperators, Cos) {
   EXPECT_DOUBLE_EQ(Cos(v1, v2), std::sqrt(2) / 2);
 }
 
+TEST(VectorOperators, CosLarge) {
+  Vector2_i v1(300000, 300000);
+  Vector2_i v2(300000, 0);
+  EXPECT_DOUBLE_EQ(Cos(v1, v2), std::sqrt(2) / 2);
+}
+
 TEST(VectorOperators, Angle) {
   Vector2_i v1(1, 1);
   Vector2_i v2(1, 0);

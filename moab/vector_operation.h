@@ -62,14 +62,18 @@ constexpr auto Cross = [](const auto& v1, const auto& v2) constexpr {
 };
 
 constexpr auto Cos = [](const auto& v1, const auto& v2) constexpr {
-  const double dot = static_cast<double>(Dot(v1, v2));
+  Vector2<double> v1_double(static_cast<double>(v1.dx()),
+                            static_cast<double>(v1.dy()));
+  Vector2<double> v2_double(static_cast<double>(v2.dx()),
+                            static_cast<double>(v2.dy()));
+  const double dot = static_cast<double>(Dot(v1_double, v2_double));
   // Use MagSqr to avoid double-sqrt and linker issues for ints
   const double mag_sqr_prod =
-      static_cast<double>(MagSqr(v1)) * static_cast<double>(MagSqr(v2));
+      static_cast<double>(Mag(v1_double)) * static_cast<double>(Mag(v2_double));
 
   if (mag_sqr_prod <= 0) return 0.0;
 
-  return std::clamp(dot / std::sqrt(mag_sqr_prod), -1.0, 1.0);
+  return std::clamp(dot / mag_sqr_prod, -1.0, 1.0);
 };
 
 constexpr auto Angle = [](const auto& v1, const auto& v2) constexpr {
