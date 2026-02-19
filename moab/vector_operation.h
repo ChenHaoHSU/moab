@@ -53,12 +53,20 @@ void Normalize(auto& v) { boost::qvm::normalize(v); }
 
 // Vector dot product.
 constexpr auto Dot = [](const auto& v1, const auto& v2) constexpr {
-  return boost::qvm::dot(v1, v2);
+  Vector2<double> v1_double(static_cast<double>(v1.dx()),
+                            static_cast<double>(v1.dy()));
+  Vector2<double> v2_double(static_cast<double>(v2.dx()),
+                            static_cast<double>(v2.dy()));
+  return boost::qvm::dot(v1_double, v2_double);
 };
 
 // Vector cross product (retuns scalar determinant).
 constexpr auto Cross = [](const auto& v1, const auto& v2) constexpr {
-  return boost::qvm::cross(v1, v2);
+  Vector2<double> v1_double(static_cast<double>(v1.dx()),
+                            static_cast<double>(v1.dy()));
+  Vector2<double> v2_double(static_cast<double>(v2.dx()),
+                            static_cast<double>(v2.dy()));
+  return boost::qvm::cross(v1_double, v2_double);
 };
 
 constexpr auto Cos = [](const auto& v1, const auto& v2) constexpr {

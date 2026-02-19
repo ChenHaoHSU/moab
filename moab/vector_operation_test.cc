@@ -54,10 +54,22 @@ TEST(VectorOperators, DotProduct) {
   EXPECT_EQ(Dot(v1, v2), 11);
 }
 
+TEST(VectorOperators, DotProductLarge) {
+  Vector2_i v1(100000, 200000);
+  Vector2_i v2(300000, 400000);
+  EXPECT_EQ(Dot(v1, v2), 110000000000);
+}
+
 TEST(VectorOperators, CrossProduct) {
   Vector2_i v1(1, 2);
   Vector2_i v2(3, 4);
   EXPECT_EQ(Cross(v1, v2), -2);
+}
+
+TEST(VectorOperators, CrossProductLarge) {
+  Vector2_i v1(100000, 200000);
+  Vector2_i v2(-400000, 300000);
+  EXPECT_EQ(Cross(v1, v2), 110000000000);
 }
 
 TEST(VectorOperators, Cos) {
