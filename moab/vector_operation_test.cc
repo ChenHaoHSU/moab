@@ -18,8 +18,18 @@ TEST(VectorOperators, MagnitudeSquared) {
   EXPECT_EQ(MagSqr(v), 25);
 }
 
+TEST(VectorOperators, MagnitudeSquaredLarge) {
+  Vector2_i v(30000, 40000);
+  EXPECT_EQ(MagSqr(v), 2500000000);
+}
+
 TEST(VectorOperators, Magnitude) {
   Vector2<double> v(3.0, 4.0);
+  EXPECT_EQ(Mag(v), 5.0);
+}
+
+TEST(VectorOperators, MagnitudeInt) {
+  Vector2_i v(3, 4);
   EXPECT_EQ(Mag(v), 5.0);
 }
 

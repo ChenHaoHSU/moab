@@ -4,6 +4,7 @@
 #include "boost/geometry.hpp"
 #include "boost/polygon/polygon.hpp"
 #include "boost/qvm/vec_operations.hpp"
+#include "moab/vector2.h"
 
 namespace moab {
 
@@ -26,13 +27,20 @@ class Vector2;
 
 // Vector magnitude squared.
 constexpr auto MagSqr = [](const auto& v) constexpr {
-  return boost::qvm::mag_sqr(v);
+  Vector2<double> v_double(static_cast<double>(v.dx()),
+                           static_cast<double>(v.dy()));
+
+  return boost::qvm::mag_sqr(v_double);
 };
 
 // Vector magnitude.
 // This is slow and only supports float and double. For integer vectors,
 // consider using MagSqr instead.
-constexpr auto Mag = [](const auto& v) constexpr { return boost::qvm::mag(v); };
+constexpr auto Mag = [](const auto& v) constexpr {
+  Vector2<double> v_double(static_cast<double>(v.dx()),
+                           static_cast<double>(v.dy()));
+  return boost::qvm::mag(v_double);
+};
 
 // Vector normalization.
 constexpr auto Normalized = [](const auto& v) constexpr {
