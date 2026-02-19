@@ -1,9 +1,3 @@
-//////////////////////
-// Vector2.h
-// Author: Yang Hsu
-// Date: 2026-02-18
-/////////////////////
-
 #ifndef MOAB_VECTOR2_H_
 #define MOAB_VECTOR2_H_
 
