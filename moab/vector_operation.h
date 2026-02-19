@@ -32,10 +32,7 @@ constexpr auto MagSqr = [](const auto& v) constexpr {
 // Vector magnitude.
 // This is slow and only supports float and double. For integer vectors,
 // consider using MagSqr instead.
-constexpr auto Mag = [](const auto& v) constexpr {
-  Vector2<double> v_double(v.dx(), v.dy());
-  return boost::qvm::mag(v_double);
-};
+constexpr auto Mag = [](const auto& v) constexpr { return boost::qvm::mag(v); };
 
 // Vector normalization.
 constexpr auto Normalized = [](const auto& v) constexpr {
