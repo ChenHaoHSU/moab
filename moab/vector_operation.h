@@ -104,12 +104,17 @@ constexpr auto IsOrthogonal = [](const auto& v1, const auto& v2) constexpr {
 };
 
 constexpr auto Project = [](const auto& v1, const auto& v2) constexpr {
-  const auto m2 = MagSqr(v2);
-  if (m2 <= 0) return v2;  // Return zero vector if v2 is zero
+  Vector2<double> v1_double(static_cast<double>(v1.dx()),
+                            static_cast<double>(v1.dy()));
+  Vector2<double> v2_double(static_cast<double>(v2.dx()),
+                            static_cast<double>(v2.dy()));
+  const auto m2 = MagSqr(v2_double);
+  if (m2 <= 0) return v2_double;  // Return zero vector if v2 is zero
 
   // Projection formula: (v1 . v2 / |v2|^2) * v2
-  double scale = static_cast<double>(Dot(v1, v2)) / static_cast<double>(m2);
-  return v2 * scale;
+  double scale =
+      static_cast<double>(Dot(v1_double, v2_double)) / static_cast<double>(m2);
+  return v2_double * scale;
 };
 
 }  // namespace moab

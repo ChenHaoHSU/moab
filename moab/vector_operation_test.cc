@@ -119,10 +119,19 @@ TEST(VectorOperators, IsOrthogonal) {
 TEST(VectorOperators, Project) {
   Vector2_i v1(2, 3);
   Vector2_i v2(1, 0);
-  Vector2_i projection = Project(v1, v2);
+  Vector2<double> projection = Project(v1, v2);
 
-  EXPECT_EQ(projection.dx(), 2);
-  EXPECT_EQ(projection.dy(), 0);
+  EXPECT_DOUBLE_EQ(projection.dx(), 2.0);
+  EXPECT_DOUBLE_EQ(projection.dy(), 0.0);
+}
+
+TEST(VectorOperators, ProjectLarge) {
+  Vector2_i v1(20000000, 30000000);
+  Vector2_i v2(10000000, 0);
+  Vector2<double> projection = Project(v1, v2);
+
+  EXPECT_DOUBLE_EQ(projection.dx(), 20000000);
+  EXPECT_DOUBLE_EQ(projection.dy(), 0);
 }
 
 }  // namespace moab
