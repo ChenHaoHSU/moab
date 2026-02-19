@@ -330,6 +330,27 @@ cc_test(
 )
 
 cc_library(
+    name = "vector_operation",
+    hdrs = ["vector_operation.h"],
+    deps = [
+        "@boost.qvm",
+    ],
+)
+
+cc_test(
+    name = "vector_operation_test",
+    size = "small",
+    srcs = ["vector_operation_test.cc"],
+    deps = [
+        ":vector2",
+        ":vector_operation",
+        "@com_google_absl//absl/log",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "rtree",
     hdrs = ["rtree.h"],
     deps = [
