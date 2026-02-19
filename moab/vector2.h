@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <ostream>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include "absl/hash/hash.h"
@@ -78,7 +79,15 @@ class Vector2 {
   const T& operator[](std::size_t i) const { return d_.at(i); }
 
   // Operators - Equality
-  bool operator==(const Vector2& v) const {
+  template <typename U>
+  bool operator==(const Vector2<U>& v) const {
+    if (std::is_floating_point_v<T> || std::is_floating_point_v<U>) {
+      constexpr double epsilon = 1e-9;
+      return std::abs(static_cast<double>(d_[0]) -
+                      static_cast<double>(v.dx())) < epsilon &&
+             std::abs(static_cast<double>(d_[1]) -
+                      static_cast<double>(v.dy())) < epsilon;
+    }
     return d_[0] == v.d_[0] && d_[1] == v.d_[1];
   }
   bool operator!=(const Vector2& v) const { return !(*this == v); }

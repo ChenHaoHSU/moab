@@ -224,6 +224,54 @@ TEST(Operators, Inequality3) {
   EXPECT_TRUE(v2 >= v1);
 }
 
+TEST(Operators, DoubleEquality) {
+  Vector2<double> v1(1.0, 2.0);
+  Vector2<double> v2(1.0, 2.0);
+  Vector2<double> v3(1.0, 3.0);
+
+  EXPECT_TRUE(v1 == v2);
+  EXPECT_FALSE(v1 == v3);
+}
+
+TEST(Operators, DoubleNotEquality) {
+  Vector2<double> v1(1.0, 2.0);
+  Vector2<double> v2(1.0, 2.0);
+  Vector2<double> v3(1.0, 3.0);
+
+  EXPECT_FALSE(v1 != v2);
+  EXPECT_TRUE(v1 != v3);
+}
+
+TEST(Operators, DoubleInequality) {
+  Vector2<double> v1(1.0, 2.0);
+  Vector2<double> v2(1.0, 3.0);
+
+  EXPECT_TRUE(v1 < v2);
+  EXPECT_TRUE(v2 > v1);
+  EXPECT_TRUE(v1 <= v2);
+  EXPECT_TRUE(v2 >= v1);
+}
+
+TEST(Operators, DoubleInequality2) {
+  Vector2<double> v1(1.0, 2.0);
+  Vector2<double> v2(2.0, 1.0);
+
+  EXPECT_TRUE(v1 < v2);
+  EXPECT_TRUE(v2 > v1);
+  EXPECT_TRUE(v1 <= v2);
+  EXPECT_TRUE(v2 >= v1);
+}
+
+TEST(Operators, DoubleInequality3) {
+  Vector2<double> v1(1.0, 2.0);
+  Vector2<double> v2(2.0, 3.0);
+
+  EXPECT_TRUE(v1 < v2);
+  EXPECT_TRUE(v2 > v1);
+  EXPECT_TRUE(v1 <= v2);
+  EXPECT_TRUE(v2 >= v1);
+}
+
 TEST(Operators, VectorAdditionAssignment) {
   Vector2_i v1(1, 2);
   Vector2_i v2(3, 4);
