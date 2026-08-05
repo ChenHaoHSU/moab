@@ -183,6 +183,39 @@ TEST(Accessors, Centroid3) {
   EXPECT_EQ(r.Centroid(), Point2_i(23, 16));
 }
 
+TEST(Accessors, PointOnSurface1) {
+  Ring2_i r = {Point2_i(0, 0), Point2_i(2, 0), Point2_i(2, 2), Point2_i(0, 2),
+               Point2_i(0, 0)};
+
+  EXPECT_TRUE(IsWithin(r.PointOnSurface(), r));
+}
+
+TEST(Accessors, PointOnSurface2) {
+  Ring2_i r = {Point2_i(0, 0), Point2_i(4, 0), Point2_i(4, 4), Point2_i(2, 4),
+               Point2_i(2, 2), Point2_i(0, 2), Point2_i(0, 0)};
+
+  EXPECT_TRUE(IsWithin(r.PointOnSurface(), r));
+}
+
+TEST(Accessors, PointOnSurface3) {
+  Ring2_i r = {Point2_i(0, 0),   Point2_i(40, 0),  Point2_i(40, 40),
+               Point2_i(20, 40), Point2_i(20, 20), Point2_i(0, 20),
+               Point2_i(0, 0)};
+
+  EXPECT_TRUE(IsWithin(r.PointOnSurface(), r));
+}
+
+TEST(Accessors, PointOnSurfaceNotch) {
+  // U-shaped ring with a notch. The centroid falls inside the notch (outside
+  // the ring), but PointOnSurface still returns a point inside the ring.
+  Ring2_i r = {Point2_i(0, 0),   Point2_i(40, 0),  Point2_i(40, 40),
+               Point2_i(30, 40), Point2_i(30, 10), Point2_i(10, 10),
+               Point2_i(10, 40), Point2_i(0, 40),  Point2_i(0, 0)};
+
+  EXPECT_FALSE(IsWithin(r.Centroid(), r));
+  EXPECT_TRUE(IsWithin(r.PointOnSurface(), r));
+}
+
 TEST(Accessors, BoundingBox1) {
   Ring2_i r = {Point2_i(0, 0), Point2_i(2, 0), Point2_i(2, 2), Point2_i(0, 2),
                Point2_i(0, 0)};

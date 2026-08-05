@@ -57,6 +57,12 @@ class Ring2 {
     bg::centroid(*this, p);
     return p;
   }
+  // Returns a point guaranteed to lie inside the ring (on its surface).
+  Point2<T> PointOnSurface() const {
+    Point2<T> p;
+    bg::point_on_surface(*this, p);
+    return p;
+  }
   Box2<T> BoundingBox() const {
     Box2<T> b;
     bg::envelope(*this, b);
