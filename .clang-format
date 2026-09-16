@@ -24,13 +24,5 @@ IncludeCategories:
   - Regex: '.*'
     Priority: 6
 ---
-Language:        Java
-BasedOnStyle:  Google
----
-Language:      CSharp
-BasedOnStyle:  Microsoft
-NamespaceIndentation: None
----
 Language:      Proto
 BasedOnStyle:  Google
-ColumnLimit:   200
