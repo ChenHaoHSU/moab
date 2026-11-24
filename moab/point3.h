@@ -208,7 +208,9 @@ class Point3 {
   // metric.
   T Distance(const Point3& p) const { return ManhattanDistance(p); }
   // Returns the squared Euclidean distance to 'p', dx^2 + dy^2 + dz^2,
-  // computed exactly in area_type.
+  // computed in area_type. For integer coordinates it is exact while the
+  // result fits in int64_t, which holds whenever each difference is below
+  // about 1.7e9.
   area_type SquaredEuclideanDistance(const Point3& p) const {
     const area_type dx =
         static_cast<area_type>(d_[0]) - static_cast<area_type>(p.d_[0]);
@@ -242,7 +244,7 @@ class Point3 {
 
   // Protobuf.
   // Returns a Point3Proto.
-  Point3Proto ToProto() const;
+  Point3Proto ToProto() const noexcept;
   // Sets the Point3 from a Point3Proto. On error, returns the error from
   // FromProto and leaves the Point3 unchanged.
   absl::Status SetFromProto(const Point3Proto& proto);
@@ -257,7 +259,7 @@ class Point3 {
 
 // Protobuf.
 template <typename T>
-Point3Proto Point3<T>::ToProto() const {
+Point3Proto Point3<T>::ToProto() const noexcept {
   Point3Proto proto;
   if constexpr (std::is_same_v<T, int> || std::is_same_v<T, int32_t>) {
     proto.mutable_point_int32()->set_x(d_[0]);

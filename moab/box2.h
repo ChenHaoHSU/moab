@@ -121,15 +121,20 @@ class Box2 {
   // Returns the squared Euclidean distance between the closest points of this
   // box and 'b': dx^2 + dy^2, where dx and dy are the gaps between the boxes
   // along x and y (0 where their projections overlap or touch). It is 0 when
-  // the boxes overlap or touch. Computed exactly in area_type, so compare it
-  // against a squared spacing: SquaredEuclideanDistance(b) < s * s.
+  // the boxes overlap or touch. It is computed in area_type; for integer
+  // coordinates it is exact while the result fits in int64_t, which holds
+  // whenever each gap is below 2^31 (about 2.1e9). Compare it against a
+  // squared spacing to avoid a square root: SquaredEuclideanDistance(b) < s *
+  // s.
   area_type SquaredEuclideanDistance(const Box2& b) const {
     const area_type dx = std::max<area_type>(
-        {0, static_cast<area_type>(b.xl()) - static_cast<area_type>(xh()),
-         static_cast<area_type>(xl()) - static_cast<area_type>(b.xh())});
+        0, std::max(
+               static_cast<area_type>(b.xl()) - static_cast<area_type>(xh()),
+               static_cast<area_type>(xl()) - static_cast<area_type>(b.xh())));
     const area_type dy = std::max<area_type>(
-        {0, static_cast<area_type>(b.yl()) - static_cast<area_type>(yh()),
-         static_cast<area_type>(yl()) - static_cast<area_type>(b.yh())});
+        0, std::max(
+               static_cast<area_type>(b.yl()) - static_cast<area_type>(yh()),
+               static_cast<area_type>(yl()) - static_cast<area_type>(b.yh())));
     return dx * dx + dy * dy;
   }
   // Returns the Euclidean (L2) distance between the closest points of this box
@@ -258,7 +263,7 @@ class Box2 {
 
   // Protobuf.
   // Returns a Box2Proto.
-  Box2Proto ToProto() const;
+  Box2Proto ToProto() const noexcept;
   // Sets the Box2 from a Box2Proto. On error, returns the error from FromProto
   // and leaves the Box2 unchanged.
   absl::Status SetFromProto(const Box2Proto& proto);
@@ -294,7 +299,7 @@ class Box2 {
 
 // Protobuf.
 template <typename T>
-Box2Proto Box2<T>::ToProto() const {
+Box2Proto Box2<T>::ToProto() const noexcept {
   Box2Proto proto;
   if constexpr (std::is_same_v<T, int> || std::is_same_v<T, int32_t>) {
     proto.mutable_box_int32()->mutable_min_corner()->set_x(d_[0].x());

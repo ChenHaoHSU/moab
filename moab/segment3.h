@@ -171,7 +171,7 @@ class Segment3 {
 
   // Protobuf.
   // Returns a Segment3Proto.
-  Segment3Proto ToProto() const;
+  Segment3Proto ToProto() const noexcept;
   // Sets the Segment3 from a Segment3Proto. On error, returns the error from
   // FromProto and leaves the Segment3 unchanged.
   absl::Status SetFromProto(const Segment3Proto& proto);
@@ -186,7 +186,7 @@ class Segment3 {
 
 // Protobuf.
 template <typename T>
-Segment3Proto Segment3<T>::ToProto() const {
+Segment3Proto Segment3<T>::ToProto() const noexcept {
   Segment3Proto proto;
   if constexpr (std::is_same_v<T, int> || std::is_same_v<T, int32_t>) {
     proto.mutable_segment_int32()->mutable_p0()->set_x(d_[0].x());

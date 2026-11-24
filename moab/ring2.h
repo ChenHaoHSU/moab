@@ -91,7 +91,7 @@ class Ring2 {
     return b;
   }
   // Returns the maximum boxes that cover the ring.
-  std::vector<Box2<T>> MaxBoxes() const {
+  std::vector<Box2<T>> MaxBoxes() const noexcept {
     std::vector<Box2<T>> boxes;
     gtl::get_max_rectangles(boxes,
                             gtl::view_as<gtl::polygon_90_set_concept>(*this));
