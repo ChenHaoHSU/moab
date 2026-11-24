@@ -27,7 +27,7 @@ namespace moab {
 template <typename T>
 class Segment2 {
  public:
-  // Type aliases. (Required by Boost geometry/poylgon traits.)
+  // Type aliases. (Required by Boost geometry/polygon traits.)
   using coordinate_type = T;
   using point_type = Point2<T>;
 

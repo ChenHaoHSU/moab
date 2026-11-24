@@ -85,7 +85,7 @@ class Ring2 {
   }
 
   // Mutators.
-  // Avoid using these methods if possible. It is designed for Boost
+  // Avoid using these methods if possible. They are designed for Boost
   // polygon/geometry registration.
   void Clear() { d_.clear(); }
   void Append(const Point2<T>& p) { d_.push_back(p); }

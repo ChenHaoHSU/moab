@@ -19,7 +19,7 @@ template <typename T>
 class Ring2;
 
 // Please refer to
-//   https://www.boost.org/doc/libs/1_85_0/libs/polygon/doc/gtl_polygon_set_concept.htm
+//   https://www.boost.org/doc/libs/1_90_0/libs/polygon/doc/gtl_polygon_set_concept.htm
 // for more information.
 
 // ==================================
@@ -75,7 +75,8 @@ constexpr auto Area = [](const auto& set) constexpr {
 // Boost geometry algorithms functions
 // ==================================
 
-// Checks if the first geometry is inside or on border the second geometry.
+// Checks if the first geometry is inside or on the border of the second
+// geometry.
 constexpr auto IsCoveredBy = [](const auto& g1,
                                 const auto& g2) constexpr -> bool {
   return boost::geometry::covered_by(g1, g2);
@@ -121,7 +122,7 @@ constexpr auto IsDisjoint = [](const auto& g1,
   return boost::geometry::disjoint(g1, g2);
 };
 
-// Checks if a geometry are spatially equal.
+// Checks if two geometries are spatially equal.
 // Point-Point
 // Box-Box
 constexpr auto IsEqual = [](const auto& g1, const auto& g2) constexpr -> bool {

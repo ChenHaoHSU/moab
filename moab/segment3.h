@@ -33,8 +33,8 @@ class Segment3 {
   // Constructors.
   Segment3() : d_({Point3<T>(0, 0, 0), Point3<T>(0, 0, 0)}) {}
   explicit Segment3(const Point3<T>& p0, const Point3<T>& p1) { Set(p0, p1); }
-  explicit Segment3(T xl, T yl, T zl, T xh, T yh, T zh) {
-    Set(xl, yl, zl, xh, yh, zh);
+  explicit Segment3(T x0, T y0, T z0, T x1, T y1, T z1) {
+    Set(x0, y0, z0, x1, y1, z1);
   }
   explicit Segment3(const Segment3Proto& proto) { SetFromProto(proto); }
   Segment3(const Segment3&) = default;
@@ -90,7 +90,7 @@ class Segment3 {
   void SetP0(const Point3<T>& p) { d_[0] = p; }
   void SetP1(const Point3<T>& p) { d_[1] = p; }
   void SetP(std::size_t i, const Point3<T>& p) {
-    DCHECK(i < 2) << "Invalid SetP Index i" << i;
+    DCHECK(i < 2) << "Invalid index. i: " << i;
     d_[i] = p;
   }
 

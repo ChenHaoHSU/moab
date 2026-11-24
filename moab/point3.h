@@ -198,7 +198,7 @@ class Point3 {
   // Protobuf.
   // Returns a Point3Proto.
   Point3Proto ToProto() const;
-  // Sets the Point2 from a Point3Proto.
+  // Sets the Point3 from a Point3Proto.
   void SetFromProto(const Point3Proto& proto);
 
  private:
