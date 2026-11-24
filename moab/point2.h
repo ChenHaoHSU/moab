@@ -66,7 +66,10 @@ class Point2 {
   }
   void SetX(T x) { d_[0] = x; }
   void SetY(T y) { d_[1] = y; }
-  void SetDim(std::size_t i, T v) { d_[i] = v; }
+  void SetDim(std::size_t i, T v) {
+    DCHECK_LT(i, d_.size());
+    d_[i] = v;
+  }
 
   // Operations.
   void Shift(T dx, T dy) {

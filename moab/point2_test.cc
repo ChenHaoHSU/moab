@@ -497,6 +497,7 @@ TEST(Point2OperatorsDeathTest, SubscriptOutOfRange) {
 
   EXPECT_DEATH((void)v[2], "Check failed: i < d_.size");
   EXPECT_DEATH((void)const_v[2], "Check failed: i < d_.size");
+  EXPECT_DEATH(v.SetDim(2, 0), "Check failed: i < d_.size");
 }
 #endif
 

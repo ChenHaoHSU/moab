@@ -76,7 +76,10 @@ class Point3 {
   void SetX(T x) { d_[0] = x; }
   void SetY(T y) { d_[1] = y; }
   void SetZ(T z) { d_[2] = z; }
-  void SetDim(std::size_t i, T v) { d_[i] = v; }
+  void SetDim(std::size_t i, T v) {
+    DCHECK_LT(i, d_.size());
+    d_[i] = v;
+  }
 
   // Operations.
   void Shift(T dx, T dy, T dz) {
@@ -91,16 +94,19 @@ class Point3 {
   // The rotations turn the point around the origin in the plane of axes
   // 'axis1' and 'axis2' (0 = x, 1 = y, 2 = z), counterclockwise meaning from
   // axis1 toward axis2. The third coordinate is unchanged; for example,
-  // (1, 2, 3).Rotate90(0, 1) gives (-2, 1, 3).
+  // (1, 2, 3).Rotate90(0, 1) gives (-2, 1, 3). The axes must be different and
+  // below 3, which debug builds check.
 
   // Rotates the point counterclockwise by 90 degrees.
   void Rotate90(size_t axis1, size_t axis2) {
+    CheckRotationAxes(axis1, axis2);
     T x = d_[axis1];
     d_[axis1] = -d_[axis2];
     d_[axis2] = x;
   }
   // Rotates the point by 180 degrees.
   void Rotate180(size_t axis1, size_t axis2) {
+    CheckRotationAxes(axis1, axis2);
     d_[axis1] = -d_[axis1];
     d_[axis2] = -d_[axis2];
   }
@@ -254,6 +260,12 @@ class Point3 {
   static absl::StatusOr<Point3> FromProto(const Point3Proto& proto);
 
  private:
+  static void CheckRotationAxes(size_t axis1, size_t axis2) {
+    DCHECK_LT(axis1, 3u);
+    DCHECK_LT(axis2, 3u);
+    DCHECK_NE(axis1, axis2) << "Rotation needs two different axes.";
+  }
+
   std::array<T, 3> d_;  // (x, y, z)
 };
 

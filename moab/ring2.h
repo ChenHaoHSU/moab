@@ -86,12 +86,25 @@ class Ring2 {
     bg::point_on_surface(*this, p);
     return p;
   }
+  // Returns the smallest box that contains the ring. An empty ring has no
+  // extent and gives the zero box (0 0)-(0 0).
   Box2<T> BoundingBox() const {
+    if (d_.empty()) {
+      return Box2<T>();
+    }
     Box2<T> b;
     bg::envelope(*this, b);
     return b;
   }
-  // Returns the maximum boxes that cover the ring.
+  // Returns true if every edge, including the one from the last point back to
+  // the first, is horizontal or vertical (or has zero length). An empty ring
+  // is Manhattan.
+  bool IsManhattan() const;
+  // Returns the maximum boxes that cover the ring. The ring must be Manhattan
+  // (see IsManhattan). Boost.Polygon reads a diagonal edge as if it were
+  // axis-parallel, so for other rings the boxes are wrong and may miss part
+  // of the ring or reach outside it; check IsManhattan first when the input
+  // can have diagonal edges, such as shapes read from GDS.
   std::vector<Box2<T>> MaxBoxes() const noexcept {
     std::vector<Box2<T>> boxes;
     gtl::get_max_rectangles(boxes,
@@ -115,7 +128,7 @@ class Ring2 {
   // Operations.
   // Operations - Bloat
   // Returns the ring's max boxes (see MaxBoxes) bloated by 'x' and 'y', as
-  // rings. 'x' and 'y' must be non-negative.
+  // rings. 'x' and 'y' must be non-negative, and the ring must be Manhattan.
   std::vector<Ring2<T>> BloatedRings(T x, T y) const;
   // Operations - Simplify
   // Removes the redundant points of the ring and returns *this: consecutive
@@ -169,14 +182,15 @@ class Ring2 {
   }
 
   // Hash.
-  // This is NOT a perfect hash function. Be careful when using this hash
-  // function. It is possible that two equivalent rings with different point
-  // sets have different hash values. They are equal under operator== (the
-  // IsEqual function) but have different hash values.
+  // Hashes the bounding box and the area, which rings equal under operator==
+  // share however their point lists are written (start point, direction,
+  // extra collinear points), so equal rings hash equally. Rings with the same
+  // box and area collide. Hashing is O(n) in the number of points. For
+  // floating-point coordinates, rings that IsEqual treats as equal within its
+  // tolerance may still hash differently.
   template <typename H>
   friend H AbslHashValue(H h, const Ring2& r) {
-    h = H::combine(std::move(h), r.d_);
-    return h;
+    return H::combine(std::move(h), r.BoundingBox(), r.Area());
   }
 
  private:
@@ -208,6 +222,18 @@ bool Ring2<T>::IsRedundant(const Point2<T>& a, const Point2<T>& b,
                (b.y() - a.y()) * (c.x() - b.x()) ==
            0;
   }
+}
+
+template <typename T>
+bool Ring2<T>::IsManhattan() const {
+  for (std::size_t i = 0; i < d_.size(); ++i) {
+    const Point2<T>& a = d_[i];
+    const Point2<T>& b = d_[i + 1 < d_.size() ? i + 1 : 0];
+    if (a.x() != b.x() && a.y() != b.y()) {
+      return false;
+    }
+  }
+  return true;
 }
 
 template <typename T>

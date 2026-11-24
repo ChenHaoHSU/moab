@@ -384,6 +384,26 @@ TEST(Box2AccessorsTypeSpecific, IntegerCenterRoundsTowardZero) {
   EXPECT_EQ(Box2_i64(-3, -3, 0, 0).Center(), Point2_i64(-1, -1));
 }
 
+// The sum lo + hi is computed in a wider type, so the center of a box near
+// the type's limits does not overflow.
+TEST(Box2AccessorsTypeSpecific, IntegerCenterDoesNotOverflow) {
+  constexpr int32_t kMax32 = std::numeric_limits<int32_t>::max();
+  constexpr int32_t kMin32 = std::numeric_limits<int32_t>::min();
+  EXPECT_EQ(Box2_i32(kMax32 - 2, kMax32 - 4, kMax32, kMax32).Center(),
+            Point2_i32(kMax32 - 1, kMax32 - 2));
+  EXPECT_EQ(Box2_i32(kMin32, kMin32, kMin32 + 2, kMin32 + 4).Center(),
+            Point2_i32(kMin32 + 1, kMin32 + 2));
+  EXPECT_EQ(Box2_i32(kMin32, kMin32, kMax32, kMax32).Center(),
+            Point2_i32(0, 0));
+
+  constexpr int64_t kMax64 = std::numeric_limits<int64_t>::max();
+  constexpr int64_t kMin64 = std::numeric_limits<int64_t>::min();
+  EXPECT_EQ(Box2_i64(kMax64 - 2, kMax64 - 4, kMax64, kMax64).Center(),
+            Point2_i64(kMax64 - 1, kMax64 - 2));
+  EXPECT_EQ(Box2_i64(kMin64, kMin64, kMax64, kMax64).Center(),
+            Point2_i64(0, 0));
+}
+
 TEST(Box2AccessorsTypeSpecific, FloatingPointCenterIsExact) {
   EXPECT_EQ(Box2<double>(10, 20, 15, 25).Center(), Point2<double>(12.5, 22.5));
   EXPECT_EQ(Box2<float>(10, 20, 15, 25).Center(), Point2<float>(12.5f, 22.5f));

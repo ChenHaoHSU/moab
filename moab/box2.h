@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "absl/log/check.h"
+#include "absl/numeric/int128.h"
 #include "absl/status/status.h"
 #include "absl/status/status_macros.h"
 #include "absl/status/statusor.h"
@@ -103,13 +104,10 @@ class Box2 {
   // Center.
   // Returns the center of the box. For integer coordinates, each coordinate is
   // (lo + hi) / 2 rounded toward zero, so (-3 -3)-(0 0) has center (-1 -1).
-  T CenterX() const { return Center().x(); }
-  T CenterY() const { return Center().y(); }
-  Point2<T> Center() const {
-    Point2<T> p;
-    gtl::center(p, *this);
-    return p;
-  }
+  // The sum is computed in a wider type, so it does not overflow.
+  T CenterX() const { return Midpoint(d_[0].x(), d_[1].x()); }
+  T CenterY() const { return Midpoint(d_[0].y(), d_[1].y()); }
+  Point2<T> Center() const { return Point2<T>(CenterX(), CenterY()); }
 
   area_type Area() const {
     return static_cast<area_type>(Width()) * static_cast<area_type>(Height());
@@ -278,6 +276,18 @@ class Box2 {
   friend struct boost::geometry::traits::indexed_access;
   template <typename Rectangle>
   friend struct boost::polygon::rectangle_mutable_traits;
+
+  // Returns (lo + hi) / 2, rounded toward zero for integers, without
+  // overflowing T.
+  static T Midpoint(T lo, T hi) {
+    if constexpr (std::is_integral_v<T>) {
+      using Wide = std::conditional_t<(sizeof(T) < sizeof(int64_t)), int64_t,
+                                      absl::int128>;
+      return static_cast<T>((Wide(lo) + Wide(hi)) / 2);
+    } else {
+      return (lo + hi) / 2;
+    }
+  }
 
   // Moves both sides of axis 'dim' outward by 'd' (inward if negative), and
   // collapses the axis to its center rather than inverting it.

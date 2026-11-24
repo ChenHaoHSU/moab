@@ -623,6 +623,18 @@ TEST(Point3OperatorsDeathTest, SubscriptOutOfRange) {
 
   EXPECT_DEATH((void)v[3], "Check failed: i < d_.size");
   EXPECT_DEATH((void)const_v[3], "Check failed: i < d_.size");
+  EXPECT_DEATH(v.SetDim(3, 0), "Check failed: i < d_.size");
+}
+
+// The rotations check their axes with DCHECK, so only debug builds abort.
+TEST(Point3OperationsDeathTest, RotationAxesOutOfRangeOrEqual) {
+  Point3_i v(1, 2, 3);
+
+  EXPECT_DEATH(v.Rotate90(3, 1), "Check failed: axis1 < 3u");
+  EXPECT_DEATH(v.Rotate90(0, 3), "Check failed: axis2 < 3u");
+  EXPECT_DEATH(v.Rotate90(1, 1), "Rotation needs two different axes");
+  EXPECT_DEATH(v.Rotate180(2, 2), "Rotation needs two different axes");
+  EXPECT_DEATH(v.Rotate270(0, 0), "Rotation needs two different axes");
 }
 #endif
 

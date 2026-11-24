@@ -380,10 +380,40 @@ TYPED_TEST(Ring2Accessor, BoundingBox) {
       {"negative coordinates",
        MakeRing<TypeParam>({{-3, -1}, {-1, -5}, {2, -2}, {-3, -1}}),
        Box2<TypeParam>(-3, -5, 2, -1)},
+      // Boost.Geometry gives an empty range an inside-out box; Ring2 gives
+      // the zero box instead, so the result is never inverted.
+      {"empty ring gives the zero box", Ring2<TypeParam>(), Box2<TypeParam>()},
   };
   for (const Case& c : cases) {
     SCOPED_TRACE(c.name);
     EXPECT_EQ(c.ring.BoundingBox(), c.expected);
+  }
+}
+
+TYPED_TEST(Ring2Accessor, IsManhattan) {
+  struct Case {
+    std::string name;
+    Ring2<TypeParam> ring;
+    bool expected;
+  };
+  const std::vector<Case> cases = {
+      {"empty", Ring2<TypeParam>(), true},
+      {"closed square", Ring2<TypeParam>(SquarePoints<TypeParam>()), true},
+      {"L-shape", LShape<TypeParam>(), true},
+      {"open rectangle", MakeRing<TypeParam>({{0, 0}, {4, 0}, {4, 2}, {0, 2}}),
+       true},
+      {"repeated point",
+       MakeRing<TypeParam>({{0, 0}, {4, 0}, {4, 0}, {4, 2}, {0, 2}, {0, 0}}),
+       true},
+      {"closed triangle", MakeRing<TypeParam>({{0, 0}, {4, 0}, {4, 2}, {0, 0}}),
+       false},
+      // The edge from the last point back to the first is diagonal.
+      {"open, diagonal closing edge",
+       MakeRing<TypeParam>({{0, 0}, {4, 0}, {4, 2}}), false},
+  };
+  for (const Case& c : cases) {
+    SCOPED_TRACE(c.name);
+    EXPECT_EQ(c.ring.IsManhattan(), c.expected);
   }
 }
 
@@ -945,20 +975,37 @@ TYPED_TEST(Ring2Hash, SupportsAbslHash) {
       Ring2<TypeParam>(),
       Ring2<TypeParam>({P(0, 0), P(2, 0), P(2, 2), P(0, 2), P(0, 0)}),
       Ring2<TypeParam>({P(0, 0), P(2, 0), P(2, 2), P(0, 2), P(0, 0)}),
+      // The same square, starting at another point.
+      Ring2<TypeParam>({P(2, 0), P(2, 2), P(0, 2), P(0, 0), P(2, 0)}),
       Ring2<TypeParam>({P(0, 0), P(20, 0), P(20, 20), P(0, 20), P(0, 0)}),
   }));
 }
 
-TYPED_TEST(Ring2Hash, HashesThePointList) {
+// Rings equal under operator== hash equally, however their point lists are
+// written. The hash covers the bounding box and the area.
+TYPED_TEST(Ring2Hash, EqualRingsHashEqually) {
   using P = Point2<TypeParam>;
-  // Equal under operator== (the same square, starting at another point), but
-  // the point lists differ, and so do the hashes (see AbslHashValue).
-  const Ring2<TypeParam> r1(SquarePoints<TypeParam>());
-  const Ring2<TypeParam> r2 = {P(2, 0), P(2, 2), P(0, 2), P(0, 0), P(2, 0)};
-
-  EXPECT_EQ(r1, r2);
-  EXPECT_NE(absl::HashOf(r1), absl::HashOf(r2));
-  EXPECT_EQ(absl::HashOf(r1), absl::HashOf(Ring2<TypeParam>(r1)));
+  const Ring2<TypeParam> square(SquarePoints<TypeParam>());
+  struct Case {
+    std::string name;
+    Ring2<TypeParam> ring;
+  };
+  const std::vector<Case> cases = {
+      {"a copy", Ring2<TypeParam>(square)},
+      {"another start point", {P(2, 0), P(2, 2), P(0, 2), P(0, 0), P(2, 0)}},
+      {"an extra collinear point",
+       {P(0, 0), P(1, 0), P(2, 0), P(2, 2), P(0, 2), P(0, 0)}},
+  };
+  for (const Case& c : cases) {
+    SCOPED_TRACE(c.name);
+    ASSERT_EQ(c.ring, square);
+    EXPECT_EQ(absl::HashOf(c.ring), absl::HashOf(square));
+  }
+  // Different rings with different boxes or areas hash differently.
+  EXPECT_NE(absl::HashOf(square),
+            absl::HashOf(Ring2<TypeParam>(Box2<TypeParam>(0, 0, 2, 3))));
+  EXPECT_NE(absl::HashOf(square),
+            absl::HashOf(Ring2<TypeParam>(Box2<TypeParam>(1, 0, 3, 2))));
 }
 
 // =============================================================
@@ -1072,6 +1119,31 @@ TYPED_TEST(Ring2BoostPolygon, SetPoints) {
   EXPECT_EQ(r.Size(), 4u);
   EXPECT_EQ(r.Points(), points);
   EXPECT_EQ(gtl::area(r), 8);
+}
+
+// Boost.Polygon writes the rings of a set operation closed (the first point
+// repeats at the end) and counterclockwise, which matches the Boost.Geometry
+// traits, so Boost.Geometry algorithms work on them unchanged.
+template <typename T>
+void ExpectSetOutputMatchesGeometryTraits() {
+  std::vector<Ring2<T>> rings;
+  Assign(rings,
+         std::vector<Box2<T>>{Box2<T>(0, 0, 10, 10), Box2<T>(5, 5, 15, 15)});
+
+  ASSERT_EQ(rings.size(), 1u);
+  const Ring2<T>& r = rings[0];
+  EXPECT_EQ(r.Size(), 9u);
+  EXPECT_EQ(r.Points().front(), r.Points().back());
+  EXPECT_EQ(bg::area(r), 175);  // Positive: counterclockwise.
+  EXPECT_EQ(r.Area(), 175);
+  EXPECT_TRUE(bg::is_valid(r));
+  EXPECT_TRUE(IsWithin(Point2<T>(1, 1), r));
+  EXPECT_FALSE(IsWithin(Point2<T>(1, 14), r));
+}
+
+TEST(Ring2BoostPolygonSetOutput, ClosedAndCounterclockwise) {
+  ExpectSetOutputMatchesGeometryTraits<int32_t>();
+  ExpectSetOutputMatchesGeometryTraits<int64_t>();
 }
 
 TYPED_TEST(Ring2BoostPolygon, SetPointsFromAnotherPointType) {
