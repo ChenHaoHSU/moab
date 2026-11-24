@@ -53,15 +53,18 @@ class Interval {
   T Size() const { return Length(); }
 
   // Mutators.
+  // Sets the ends to 'lo' and 'hi', swapping them if lo > hi.
   void Set(T lo, T hi) {
-    // Ensure the interval is valid. Automatically swap if lo > hi.
     d_[0] = lo < hi ? lo : hi;
     d_[1] = lo < hi ? hi : lo;
   }
 
+  // Sets one end and keeps lo <= hi by swapping: if 'v' passes the other end,
+  // the ends swap, so set_lo(20) on [0 10] gives [10 20].
   void set_lo(T v) { Set(v, hi()); }
   void set_hi(T v) { Set(lo(), v); }
 
+  // Same as set_lo and set_hi.
   void SetMin(T v) { Set(v, hi()); }
   void SetMax(T v) { Set(lo(), v); }
 
@@ -94,6 +97,8 @@ class Interval {
   }
   bool operator!=(const Interval& i) const { return !(*this == i); }
   // Operators - Inequality.
+  // Lexicographic order, for sorting and ordered containers; not a geometric
+  // comparison. Compares lo, then hi.
   bool operator<(const Interval& i) const {
     return d_[0] != i.d_[0] ? d_[0] < i.d_[0] : d_[1] < i.d_[1];
   }

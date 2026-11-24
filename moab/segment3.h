@@ -69,6 +69,8 @@ class Segment3 {
   // the Euclidean length.
   T Length() const { return d_[0].ManhattanDistance(d_[1]); }
 
+  // The minimum and maximum coordinates over the two endpoints. The endpoints
+  // are not sorted, so xl() is not necessarily p0().x().
   T xl() const { return d_[0].x() < d_[1].x() ? d_[0].x() : d_[1].x(); }
   T yl() const { return d_[0].y() < d_[1].y() ? d_[0].y() : d_[1].y(); }
   T zl() const { return d_[0].z() < d_[1].z() ? d_[0].z() : d_[1].z(); }
@@ -83,6 +85,9 @@ class Segment3 {
   T MaxY() const { return yh(); }
   T MaxZ() const { return zh(); }
 
+  // Returns the lexicographically smaller (MinPoint) or larger (MaxPoint)
+  // endpoint, comparing x, then y, then z. When the endpoints are equal, both
+  // return p1().
   Point3<T>& MinPoint() { return d_[0] < d_[1] ? d_[0] : d_[1]; }
   const Point3<T>& MinPoint() const { return d_[0] < d_[1] ? d_[0] : d_[1]; }
   Point3<T>& MaxPoint() { return d_[0] > d_[1] ? d_[0] : d_[1]; }
@@ -139,6 +144,8 @@ class Segment3 {
   }
   bool operator!=(const Segment3& p) const { return !(*this == p); }
   // Operators - Inequality
+  // Lexicographic order, for sorting and ordered containers; not a geometric
+  // comparison. Compares p0, then p1.
   bool operator<(const Segment3& p) const {
     return d_[0] != p.d_[0] ? d_[0] < p.d_[0] : d_[1] < p.d_[1];
   }

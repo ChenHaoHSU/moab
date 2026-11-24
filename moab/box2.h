@@ -101,6 +101,8 @@ class Box2 {
   }
 
   // Center.
+  // Returns the center of the box. For integer coordinates, each coordinate is
+  // (lo + hi) / 2 rounded toward zero, so (-3 -3)-(0 0) has center (-1 -1).
   T CenterX() const { return Center().x(); }
   T CenterY() const { return Center().y(); }
   Point2<T> Center() const {
@@ -137,8 +139,8 @@ class Box2 {
   }
 
   // Mutators.
+  // Sets the corners, swapping the ends of an axis if they are out of order.
   void Set(T xl, T yl, T xh, T yh) {
-    // Ensure that the box is valid. Automatically swap if necessary.
     d_[0].Set((xl < xh ? xl : xh), (yl < yh ? yl : yh));
     d_[1].Set((xl < xh ? xh : xl), (yl < yh ? yh : yl));
   }
@@ -146,6 +148,9 @@ class Box2 {
     Set(ll.x(), ll.y(), ur.x(), ur.y());
   }
 
+  // Sets one side or corner and keeps the box ordered by swapping: if the new
+  // value passes the opposite side, the sides swap, so set_xl(15) on
+  // (0 0)-(10 10) gives (10 0)-(15 10).
   void set_xl(T xl) { Set(xl, yl(), xh(), yh()); }
   void set_yl(T yl) { Set(xl(), yl, xh(), yh()); }
   void set_xh(T xh) { Set(xl(), yl(), xh, yh()); }
@@ -153,6 +158,7 @@ class Box2 {
   void set_ll(const Point2<T>& p) { Set(p.x(), p.y(), xh(), yh()); }
   void set_ur(const Point2<T>& p) { Set(xl(), yl(), p.x(), p.y()); }
 
+  // Same as set_ll and set_ur.
   void SetMinCorner(const Point2<T>& p) { Set(p.x(), p.y(), xh(), yh()); }
   void SetMaxCorner(const Point2<T>& p) { Set(xl(), yl(), p.x(), p.y()); }
 
@@ -197,6 +203,8 @@ class Box2 {
   Box2& ShrinkX(T dx) { return BloatX(-dx); }
   Box2& ShrinkY(T dy) { return BloatY(-dy); }
   // Operations - Encompass
+  // Grows the box to contain 'p' (or 'b'). Returns true if the box grew, and
+  // false if it already contained it.
   bool Encompass(const Point2<T>& p) { return gtl::encompass(*this, p); }
   bool Encompass(const Box2& b) { return gtl::encompass(*this, b); }
 
@@ -212,6 +220,8 @@ class Box2 {
   }
   bool operator!=(const Box2& b) const { return !(*this == b); }
   // Operators - Inequality
+  // Lexicographic order, for sorting and ordered containers; not a geometric
+  // comparison. Compares the min corner, then the max corner.
   bool operator<(const Box2& b) const {
     return d_[0] != b.d_[0] ? d_[0] < b.d_[0] : d_[1] < b.d_[1];
   }

@@ -76,14 +76,14 @@ class Point2 {
   }
   void ShiftX(T dx) { d_[0] += dx; }
   void ShiftY(T dy) { d_[1] += dy; }
+  // Rotates the point counterclockwise by 90 degrees around the origin.
   void Rotate90() {
-    // Counterclockwise rotation by 90 degrees.
     T x = d_[0];
     d_[0] = -d_[1];
     d_[1] = x;
   }
+  // Rotates the point by 180 degrees around the origin.
   void Rotate180() {
-    // Rotation by 180 degrees.
     d_[0] = -d_[0];
     d_[1] = -d_[1];
   }
@@ -104,6 +104,8 @@ class Point2 {
   }
   bool operator!=(const Point2& p) const { return !(*this == p); }
   // Operators - Inequality
+  // Lexicographic order, for sorting and ordered containers; not a geometric
+  // comparison. Compares x, then y.
   bool operator<(const Point2& p) const {
     return d_[0] != p.d_[0] ? d_[0] < p.d_[0] : d_[1] < p.d_[1];
   }
@@ -130,6 +132,8 @@ class Point2 {
   Point2 operator+() const { return Point2(d_[0], d_[1]); }
   Point2 operator-() const { return Point2(-d_[0], -d_[1]); }
 
+  // The scalar operators apply the scalar to every coordinate: p + 1 adds 1 to
+  // both x and y.
   Point2& operator+=(T v) {
     d_[0] += v;
     d_[1] += v;

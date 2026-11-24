@@ -66,7 +66,14 @@ class Ring2 {
   size_t size() const { return d_.size(); }
   bool Empty() const { return d_.empty(); }
 
+  // Returns the area of the ring, the same for either orientation. For integer
+  // coordinates a fractional area is rounded down (a triangle of area 1.5
+  // gives 1).
   area_type Area() const { return static_cast<area_type>(gtl::area(*this)); }
+  // Returns the centroid of the ring. For integer coordinates Boost.Geometry
+  // computes it with integer arithmetic, so the result is approximate (within
+  // about one unit) and not consistently rounded; use Ring2<double> for an
+  // exact centroid.
   Point2<T> Centroid() const {
     Point2<T> p;
     bg::centroid(*this, p);
@@ -131,6 +138,9 @@ class Ring2 {
     return d_[i];
   }
   // Operator - Equality
+  // Returns true if the rings cover the same area (see IsEqual), even if their
+  // point lists differ, e.g. start at a different point. See the note on
+  // AbslHashValue.
   bool operator==(const Ring2& r) const { return moab::IsEqual(*this, r); }
   bool operator!=(const Ring2& r) const { return !(*this == r); }
 

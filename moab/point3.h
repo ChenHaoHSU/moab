@@ -61,6 +61,7 @@ class Point3 {
   const T* data() const { return d_.data(); }
   constexpr std::size_t Size() const { return d_.size(); }
 
+  // Returns the (x, y) point, dropping z.
   Point2<T> To2D() const { return Point2<T>(d_[0], d_[1]); }
 
   std::tuple<T, T, T> ToTuple() const {
@@ -88,19 +89,24 @@ class Point3 {
   void ShiftY(T dy) { d_[1] += dy; }
   void ShiftZ(T dz) { d_[2] += dz; }
 
+  // The rotations turn the point around the origin in the plane of axes
+  // 'axis1' and 'axis2' (0 = x, 1 = y, 2 = z), counterclockwise meaning from
+  // axis1 toward axis2. The third coordinate is unchanged; for example,
+  // (1, 2, 3).Rotate90(0, 1) gives (-2, 1, 3).
+
+  // Rotates the point counterclockwise by 90 degrees.
   void Rotate90(size_t axis1, size_t axis2) {
-    // Counterclockwise rotation by 90 degrees on (axis1, axis2) plane.
     T x = d_[axis1];
     d_[axis1] = -d_[axis2];
     d_[axis2] = x;
   }
+  // Rotates the point by 180 degrees.
   void Rotate180(size_t axis1, size_t axis2) {
-    // Rotation by 180 degrees on (axis1, axis2) plane.
     d_[axis1] = -d_[axis1];
     d_[axis2] = -d_[axis2];
   }
+  // Rotates the point counterclockwise by 270 degrees.
   void Rotate270(size_t axis1, size_t axis2) {
-    // Counterclockwise rotation by 270 degrees on (axis1, axis2) plane.
     Rotate90(axis1, axis2);
     Rotate180(axis1, axis2);
   }
@@ -121,6 +127,8 @@ class Point3 {
   }
   bool operator!=(const Point3& p) const { return !(*this == p); }
   // Operators - Inequality
+  // Lexicographic order, for sorting and ordered containers; not a geometric
+  // comparison. Compares x, then y, then z.
   bool operator<(const Point3& p) const {
     return d_[0] != p.d_[0]   ? d_[0] < p.d_[0]
            : d_[1] != p.d_[1] ? d_[1] < p.d_[1]
@@ -152,6 +160,8 @@ class Point3 {
   Point3 operator+() const { return Point3(d_[0], d_[1], d_[2]); }
   Point3 operator-() const { return Point3(-d_[0], -d_[1], -d_[2]); }
 
+  // The scalar operators apply the scalar to every coordinate: p + 1 adds 1 to
+  // x, y and z.
   Point3& operator+=(T v) {
     d_[0] += v;
     d_[1] += v;

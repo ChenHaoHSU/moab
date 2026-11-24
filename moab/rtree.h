@@ -188,6 +188,9 @@ class Rtree {
   }
 
   // Queries.
+  // Returns the values that satisfy 'predicates', such as
+  // index::Intersects(box) or several predicates combined with &&. The
+  // values come in the R-tree's traversal order, not sorted.
   template <typename Predicates>
   std::vector<T> Query(const Predicates& predicates) const {
     std::vector<T> result;
@@ -234,6 +237,8 @@ class Rtree {
   }
 
   // Rtree map / multi-map queries.
+  // Same as Query, but returns only element I of each matching pair or tuple.
+  // For a map, I = 0 is the key and I = 1 is the value.
   template <std::size_t I, typename Predicates>
   auto Query(const Predicates& predicates) const {
     static_assert(is_pair_v<T> || is_tuple_v<T>,
