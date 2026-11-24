@@ -15,7 +15,13 @@
 
 namespace moab {
 
-// Closed interval [lo, hi].
+// Closed interval [lo, hi], with lo <= hi.
+//
+// The ends can only be changed through the constructor and the setters, which
+// keep lo <= hi by swapping the ends when needed. Boost.Polygon's traits write
+// the ends directly and one at a time, so an interval may be inverted while
+// Boost updates it; reading its size then is a bug, which Length, Size and
+// Contains check in debug builds.
 template <typename T>
 class Interval {
  public:
@@ -35,14 +41,16 @@ class Interval {
   // Accessors.
   T lo() const { return d_[0]; }
   T hi() const { return d_[1]; }
-  T* data() { return d_.data(); }
   const T* data() const { return d_.data(); }
 
   T Min() const { return d_[0]; }
   T Max() const { return d_[1]; }
 
-  T Length() const { return d_[1] - d_[0]; }
-  T Size() const { return d_[1] - d_[0]; }
+  T Length() const {
+    DCHECK_LE(d_[0], d_[1]) << "Interval is inverted.";
+    return d_[1] - d_[0];
+  }
+  T Size() const { return Length(); }
 
   // Mutators.
   void Set(T lo, T hi) {
@@ -58,8 +66,13 @@ class Interval {
   void SetMax(T v) { Set(lo(), v); }
 
   // Queries.
-  bool Contains(T v) const { return lo() <= v && v <= hi(); }
+  bool Contains(T v) const {
+    DCHECK_LE(d_[0], d_[1]) << "Interval is inverted.";
+    return lo() <= v && v <= hi();
+  }
   bool Contains(const Interval& i) const {
+    DCHECK_LE(d_[0], d_[1]) << "Interval is inverted.";
+    DCHECK_LE(i.d_[0], i.d_[1]) << "Interval is inverted.";
     return lo() <= i.lo() && i.hi() <= hi();
   }
 
@@ -71,10 +84,6 @@ class Interval {
 
   // Operators.
   // Operators - Subscript.
-  T& operator[](std::size_t i) {
-    DCHECK_LT(i, d_.size());
-    return d_[i];
-  }
   const T& operator[](std::size_t i) const {
     DCHECK_LT(i, d_.size());
     return d_[i];
@@ -129,6 +138,10 @@ class Interval {
   }
 
  private:
+  // Boost's traits write the ends directly; see the class comment.
+  template <typename U>
+  friend struct boost::polygon::interval_mutable_traits;
+
   std::array<T, 2> d_;  // <low, high>
 };
 
@@ -162,7 +175,7 @@ struct interval_mutable_traits<moab::Interval<T>> {
 
   static inline void set(moab::Interval<T>& i, direction_1d dir,
                          coordinate_type value) {
-    i[dir.to_int()] = value;
+    i.d_[dir.to_int()] = value;
   }
   static inline moab::Interval<T> construct(coordinate_type lo,
                                             coordinate_type hi) {

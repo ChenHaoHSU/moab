@@ -4,9 +4,12 @@
 #include <gtest/gtest.h>
 
 #include <string>
+#include <type_traits>
+#include <utility>
 
 #include "absl/hash/hash_testing.h"
 #include "absl/strings/str_format.h"
+#include "boost/polygon/polygon.hpp"
 
 namespace moab {
 
@@ -267,13 +270,13 @@ TEST(Operators, SubscriptAccess) {
   EXPECT_EQ(i[1], 2);
 }
 
-TEST(Operators, SubscriptMutation) {
-  Interval_i i(1, 2);
-  i[0] = 3;
-  i[1] = 4;
-
-  EXPECT_EQ(i[0], 3);
-  EXPECT_EQ(i[1], 4);
+// The ends are read-only outside the setters, so an interval can't be
+// inverted through them.
+TEST(Operators, EndAccessorsAreReadOnly) {
+  static_assert(
+      std::is_same_v<decltype(std::declval<Interval_i&>()[0]), const int&>);
+  static_assert(
+      std::is_same_v<decltype(std::declval<Interval_i&>().data()), const int*>);
 }
 
 TEST(Operators, AdditionAssignment) {
@@ -346,6 +349,38 @@ TEST(OperatorsDeathTest, SubscriptOutOfRange) {
 
   EXPECT_DEATH((void)v[2], "Check failed: i < d_.size");
   EXPECT_DEATH((void)const_v[2], "Check failed: i < d_.size");
+}
+#endif
+
+// Boost.Polygon writes the two ends one at a time. These cases move both ends
+// past the old high end, so they fail if a write ever reorders the ends.
+TEST(BoostPolygon, Move) {
+  Interval_i i(0, 10);
+
+  boost::polygon::move(i, 20);
+
+  EXPECT_EQ(i, Interval_i(20, 30));
+}
+
+TEST(BoostPolygon, ScaleUp) {
+  Interval_i i(1, 2);
+
+  boost::polygon::scale_up(i, 10);
+
+  EXPECT_EQ(i, Interval_i(10, 20));
+}
+
+// Length and Contains check the end order in debug builds. Boost's raw writes
+// are the only way to produce an inverted interval.
+#ifndef NDEBUG
+TEST(InvariantDeathTest, InvertedIntervalSize) {
+  Interval_i i(0, 10);
+  boost::polygon::low(i, 20);
+
+  EXPECT_DEATH((void)i.Length(), "Interval is inverted");
+  EXPECT_DEATH((void)i.Size(), "Interval is inverted");
+  EXPECT_DEATH((void)i.Contains(5), "Interval is inverted");
+  EXPECT_DEATH((void)Interval_i(0, 30).Contains(i), "Interval is inverted");
 }
 #endif
 

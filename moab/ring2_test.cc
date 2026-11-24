@@ -11,6 +11,8 @@
 
 #include "absl/hash/hash_testing.h"
 #include "absl/strings/str_format.h"
+#include "boost/geometry.hpp"
+#include "boost/polygon/polygon.hpp"
 #include "moab/box2.h"
 #include "moab/point2.h"
 
@@ -484,5 +486,15 @@ TEST(OperatorsDeathTest, SubscriptOutOfRange) {
   EXPECT_DEATH((void)const_v[3], "Check failed: i < d_.size");
 }
 #endif
+
+// Boost.Geometry builds an envelope from an inside-out box. A ring away from
+// the origin fails if a write ever reorders the ends of an axis.
+TEST(BoostGeometry, BoundingBoxAwayFromOrigin) {
+  Ring2_i r(Box2_i(100, 100, 200, 300));
+
+  EXPECT_EQ(r.BoundingBox(), Box2_i(100, 100, 200, 300));
+  EXPECT_EQ(boost::geometry::return_envelope<Box2_i>(r),
+            Box2_i(100, 100, 200, 300));
+}
 
 }  // namespace moab

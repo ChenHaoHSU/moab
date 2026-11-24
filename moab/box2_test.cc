@@ -10,12 +10,15 @@
 #include <set>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "absl/hash/hash_testing.h"
 #include "absl/status/status.h"
 #include "absl/status/status_matchers.h"
 #include "absl/strings/str_format.h"
+#include "boost/geometry.hpp"
+#include "boost/polygon/polygon.hpp"
 #include "moab/box2.pb.h"
 #include "moab/point2.h"
 #include "moab/point2.pb.h"
@@ -463,13 +466,19 @@ TEST(Operators, SubscriptAccess) {
   EXPECT_EQ(b[1], Point2_i(3, 4));
 }
 
-TEST(Operators, SubscriptMutation) {
-  Box2_i b(Point2_i(1, 2), Point2_i(3, 4));
-  b[0] = Point2_i(5, 6);
-  b[1] = Point2_i(7, 8);
-
-  EXPECT_EQ(b[0], Point2_i(5, 6));
-  EXPECT_EQ(b[1], Point2_i(7, 8));
+// The corners are read-only outside the setters, so a box can't be inverted
+// through them.
+TEST(Operators, CornerAccessorsAreReadOnly) {
+  static_assert(
+      std::is_same_v<decltype(std::declval<Box2_i&>()[0]), const Point2_i&>);
+  static_assert(
+      std::is_same_v<decltype(std::declval<Box2_i&>().ll()), const Point2_i&>);
+  static_assert(
+      std::is_same_v<decltype(std::declval<Box2_i&>().ur()), const Point2_i&>);
+  static_assert(std::is_same_v<decltype(std::declval<Box2_i&>().MinCorner()),
+                               const Point2_i&>);
+  static_assert(std::is_same_v<decltype(std::declval<Box2_i&>().MaxCorner()),
+                               const Point2_i&>);
 }
 
 TEST(Operators, Equality) {
@@ -823,6 +832,106 @@ TEST(OperatorsDeathTest, SubscriptOutOfRange) {
 
   EXPECT_DEATH((void)v[2], "Check failed: i < d_.size");
   EXPECT_DEATH((void)const_v[2], "Check failed: i < d_.size");
+}
+#endif
+
+// Boost writes box coordinates one at a time, and Boost.Geometry starts some
+// algorithms from an inside-out box. These cases fail if a write ever reorders
+// the ends of an axis.
+TEST(BoostPolygon, Move) {
+  Box2_i b(0, 0, 10, 10);
+
+  boost::polygon::move(b, boost::polygon::HORIZONTAL, 20);
+
+  EXPECT_EQ(b, Box2_i(20, 0, 30, 10));
+}
+
+TEST(BoostPolygon, Convolve) {
+  Box2_i b(0, 0, 10, 10);
+
+  boost::polygon::convolve(b, Point2_i(100, 0));
+
+  EXPECT_EQ(b, Box2_i(100, 0, 110, 10));
+}
+
+TEST(BoostGeometry, AssignInverseThenExpand) {
+  Box2_i b;
+
+  boost::geometry::assign_inverse(b);
+  boost::geometry::expand(b, Point2_i(50, 60));
+  boost::geometry::expand(b, Point2_i(70, 90));
+
+  EXPECT_EQ(b, Box2_i(50, 60, 70, 90));
+}
+
+TEST(BoostGeometry, Convert) {
+  Box2_i b;
+
+  boost::geometry::convert(Box2_i(100, 100, 200, 300), b);
+
+  EXPECT_EQ(b, Box2_i(100, 100, 200, 300));
+}
+
+TEST(Operations, ShrinkPastZeroCollapsesToCenter) {
+  Box2_i b(0, 0, 10, 20);
+
+  b.Shrink(6);  // x is 10 wide and collapses to 5; y shrinks to [6, 14].
+
+  EXPECT_EQ(b, Box2_i(5, 6, 5, 14));
+  EXPECT_EQ(b.Width(), 0);
+  EXPECT_EQ(b.Area(), 0);
+}
+
+TEST(Operations, ShrinkExactlyToZero) {
+  Box2_i b(0, 0, 10, 10);
+
+  b.Shrink(5);
+
+  EXPECT_EQ(b, Box2_i(5, 5, 5, 5));
+}
+
+TEST(Operations, ShrinkPastZeroOddWidthRoundsTowardLo) {
+  Box2_i b(0, 0, 9, 9);
+
+  b.ShrinkX(5);
+
+  EXPECT_EQ(b, Box2_i(4, 0, 4, 9));
+}
+
+TEST(Operations, ShrinkPastZeroNegativeCoordinates) {
+  Box2_i b(-10, -10, -1, -1);
+
+  b.Shrink(5);
+
+  EXPECT_EQ(b, Box2_i(-6, -6, -6, -6));
+}
+
+TEST(Operations, BloatNegativePastZeroCollapsesToCenter) {
+  Box2_i b(0, 0, 10, 10);
+
+  b.Bloat(-6, 0);
+
+  EXPECT_EQ(b, Box2_i(5, 0, 5, 10));
+}
+
+TEST(Operations, ShrinkPastZeroFloatingPoint) {
+  Box2<double> b(0, 0, 3, 1);
+
+  b.ShrinkX(2);
+
+  EXPECT_EQ(b, Box2<double>(1.5, 0, 1.5, 1));
+}
+
+// Width and Height check the corner order in debug builds. Boost's raw writes
+// are the only way to produce an inverted box.
+#ifndef NDEBUG
+TEST(InvariantDeathTest, InvertedBoxSize) {
+  Box2_i b;
+  boost::geometry::assign_inverse(b);
+
+  EXPECT_DEATH((void)b.Width(), "Box is inverted in x");
+  EXPECT_DEATH((void)b.Height(), "Box is inverted in y");
+  EXPECT_DEATH((void)b.Area(), "Box is inverted");
 }
 #endif
 

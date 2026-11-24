@@ -35,6 +35,15 @@ namespace moab {
 
 namespace gtl = boost::polygon;
 
+// Axis-aligned box with min corner (xl, yl) and max corner (xh, yh), where
+// xl <= xh and yl <= yh.
+//
+// The corners can only be changed through the constructors, the setters,
+// Bloat, Shrink and Encompass, which keep them ordered.
+// Boost's traits write coordinates directly and one at a time, and some
+// Boost.Geometry algorithms start from an inside-out box, so a box may be
+// inverted while Boost updates it; reading its size then is a bug, which Width
+// and Height (and so Area and the perimeters) check in debug builds.
 template <typename T>
 class Box2 {
  public:
@@ -60,14 +69,10 @@ class Box2 {
   Box2& operator=(Box2&&) = default;
 
   // Accessors.
-  Point2<T>& ll() { return d_[0]; }
   const Point2<T>& ll() const { return d_[0]; }
-  Point2<T>& ur() { return d_[1]; }
   const Point2<T>& ur() const { return d_[1]; }
 
-  Point2<T>& MinCorner() { return d_[0]; }
   const Point2<T>& MinCorner() const { return d_[0]; }
-  Point2<T>& MaxCorner() { return d_[1]; }
   const Point2<T>& MaxCorner() const { return d_[1]; }
 
   T xl() const { return d_[0].x(); }
@@ -80,8 +85,14 @@ class Box2 {
   T MaxX() const { return d_[1].x(); }
   T MaxY() const { return d_[1].y(); }
 
-  T Width() const { return d_[1].x() - d_[0].x(); }
-  T Height() const { return d_[1].y() - d_[0].y(); }
+  T Width() const {
+    DCHECK_LE(d_[0].x(), d_[1].x()) << "Box is inverted in x.";
+    return d_[1].x() - d_[0].x();
+  }
+  T Height() const {
+    DCHECK_LE(d_[0].y(), d_[1].y()) << "Box is inverted in y.";
+    return d_[1].y() - d_[0].y();
+  }
 
   std::tuple<T, T, T, T> ToTuple() const {
     return std::make_tuple(d_[0].x(), d_[0].y(), d_[1].x(), d_[1].y());
@@ -137,33 +148,37 @@ class Box2 {
     d_[1].ShiftY(dy);
   }
   // Operations - Bloat
-  Box2& Bloat(T d) { return gtl::bloat(*this, d); }
+  // Moves both sides of an axis outward by the given amount, or inward if it
+  // is negative. An axis shrunk past zero width collapses to zero width at its
+  // center, lo + (hi - lo) / 2 (rounded toward lo for integers), instead of
+  // inverting.
+  Box2& Bloat(T d) { return Bloat(d, d); }
   Box2& Bloat(T dx, T dy) {
     BloatX(dx);
     BloatY(dy);
     return *this;
   }
-  Box2& BloatX(T dx) { return gtl::bloat(*this, gtl::HORIZONTAL, dx); }
-  Box2& BloatY(T dy) { return gtl::bloat(*this, gtl::VERTICAL, dy); }
-  // Operations - Shrink
-  Box2& Shrink(T d) { return gtl::shrink(*this, d); }
-  Box2& Shrink(T dx, T dy) {
-    ShrinkX(dx);
-    ShrinkY(dy);
+  Box2& BloatX(T dx) {
+    BloatAxis(0, dx);
     return *this;
   }
-  Box2& ShrinkX(T dx) { return gtl::shrink(*this, gtl::HORIZONTAL, dx); }
-  Box2& ShrinkY(T dy) { return gtl::shrink(*this, gtl::VERTICAL, dy); }
+  Box2& BloatY(T dy) {
+    BloatAxis(1, dy);
+    return *this;
+  }
+  // Operations - Shrink
+  // Moves both sides of an axis inward by the given amount. Shrink(d) is
+  // Bloat(-d), so an axis shrunk past zero width collapses to its center.
+  Box2& Shrink(T d) { return Bloat(-d); }
+  Box2& Shrink(T dx, T dy) { return Bloat(-dx, -dy); }
+  Box2& ShrinkX(T dx) { return BloatX(-dx); }
+  Box2& ShrinkY(T dy) { return BloatY(-dy); }
   // Operations - Encompass
   bool Encompass(const Point2<T>& p) { return gtl::encompass(*this, p); }
   bool Encompass(const Box2& b) { return gtl::encompass(*this, b); }
 
   // Operators.
   // Operators - Subscript
-  Point2<T>& operator[](std::size_t i) {
-    DCHECK_LT(i, d_.size());
-    return d_[i];
-  }
   const Point2<T>& operator[](std::size_t i) const {
     DCHECK_LT(i, d_.size());
     return d_[i];
@@ -220,6 +235,27 @@ class Box2 {
   static absl::StatusOr<Box2> FromProto(const Box2Proto& proto);
 
  private:
+  // Boost's traits write coordinates directly; see the class comment.
+  template <typename Geometry, std::size_t Index, std::size_t Dimension>
+  friend struct boost::geometry::traits::indexed_access;
+  template <typename Rectangle>
+  friend struct boost::polygon::rectangle_mutable_traits;
+
+  // Moves both sides of axis 'dim' outward by 'd' (inward if negative), and
+  // collapses the axis to its center rather than inverting it.
+  void BloatAxis(std::size_t dim, T d) {
+    const T lo = d_[0][dim] - d;
+    const T hi = d_[1][dim] + d;
+    if (lo <= hi) {
+      d_[0][dim] = lo;
+      d_[1][dim] = hi;
+    } else {
+      const T center = d_[0][dim] + (d_[1][dim] - d_[0][dim]) / 2;
+      d_[0][dim] = center;
+      d_[1][dim] = center;
+    }
+  }
+
   std::array<Point2<T>, 2> d_;
 };
 
@@ -338,7 +374,7 @@ struct indexed_access<moab::Box2<T>, Index, Dimension> {
     return b[Index][Dimension];
   }
   static inline void set(box_type& b, const coordinate_type& value) {
-    b[Index][Dimension] = value;
+    b.d_[Index][Dimension] = value;
   }
 };
 
@@ -375,8 +411,8 @@ struct rectangle_mutable_traits<moab::Box2<T>> {
   template <typename T2>
   static inline void set(moab::Box2<T>& rectangle, orientation_2d orient,
                          const T2& interval) {
-    rectangle[0][orient.to_int()] = interval_traits<T2>::get(interval, LOW);
-    rectangle[1][orient.to_int()] = interval_traits<T2>::get(interval, HIGH);
+    rectangle.d_[0][orient.to_int()] = interval_traits<T2>::get(interval, LOW);
+    rectangle.d_[1][orient.to_int()] = interval_traits<T2>::get(interval, HIGH);
   }
   template <typename T2, typename T3>
   static inline moab::Box2<T> construct(const T2& interval_horizontal,
