@@ -181,6 +181,8 @@ class Point3 {
   }
 
   // Distance.
+  // Returns the Manhattan (L1) distance to 'p': |dx| + |dy| + |dz|. Not the
+  // Euclidean distance.
   T Distance(const Point3& p) const {
     return std::abs(d_[0] - p.d_[0]) + std::abs(d_[1] - p.d_[1]) +
            std::abs(d_[2] - p.d_[2]);

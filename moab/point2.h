@@ -147,6 +147,8 @@ class Point2 {
   Point2 operator/(T v) const { return Point2(d_[0] / v, d_[1] / v); }
 
   // Distance.
+  // Returns the Manhattan (L1) distance to 'p': |dx| + |dy|. Not the Euclidean
+  // distance.
   T Distance(const Point2& p) const {
     return std::abs(d_[0] - p.d_[0]) + std::abs(d_[1] - p.d_[1]);
   }
