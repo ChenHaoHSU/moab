@@ -122,8 +122,14 @@ class Ring2 {
 
   // Operators.
   // Operator - Subscript
-  Point2<T>& operator[](std::size_t i) { return d_[i]; }
-  const Point2<T>& operator[](std::size_t i) const { return d_[i]; }
+  Point2<T>& operator[](std::size_t i) {
+    DCHECK_LT(i, d_.size());
+    return d_[i];
+  }
+  const Point2<T>& operator[](std::size_t i) const {
+    DCHECK_LT(i, d_.size());
+    return d_[i];
+  }
   // Operator - Equality
   bool operator==(const Ring2& r) const { return moab::IsEqual(*this, r); }
   bool operator!=(const Ring2& r) const { return !(*this == r); }

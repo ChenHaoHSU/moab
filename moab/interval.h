@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "absl/log/check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "boost/polygon/polygon.hpp"
@@ -70,8 +71,14 @@ class Interval {
 
   // Operators.
   // Operators - Subscript.
-  T& operator[](std::size_t i) { return d_[i]; }
-  const T& operator[](std::size_t i) const { return d_.at(i); }
+  T& operator[](std::size_t i) {
+    DCHECK_LT(i, d_.size());
+    return d_[i];
+  }
+  const T& operator[](std::size_t i) const {
+    DCHECK_LT(i, d_.size());
+    return d_[i];
+  }
   // Operators - Equality.
   bool operator==(const Interval& i) const {
     return d_[0] == i.d_[0] && d_[1] == i.d_[1];

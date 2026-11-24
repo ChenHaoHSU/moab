@@ -55,9 +55,9 @@ class Segment3 {
 
   // Accessors.
   Point3<T>& p0() { return d_[0]; }
-  const Point3<T>& p0() const { return d_.at(0); }
+  const Point3<T>& p0() const { return d_[0]; }
   Point3<T>& p1() { return d_[1]; }
-  const Point3<T>& p1() const { return d_.at(1); }
+  const Point3<T>& p1() const { return d_[1]; }
   Point3<T>* data() { return d_.data(); }
   const Point3<T>* data() const { return d_.data(); }
 
@@ -125,8 +125,14 @@ class Segment3 {
 
   // Operators.
   // Operators - Subscript
-  Point3<T>& operator[](std::size_t i) { return d_[i]; }
-  const Point3<T>& operator[](std::size_t i) const { return d_.at(i); }
+  Point3<T>& operator[](std::size_t i) {
+    DCHECK_LT(i, d_.size());
+    return d_[i];
+  }
+  const Point3<T>& operator[](std::size_t i) const {
+    DCHECK_LT(i, d_.size());
+    return d_[i];
+  }
   // Operators - Equality
   bool operator==(const Segment3& p) const {
     return d_[0] == p.d_[0] && d_[1] == p.d_[1];
@@ -143,7 +149,7 @@ class Segment3 {
   // String conversion.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const Segment3& s) {
-    absl::Format(&sink, "(%v %v)", s.d_.at(0), s.d_.at(1));
+    absl::Format(&sink, "(%v %v)", s.d_[0], s.d_[1]);
   }
   std::string ToString() const { return absl::StrCat(*this); }
   friend std::ostream& operator<<(std::ostream& os, const Segment3& s) {
@@ -154,7 +160,7 @@ class Segment3 {
   // Hash.
   template <typename H>
   friend H AbslHashValue(H h, const Segment3& s) {
-    return H::combine(std::move(h), s.d_.at(0), s.d_.at(1));
+    return H::combine(std::move(h), s.d_[0], s.d_[1]);
   }
 
   // Protobuf.

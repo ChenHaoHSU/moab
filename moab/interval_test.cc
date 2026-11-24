@@ -338,4 +338,15 @@ TEST(Hash, SupportsAbslHash) {
   }));
 }
 
+// operator[] checks the index with DCHECK, so only debug builds abort.
+#ifndef NDEBUG
+TEST(OperatorsDeathTest, SubscriptOutOfRange) {
+  Interval_i v(1, 2);
+  const Interval_i& const_v = v;
+
+  EXPECT_DEATH((void)v[2], "Check failed: i < d_.size");
+  EXPECT_DEATH((void)const_v[2], "Check failed: i < d_.size");
+}
+#endif
+
 }  // namespace moab

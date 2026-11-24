@@ -474,4 +474,15 @@ TEST(BoostPolygon, SetPoints) {
   EXPECT_EQ(boost::polygon::area(r), 8);
 }
 
+// operator[] checks the index with DCHECK, so only debug builds abort.
+#ifndef NDEBUG
+TEST(OperatorsDeathTest, SubscriptOutOfRange) {
+  Ring2_i v{Point2_i(0, 0), Point2_i(1, 0), Point2_i(1, 1)};
+  const Ring2_i& const_v = v;
+
+  EXPECT_DEATH((void)v[3], "Check failed: i < d_.size");
+  EXPECT_DEATH((void)const_v[3], "Check failed: i < d_.size");
+}
+#endif
+
 }  // namespace moab

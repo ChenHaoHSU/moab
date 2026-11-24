@@ -230,6 +230,7 @@ cc_library(
     name = "interval",
     hdrs = ["interval.h"],
     deps = [
+        "@abseil-cpp//absl/log:check",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
         "@boost.polygon",

@@ -627,4 +627,15 @@ TEST(Protobuf, SetFromProtoNotSetLeavesValueUnchanged) {
   EXPECT_EQ(v, Point3_i(7, 8, 9));
 }
 
+// operator[] checks the index with DCHECK, so only debug builds abort.
+#ifndef NDEBUG
+TEST(OperatorsDeathTest, SubscriptOutOfRange) {
+  Point3_i v(1, 2, 3);
+  const Point3_i& const_v = v;
+
+  EXPECT_DEATH((void)v[3], "Check failed: i < d_.size");
+  EXPECT_DEATH((void)const_v[3], "Check failed: i < d_.size");
+}
+#endif
+
 }  // namespace moab

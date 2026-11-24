@@ -87,8 +87,14 @@ class Point2 {
 
   // Operators.
   // Operators - Subscript
-  T& operator[](std::size_t i) { return d_[i]; }
-  const T& operator[](std::size_t i) const { return d_.at(i); }
+  T& operator[](std::size_t i) {
+    DCHECK_LT(i, d_.size());
+    return d_[i];
+  }
+  const T& operator[](std::size_t i) const {
+    DCHECK_LT(i, d_.size());
+    return d_[i];
+  }
   // Operators - Equality
   bool operator==(const Point2& p) const {
     return d_[0] == p.d_[0] && d_[1] == p.d_[1];
