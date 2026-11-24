@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <string>
 #include <type_traits>
+#include <utility>
 
 #include "absl/hash/hash_testing.h"
 #include "absl/status/status.h"
@@ -86,7 +87,10 @@ TEST(Accessors, XY) {
   EXPECT_EQ(p.y(), 2);
 }
 
+// data() is read-only, even on a non-const point.
 TEST(Accessors, Data) {
+  static_assert(
+      std::is_same_v<decltype(std::declval<Point2_i&>().data()), const int*>);
   Point2_i p(1, 2);
   const int* d = p.data();
 

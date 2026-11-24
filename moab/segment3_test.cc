@@ -4,6 +4,8 @@
 #include <gtest/gtest.h>
 
 #include <string>
+#include <type_traits>
+#include <utility>
 
 #include "absl/hash/hash_testing.h"
 #include "absl/status/status.h"
@@ -103,14 +105,15 @@ TEST(Accessors, P0P1Const) {
   EXPECT_EQ(s.p1(), Point3_i(4, 5, 6));
 }
 
+// data() is read-only, even on a non-const segment.
 TEST(Accessors, Data) {
+  static_assert(std::is_same_v<decltype(std::declval<Segment3_i&>().data()),
+                               const Point3_i*>);
   Segment3_i s(Point3_i(1, 2, 3), Point3_i(4, 5, 6));
-  Point3_i* data = s.data();
-
-  data[1] = Point3_i(7, 8, 9);
+  const Point3_i* data = s.data();
 
   EXPECT_EQ(data[0], Point3_i(1, 2, 3));
-  EXPECT_EQ(data[1], Point3_i(7, 8, 9));
+  EXPECT_EQ(data[1], Point3_i(4, 5, 6));
 }
 
 TEST(Accessors, DataConst) {

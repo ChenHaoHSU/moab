@@ -57,7 +57,6 @@ class Point3 {
   T x() const { return d_[0]; }
   T y() const { return d_[1]; }
   T z() const { return d_[2]; }
-  T* data() { return d_.data(); }
   const T* data() const { return d_.data(); }
   constexpr std::size_t Size() const { return d_.size(); }
 

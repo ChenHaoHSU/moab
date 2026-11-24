@@ -58,7 +58,6 @@ class Segment3 {
   const Point3<T>& p0() const { return d_[0]; }
   Point3<T>& p1() { return d_[1]; }
   const Point3<T>& p1() const { return d_[1]; }
-  Point3<T>* data() { return d_.data(); }
   const Point3<T>* data() const { return d_.data(); }
 
   constexpr std::size_t Size() const { return d_.size(); }
