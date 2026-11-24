@@ -348,4 +348,84 @@ TEST(Protobuf, SetFromProto) {
   EXPECT_EQ(s.p1(), Point2_i(3, 4));
 }
 
+// Boost.Polygon sees p0 as LOW and p1 as HIGH, without reordering.
+TEST(BoostPolygon, LowHigh) {
+  Segment2_i s(10, 0, 0, 0);
+
+  EXPECT_EQ(boost::polygon::low(s), Point2_i(10, 0));
+  EXPECT_EQ(boost::polygon::high(s), Point2_i(0, 0));
+}
+
+TEST(BoostPolygon, SetLowThenHigh) {
+  Segment2_i s(0, 0, 10, 0);
+
+  boost::polygon::set(s, boost::polygon::LOW, Point2_i(20, 0));
+  boost::polygon::set(s, boost::polygon::HIGH, Point2_i(30, 0));
+
+  EXPECT_EQ(s, Segment2_i(20, 0, 30, 0));
+}
+
+TEST(BoostPolygon, SetHighThenLow) {
+  Segment2_i s(0, 0, 10, 0);
+
+  boost::polygon::set(s, boost::polygon::HIGH, Point2_i(-10, 0));
+  boost::polygon::set(s, boost::polygon::LOW, Point2_i(-20, 0));
+
+  EXPECT_EQ(s, Segment2_i(-20, 0, -10, 0));
+}
+
+TEST(BoostPolygon, SetDegenerate) {
+  Segment2_i s(5, 5, 5, 5);
+
+  boost::polygon::set(s, boost::polygon::LOW, Point2_i(0, 0));
+  boost::polygon::set(s, boost::polygon::HIGH, Point2_i(9, 9));
+
+  EXPECT_EQ(s, Segment2_i(0, 0, 9, 9));
+}
+
+TEST(BoostPolygon, Construct) {
+  Segment2_i s =
+      boost::polygon::construct<Segment2_i>(Point2_i(3, 4), Point2_i(1, 2));
+
+  EXPECT_EQ(s, Segment2_i(3, 4, 1, 2));
+}
+
+TEST(BoostPolygon, Convolve) {
+  Segment2_i s(0, 0, 10, 0);
+
+  boost::polygon::convolve(s, Point2_i(100, 0));
+
+  EXPECT_EQ(s, Segment2_i(100, 0, 110, 0));
+}
+
+TEST(BoostPolygon, ConvolveReversed) {
+  Segment2_i s(10, 0, 0, 0);
+
+  boost::polygon::convolve(s, Point2_i(0, 7));
+
+  EXPECT_EQ(s, Segment2_i(10, 7, 0, 7));
+}
+
+TEST(BoostPolygon, Move) {
+  Segment2_i s(0, 0, 10, 5);
+
+  boost::polygon::move(s, boost::polygon::HORIZONTAL, 3);
+  boost::polygon::move(s, boost::polygon::VERTICAL, -2);
+
+  EXPECT_EQ(s, Segment2_i(3, -2, 13, 3));
+}
+
+TEST(BoostPolygon, ScaleUp) {
+  Segment2_i s(1, 2, 3, 4);
+
+  boost::polygon::scale_up(s, 10);
+
+  EXPECT_EQ(s, Segment2_i(10, 20, 30, 40));
+}
+
+TEST(StringConversion, ToStringFloatingPoint) {
+  EXPECT_THAT(Segment2<double>(0.5, 1, 2, 3.5).ToString(),
+              StrEq("((0.5 1) (2 3.5))"));
+}
+
 }  // namespace moab

@@ -32,6 +32,8 @@ class Box2 {
   using coordinate_type = T;
   using point_type = Point2<T>;
   using interval_type = Interval<T>;
+  // Area type. int64_t for integral coordinates to avoid overflow.
+  using area_type = std::conditional_t<std::is_integral_v<T>, int64_t, T>;
 
   // Constructors.
   Box2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
@@ -83,7 +85,9 @@ class Box2 {
     return p;
   }
 
-  T Area() const { return Width() * Height(); }
+  area_type Area() const {
+    return static_cast<area_type>(Width()) * static_cast<area_type>(Height());
+  }
   T HalfPerimeter() const { return (Width() + Height()); }
   T Perimeter() const { return 2 * (Width() + Height()); }
 
@@ -192,28 +196,28 @@ class Box2 {
 
  private:
   std::array<Point2<T>, 2> d_;
-};  // class Box2
+};
 
 // Protobuf.
 template <typename T>
 Box2Proto Box2<T>::ToProto() const {
   Box2Proto proto;
-  if (std::is_same_v<T, int> || std::is_same_v<T, int32_t>) {
+  if constexpr (std::is_same_v<T, int> || std::is_same_v<T, int32_t>) {
     proto.mutable_box_int32()->mutable_min_corner()->set_x(d_[0].x());
     proto.mutable_box_int32()->mutable_min_corner()->set_y(d_[0].y());
     proto.mutable_box_int32()->mutable_max_corner()->set_x(d_[1].x());
     proto.mutable_box_int32()->mutable_max_corner()->set_y(d_[1].y());
-  } else if (std::is_same_v<T, int64_t>) {
+  } else if constexpr (std::is_same_v<T, int64_t>) {
     proto.mutable_box_int64()->mutable_min_corner()->set_x(d_[0].x());
     proto.mutable_box_int64()->mutable_min_corner()->set_y(d_[0].y());
     proto.mutable_box_int64()->mutable_max_corner()->set_x(d_[1].x());
     proto.mutable_box_int64()->mutable_max_corner()->set_y(d_[1].y());
-  } else if (std::is_same_v<T, float>) {
+  } else if constexpr (std::is_same_v<T, float>) {
     proto.mutable_box_float()->mutable_min_corner()->set_x(d_[0].x());
     proto.mutable_box_float()->mutable_min_corner()->set_y(d_[0].y());
     proto.mutable_box_float()->mutable_max_corner()->set_x(d_[1].x());
     proto.mutable_box_float()->mutable_max_corner()->set_y(d_[1].y());
-  } else if (std::is_same_v<T, double>) {
+  } else if constexpr (std::is_same_v<T, double>) {
     proto.mutable_box_double()->mutable_min_corner()->set_x(d_[0].x());
     proto.mutable_box_double()->mutable_min_corner()->set_y(d_[0].y());
     proto.mutable_box_double()->mutable_max_corner()->set_x(d_[1].x());

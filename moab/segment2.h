@@ -230,7 +230,9 @@ struct indexed_access<moab::Segment2<T>, Index, Dimension> {
 
 }  // namespace boost::geometry::traits
 
-// Boost poylgon traits.
+// Boost polygon traits.
+// LOW is p0 and HIGH is p1, as in boost::polygon::segment_data. The endpoints
+// are not reordered, so setting LOW then HIGH writes p0 then p1.
 namespace boost::polygon {
 
 template <typename T>
@@ -244,7 +246,7 @@ struct segment_traits<moab::Segment2<T>> {
   using point_type = typename moab::Segment2<T>::point_type;
 
   static inline point_type get(const moab::Segment2<T>& s, direction_1d dir) {
-    return dir == LOW ? s.MinPoint() : s.MaxPoint();
+    return s[dir.to_int()];
   }
 };
 
@@ -255,8 +257,7 @@ struct segment_mutable_traits<moab::Segment2<T>> {
 
   static inline void set(moab::Segment2<T>& s, direction_1d dir,
                          const point_type& p) {
-    point_type& point = (dir == LOW ? s.MinPoint() : s.MaxPoint());
-    point = p;
+    s[dir.to_int()] = p;
   }
   static inline moab::Segment2<T> construct(const point_type& p0,
                                             const point_type& p1) {

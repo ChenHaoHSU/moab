@@ -105,9 +105,9 @@ class Point3 {
   bool operator!=(const Point3& p) const { return !(*this == p); }
   // Operators - Inequality
   bool operator<(const Point3& p) const {
-    return d_[0] != p.d_[0]
-               ? d_[0] < p.d_[0]
-               : d_[1] != p.d_[1] ? d_[1] < p.d_[1] : d_[2] < p.d_[2];
+    return d_[0] != p.d_[0]   ? d_[0] < p.d_[0]
+           : d_[1] != p.d_[1] ? d_[1] < p.d_[1]
+                              : d_[2] < p.d_[2];
   }
   bool operator>(const Point3& p) const { return p < *this; }
   bool operator<=(const Point3& p) const { return !(*this > p); }
@@ -126,10 +126,10 @@ class Point3 {
     d_[2] -= p.d_[2];
     return *this;
   }
-  Point3 operator+(const Point3& p) {
+  Point3 operator+(const Point3& p) const {
     return Point3(d_[0] + p.d_[0], d_[1] + p.d_[1], d_[2] + p.d_[2]);
   }
-  Point3 operator-(const Point3& p) {
+  Point3 operator-(const Point3& p) const {
     return Point3(d_[0] - p.d_[0], d_[1] - p.d_[1], d_[2] - p.d_[2]);
   }
   Point3 operator+() const { return Point3(d_[0], d_[1], d_[2]); }
@@ -181,7 +181,7 @@ class Point3 {
   // String conversion.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const Point3& p) {
-    absl::Format(&sink, "(%d %d %d)", p.d_[0], p.d_[1], p.d_[2]);
+    absl::Format(&sink, "(%v %v %v)", p.d_[0], p.d_[1], p.d_[2]);
   }
   std::string ToString() const { return absl::StrCat(*this); }
   friend std::ostream& operator<<(std::ostream& os, const Point3& p) {

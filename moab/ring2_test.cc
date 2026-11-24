@@ -3,7 +3,11 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <cstdint>
+#include <iterator>
 #include <string>
+#include <type_traits>
+#include <vector>
 
 #include "absl/hash/hash_testing.h"
 #include "absl/strings/str_format.h"
@@ -423,6 +427,51 @@ TEST(Hash, SupportsAbslHash) {
       Ring2_i({Point2_i(0, 0), Point2_i(20, 0), Point2_i(20, 20),
                Point2_i(0, 20), Point2_i(0, 0)}),
   }));
+}
+
+TEST(Accessors, AreaNoOverflow) {
+  static_assert(std::is_same_v<Ring2_i::area_type, int64_t>);
+  static_assert(std::is_same_v<Ring2<double>::area_type, double>);
+
+  // 100000 x 100000 does not fit in an int.
+  Ring2_i r(Box2_i(0, 0, 100000, 100000));
+
+  EXPECT_EQ(r.Area(), int64_t{10000000000});
+}
+
+TEST(Iterators, Reverse) {
+  Ring2_i r{Point2_i(0, 0), Point2_i(1, 0), Point2_i(1, 1)};
+
+  std::vector<Point2_i> reversed(r.rbegin(), r.rend());
+  EXPECT_THAT(reversed,
+              ElementsAre(Point2_i(1, 1), Point2_i(1, 0), Point2_i(0, 0)));
+
+  *r.rbegin() = Point2_i(2, 2);
+  EXPECT_EQ(r[2], Point2_i(2, 2));
+}
+
+TEST(Iterators, ReverseConst) {
+  const Ring2_i r{Point2_i(0, 0), Point2_i(1, 0), Point2_i(1, 1)};
+
+  EXPECT_EQ(*r.rbegin(), Point2_i(1, 1));
+  EXPECT_EQ(std::distance(r.rbegin(), r.rend()), 3);
+}
+
+TEST(BoostPolygon, Size) {
+  Ring2_i r(Box2_i(0, 0, 2, 3));
+
+  EXPECT_EQ(boost::polygon::size(r), 5u);
+}
+
+TEST(BoostPolygon, SetPoints) {
+  std::vector<Point2_i> points = {Point2_i(0, 0), Point2_i(4, 0),
+                                  Point2_i(4, 2), Point2_i(0, 2)};
+  Ring2_i r;
+
+  boost::polygon::set_points(r, points.begin(), points.end());
+
+  EXPECT_EQ(r.Size(), 4u);
+  EXPECT_EQ(boost::polygon::area(r), 8);
 }
 
 }  // namespace moab

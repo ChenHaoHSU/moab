@@ -4,9 +4,11 @@
 #include <gtest/gtest.h>
 
 #include <array>
+#include <cstdint>
 #include <list>
 #include <set>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "absl/hash/hash_testing.h"
@@ -573,8 +575,9 @@ TEST(Utilities, BoundingBoxVector4) {
 TEST(Utilities, BoundingBoxVectorEmptyContainer) {
   std::vector<Point2_i> points;
 
-  EXPECT_DEATH({ Box2_i box = Box2_i::BoundingBox(points); },
-               "Points container is empty.");
+  EXPECT_DEATH(
+      { Box2_i box = Box2_i::BoundingBox(points); },
+      "Points container is empty.");
 }
 
 TEST(Utilities, BoundingBoxArray) {
@@ -593,8 +596,9 @@ TEST(Utilities, BoundingBoxArray) {
 TEST(Utilities, BoundingBoxArrayEmptyContainer) {
   std::array<Point2_i, 0> points = {};
 
-  EXPECT_DEATH({ Box2_i box = Box2_i::BoundingBox(points); },
-               "Points container is empty.");
+  EXPECT_DEATH(
+      { Box2_i box = Box2_i::BoundingBox(points); },
+      "Points container is empty.");
 }
 
 TEST(Utilities, BoundingBoxInitializerList) {
@@ -609,8 +613,8 @@ TEST(Utilities, BoundingBoxInitializerList) {
 }
 
 TEST(Utilities, BoundingBoxInitializerListEmptyContainer) {
-  EXPECT_DEATH({ Box2_i box = Box2_i::BoundingBox({}); },
-               "Points container is empty.");
+  EXPECT_DEATH(
+      { Box2_i box = Box2_i::BoundingBox({}); }, "Points container is empty.");
 }
 
 TEST(Utilities, BoundingBoxList) {
@@ -629,8 +633,9 @@ TEST(Utilities, BoundingBoxList) {
 TEST(Utilities, BoundingBoxListEmptyContainer) {
   std::list<Point2_i> points;
 
-  EXPECT_DEATH({ Box2_i box = Box2_i::BoundingBox(points); },
-               "Points container is empty.");
+  EXPECT_DEATH(
+      { Box2_i box = Box2_i::BoundingBox(points); },
+      "Points container is empty.");
 }
 
 TEST(Utilities, BoundingBoxSet) {
@@ -649,8 +654,9 @@ TEST(Utilities, BoundingBoxSet) {
 TEST(Utilities, BoundingBoxSetEmptyContainer) {
   std::set<Point2_i> points;
 
-  EXPECT_DEATH({ Box2_i box = Box2_i::BoundingBox(points); },
-               "Points container is empty.");
+  EXPECT_DEATH(
+      { Box2_i box = Box2_i::BoundingBox(points); },
+      "Points container is empty.");
 }
 
 TEST(StringConversion, ToString) {
@@ -699,6 +705,64 @@ TEST(Protobuf, SetFromProto) {
 
   EXPECT_EQ(b.ll(), Point2_i(1, 2));
   EXPECT_EQ(b.ur(), Point2_i(3, 4));
+}
+
+TEST(Accessors, AreaNoOverflow) {
+  static_assert(std::is_same_v<Box2_i::area_type, int64_t>);
+  static_assert(std::is_same_v<Box2_i64::area_type, int64_t>);
+  static_assert(std::is_same_v<Box2<double>::area_type, double>);
+
+  // 100000 x 100000 does not fit in an int.
+  EXPECT_EQ(Box2_i(0, 0, 100000, 100000).Area(), int64_t{10000000000});
+  EXPECT_EQ(Box2_i(-100000, -100000, 100000, 100000).Area(),
+            int64_t{40000000000});
+}
+
+TEST(Accessors, AreaFloatingPoint) {
+  EXPECT_DOUBLE_EQ(Box2<double>(0, 0, 1.5, 2.5).Area(), 3.75);
+}
+
+TEST(Protobuf, RoundTripInt64) {
+  const int64_t big = int64_t{1} << 40;
+  Box2_i64 b(-big, 0, big, big + 1);
+
+  Box2Proto proto = b.ToProto();
+
+  ASSERT_TRUE(proto.has_box_int64());
+  EXPECT_EQ(proto.box_int64().min_corner().x(), -big);
+  EXPECT_EQ(proto.box_int64().min_corner().y(), 0);
+  EXPECT_EQ(proto.box_int64().max_corner().x(), big);
+  EXPECT_EQ(proto.box_int64().max_corner().y(), big + 1);
+  EXPECT_EQ(Box2_i64(proto), b);
+}
+
+TEST(Protobuf, RoundTripFloat) {
+  Box2<float> b(0.5f, 1.25f, 2.0f, 3.0f);
+
+  Box2Proto proto = b.ToProto();
+
+  ASSERT_TRUE(proto.has_box_float());
+  EXPECT_FLOAT_EQ(proto.box_float().min_corner().x(), 0.5f);
+  EXPECT_FLOAT_EQ(proto.box_float().max_corner().y(), 3.0f);
+  EXPECT_EQ(Box2<float>(proto), b);
+}
+
+TEST(Protobuf, RoundTripDouble) {
+  Box2<double> b(-0.001, 0.25, 12.5, 7.75);
+
+  Box2Proto proto = b.ToProto();
+
+  ASSERT_TRUE(proto.has_box_double());
+  EXPECT_DOUBLE_EQ(proto.box_double().min_corner().x(), -0.001);
+  EXPECT_DOUBLE_EQ(proto.box_double().min_corner().y(), 0.25);
+  EXPECT_DOUBLE_EQ(proto.box_double().max_corner().x(), 12.5);
+  EXPECT_DOUBLE_EQ(proto.box_double().max_corner().y(), 7.75);
+  EXPECT_EQ(Box2<double>(proto), b);
+}
+
+TEST(StringConversion, ToStringFloatingPoint) {
+  EXPECT_THAT(Box2<double>(0.5, 1, 2, 3.5).ToString(),
+              StrEq("((0.5 1) (2 3.5))"));
 }
 
 }  // namespace moab

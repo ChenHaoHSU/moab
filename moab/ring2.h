@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <initializer_list>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "absl/log/check.h"
@@ -24,9 +25,14 @@ class Ring2 {
   using base_type = std::vector<Point2<T>>;
   using coordinate_type = T;
   using point_type = Point2<T>;
+  // Area type. int64_t for integral coordinates to avoid overflow.
+  using area_type = std::conditional_t<std::is_integral_v<T>, int64_t, T>;
   using iterator_type = typename base_type::const_iterator;
   using const_iterator_type = typename base_type::const_iterator;
   using mutable_iterator_type = typename base_type::iterator;
+  using const_reverse_iterator_type =
+      typename base_type::const_reverse_iterator;
+  using mutable_reverse_iterator_type = typename base_type::reverse_iterator;
 
   // Constructors.
   Ring2() = default;
@@ -49,9 +55,11 @@ class Ring2 {
   std::vector<Point2<T>>& Points() { return d_; }
   const std::vector<Point2<T>>& Points() const { return d_; }
   size_t Size() const { return d_.size(); }
+  // Required by boost::polygon::polygon_traits_general.
+  size_t size() const { return d_.size(); }
   bool Empty() const { return d_.empty(); }
 
-  T Area() const { return gtl::area(*this); }
+  area_type Area() const { return static_cast<area_type>(gtl::area(*this)); }
   Point2<T> Centroid() const {
     Point2<T> p;
     bg::centroid(*this, p);
@@ -98,10 +106,10 @@ class Ring2 {
   mutable_iterator_type end() { return d_.end(); }
   const_iterator_type begin() const { return d_.cbegin(); }
   const_iterator_type end() const { return d_.cend(); }
-  mutable_iterator_type rbegin() { return d_.rbegin(); }
-  mutable_iterator_type rend() { return d_.rend(); }
-  const_iterator_type rbegin() const { return d_.rbegin(); }
-  const_iterator_type rend() const { return d_.rend(); }
+  mutable_reverse_iterator_type rbegin() { return d_.rbegin(); }
+  mutable_reverse_iterator_type rend() { return d_.rend(); }
+  const_reverse_iterator_type rbegin() const { return d_.crbegin(); }
+  const_reverse_iterator_type rend() const { return d_.crend(); }
 
   // Operators.
   // Operator - Subscript
@@ -213,36 +221,6 @@ struct range_size<moab::Ring2<T>> {
   using type = std::size_t;
 };
 
-template <typename T>
-inline typename range_mutable_iterator<moab::Ring2<T>>::type range_begin(
-    moab::Ring2<T>& r) {
-  return r.begin();
-}
-
-template <typename T>
-inline typename range_mutable_iterator<moab::Ring2<T>>::type range_end(
-    moab::Ring2<T>& r) {
-  return r.end();
-}
-
-template <typename T>
-inline typename range_const_iterator<moab::Ring2<T>>::type range_begin(
-    const moab::Ring2<T>& r) {
-  return r.cbegin();
-}
-
-template <typename T>
-inline typename range_const_iterator<moab::Ring2<T>>::type range_end(
-    const moab::Ring2<T>& r) {
-  return r.cend();
-}
-
-template <typename T>
-inline typename range_const_iterator<moab::Ring2<T>>::type range_calculate_size(
-    const moab::Ring2<T>& r) {
-  return r.Size();
-}
-
 }  // namespace boost
 
 // Boost polygon traits.
@@ -251,34 +229,6 @@ namespace boost::polygon {
 template <typename T>
 struct geometry_concept<moab::Ring2<T>> {
   using type = polygon_concept;
-};
-
-template <typename T>
-struct polygon_traits<
-    moab::Ring2<T>,
-    typename gtl_or_4<typename gtl_same_type<typename geometry_concept<T>::type,
-                                             polygon_concept>::type,
-                      typename gtl_same_type<typename geometry_concept<T>::type,
-                                             polygon_90_concept>::type,
-                      typename gtl_same_type<typename geometry_concept<T>::type,
-                                             polygon_90_set_concept>::type,
-                      typename gtl_same_type<typename geometry_concept<T>::type,
-                                             polygon_45_concept>::type>::type> {
-  using type = moab::Ring2<T>;
-  using coordinate_type = typename moab::Ring2<T>::coordinate_type;
-  using point_type = typename moab::Ring2<T>::point_type;
-  using iterator_type = typename moab::Ring2<T>::const_iterator_type;
-
-  static inline iterator_type begin_points(const moab::Ring2<T>& r) {
-    return r.cbegin();
-  }
-  static inline iterator_type end_points(const moab::Ring2<T>& r) {
-    return r.cend();
-  }
-  static inline std::size_t size(const moab::Ring2<T>& r) { return r.Size(); }
-  static inline winding_direction winding(const moab::Ring2<T>& r) {
-    return winding_direction::unknown_winding;
-  }
 };
 
 template <typename T>

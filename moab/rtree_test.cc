@@ -5,7 +5,9 @@
 
 #include <sstream>
 #include <string>
+#include <tuple>
 #include <utility>
+#include <vector>
 
 #include "absl/log/log.h"
 #include "boost/geometry.hpp"
@@ -805,6 +807,48 @@ TEST(RtreeSegmentMapTest, QueryIntersectsValueBox) {
   std::vector<int> values = rtree.QueryIntersects<1>(Box2_i(0, 5, 10, 10));
 
   EXPECT_THAT(values, UnorderedElementsAre(1, 2));
+}
+
+TEST(RtreeBoxMapTupleTest, InsertTupleLvalue) {
+  RtreeMultiMapBox2_i<int, std::string> rtree;
+  std::tuple<Box2_i, int, std::string> value(Box2_i(0, 0, 1, 1), 0, "zero");
+  const std::tuple<Box2_i, int, std::string> const_value(Box2_i(2, 2, 3, 3), 1,
+                                                         "one");
+
+  rtree.Insert(value);
+  rtree.Insert(const_value);
+
+  EXPECT_EQ(rtree.Size(), 2u);
+  EXPECT_EQ(rtree.Count(value), 1u);
+  EXPECT_THAT(rtree.QueryIntersects(Box2_i(0, 0, 3, 3)),
+              UnorderedElementsAre(FieldsAre(Box2_i(0, 0, 1, 1), 0, "zero"),
+                                   FieldsAre(Box2_i(2, 2, 3, 3), 1, "one")));
+}
+
+TEST(RtreeBoxMapTupleTest, InsertRange) {
+  std::vector<std::tuple<Box2_i, int, std::string>> values = {
+      {Box2_i(0, 0, 1, 1), 0, "zero"},
+      {Box2_i(2, 2, 3, 3), 1, "one"},
+      {Box2_i(4, 4, 5, 5), 2, "two"}};
+  RtreeMultiMapBox2_i<int, std::string> rtree;
+
+  rtree.Insert(values);
+
+  EXPECT_EQ(rtree.Size(), 3u);
+}
+
+// A two-element tuple must not take an iterator pair as (key, value).
+TEST(RtreeBoxMapTupleTest, InsertIteratorPairTwoElementTuple) {
+  std::vector<std::tuple<Box2_i, int>> values = {{Box2_i(0, 0, 1, 1), 0},
+                                                 {Box2_i(2, 2, 3, 3), 1}};
+  RtreeMultiMapBox2_i<int> rtree;
+
+  rtree.Insert(values.begin(), values.end());
+  rtree.Insert(Box2_i(4, 4, 5, 5), 2);
+
+  EXPECT_EQ(rtree.Size(), 3u);
+  EXPECT_THAT(rtree.QueryIntersects<1>(Box2_i(0, 0, 5, 5)),
+              UnorderedElementsAre(0, 1, 2));
 }
 
 }  // namespace moab

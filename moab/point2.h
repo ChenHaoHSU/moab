@@ -104,10 +104,10 @@ class Point2 {
     d_[1] -= p.d_[1];
     return *this;
   }
-  Point2 operator+(const Point2& p) {
+  Point2 operator+(const Point2& p) const {
     return Point2(d_[0] + p.d_[0], d_[1] + p.d_[1]);
   }
-  Point2 operator-(const Point2& p) {
+  Point2 operator-(const Point2& p) const {
     return Point2(d_[0] - p.d_[0], d_[1] - p.d_[1]);
   }
   Point2 operator+() const { return Point2(d_[0], d_[1]); }
@@ -146,7 +146,7 @@ class Point2 {
   // String conversion.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const Point2& p) {
-    absl::Format(&sink, "(%d %d)", p.d_[0], p.d_[1]);
+    absl::Format(&sink, "(%v %v)", p.d_[0], p.d_[1]);
   }
   std::string ToString() const { return absl::StrCat(*this); }
   friend std::ostream& operator<<(std::ostream& os, const Point2& p) {
@@ -168,7 +168,7 @@ class Point2 {
 
  private:
   std::array<T, 2> d_;  // <x, y>
-};                      // class Point2
+};
 
 // Protobuf.
 template <typename T>

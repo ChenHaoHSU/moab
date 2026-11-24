@@ -155,9 +155,12 @@ class Rtree {
     rtree_.insert(std::make_pair(k, v));
   }
   // Inserts a key-values tuple (only for R-tree multi-maps).
+  // Enabled only when the arguments construct a T (a single T is copied), so a
+  // range or an iterator pair goes to the overloads above.
   template <typename U = T, typename... Args>
-  std::enable_if_t<is_tuple_v<U>> Insert(Args&&... args) {
-    rtree_.insert(std::make_tuple(std::forward<Args>(args)...));
+  std::enable_if_t<is_tuple_v<U> && std::is_constructible_v<U, Args&&...>>
+  Insert(Args&&... args) {
+    rtree_.insert(U(std::forward<Args>(args)...));
   }
 
   // Removes only one value, not all equal values.

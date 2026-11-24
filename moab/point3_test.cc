@@ -3,6 +3,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <cstdint>
 #include <string>
 
 #include "absl/hash/hash_testing.h"
@@ -562,6 +563,25 @@ TEST(Protobuf, SetFromProto) {
   EXPECT_EQ(p.x(), 1);
   EXPECT_EQ(p.y(), 2);
   EXPECT_EQ(p.z(), 3);
+}
+
+TEST(Operators, ArithmeticPointConst) {
+  const Point3_i a(1, 2, 3);
+  const Point3_i b(4, 6, 8);
+
+  EXPECT_EQ(a + b, Point3_i(5, 8, 11));
+  EXPECT_EQ(b - a, Point3_i(3, 4, 5));
+}
+
+TEST(StringConversion, ToStringFloatingPoint) {
+  EXPECT_THAT(Point3<double>(1.5, -2.25, 0).ToString(), StrEq("(1.5 -2.25 0)"));
+  EXPECT_THAT(Point3<float>(0.5f, 3.0f, 0.75f).ToString(),
+              StrEq("(0.5 3 0.75)"));
+}
+
+TEST(StringConversion, ToStringInt64) {
+  EXPECT_THAT(Point3_i64(int64_t{1} << 40, -1, 2).ToString(),
+              StrEq("(1099511627776 -1 2)"));
 }
 
 }  // namespace moab
