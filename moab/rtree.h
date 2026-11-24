@@ -65,29 +65,35 @@ constexpr auto Within = [](const auto& g) { return bgi::within(g); };
 // Touches is not part of Boost.Geometry.Index, so we need to implement it.
 // Boost.Geometry has a touches function, but it is not part of the index
 // module.
+// Anything that touches g also intersects it, so the bgi::intersects predicate
+// lets the R-tree skip nodes that cannot match, and the exact test runs only on
+// the remaining candidates. g is captured by value so that a stored predicate
+// never refers to a destroyed geometry.
 constexpr auto Touches = [](const auto& g) constexpr {
-  return bgi::satisfies([&g](const auto& v) {
-    using T = std::decay_t<decltype(v)>;
-    if constexpr (is_pair_v<T> || is_tuple_v<T>) {
-      return moab::IsTouch(std::get<0>(v), g);
-    } else {
-      return moab::IsTouch(v, g);
-    }
-  });
+  return bgi::intersects(g) && bgi::satisfies([g](const auto& v) {
+           using T = std::decay_t<decltype(v)>;
+           if constexpr (is_pair_v<T> || is_tuple_v<T>) {
+             return moab::IsTouch(std::get<0>(v), g);
+           } else {
+             return moab::IsTouch(v, g);
+           }
+         });
 };
 
 // StrictlyIntersects is not part of Boost.Geometry, so we need to implement it.
 // It is similar to Intersects, but it returns true only if the geometries have
 // a non-empty intersection, i.e., intersects && !touches.
+// As with Touches, bgi::intersects lets the R-tree skip nodes that cannot
+// match, and g is captured by value.
 constexpr auto StrictlyIntersects = [](const auto& g) constexpr {
-  return bgi::satisfies([&g](const auto& v) {
-    using T = std::decay_t<decltype(v)>;
-    if constexpr (is_pair_v<T> || is_tuple_v<T>) {
-      return moab::IsStrictlyIntersect(std::get<0>(v), g);
-    } else {
-      return moab::IsStrictlyIntersect(v, g);
-    }
-  });
+  return bgi::intersects(g) && bgi::satisfies([g](const auto& v) {
+           using T = std::decay_t<decltype(v)>;
+           if constexpr (is_pair_v<T> || is_tuple_v<T>) {
+             return moab::IsStrictlyIntersect(std::get<0>(v), g);
+           } else {
+             return moab::IsStrictlyIntersect(v, g);
+           }
+         });
 };
 
 }  // namespace index

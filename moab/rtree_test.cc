@@ -3,6 +3,8 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <algorithm>
+#include <random>
 #include <sstream>
 #include <string>
 #include <tuple>
@@ -849,6 +851,120 @@ TEST(RtreeBoxMapTupleTest, InsertIteratorPairTwoElementTuple) {
   EXPECT_EQ(rtree.Size(), 3u);
   EXPECT_THAT(rtree.QueryIntersects<1>(Box2_i(0, 0, 5, 5)),
               UnorderedElementsAre(0, 1, 2));
+}
+
+// Brute-force equivalence tests for QueryStrictlyIntersects and QueryTouches.
+// Boost.Geometry implements touches only for box-box among the types here,
+// so these queries need box keys and box queries.
+// The data is grid-aligned so that many shapes abut exactly, which exercises
+// the touching cases as well as the overlapping ones.
+namespace brute_force {
+
+Box2_i RandomGridBox(std::mt19937& rng, int extent, int max_size) {
+  std::uniform_int_distribution<int> pos(0, extent / 10);
+  std::uniform_int_distribution<int> size(1, max_size / 10);
+  const int x = pos(rng) * 10;
+  const int y = pos(rng) * 10;
+  return Box2_i(x, y, x + size(rng) * 10, y + size(rng) * 10);
+}
+
+std::vector<Box2_i> RandomGridBoxes(std::mt19937& rng, int n, int extent,
+                                    int max_size) {
+  std::vector<Box2_i> boxes;
+  for (int i = 0; i < n; ++i) {
+    boxes.push_back(RandomGridBox(rng, extent, max_size));
+  }
+  return boxes;
+}
+
+template <typename T>
+std::vector<T> Sorted(std::vector<T> v) {
+  std::sort(v.begin(), v.end());
+  return v;
+}
+
+// Returns the values whose key (the value itself, or its first element)
+// satisfies `pred`, found by a linear scan.
+template <typename Value, typename Pred>
+std::vector<Value> Scan(const std::vector<Value>& values, Pred pred) {
+  std::vector<Value> result;
+  for (const Value& v : values) {
+    if constexpr (is_pair_v<Value> || is_tuple_v<Value>) {
+      if (pred(std::get<0>(v))) result.push_back(v);
+    } else {
+      if (pred(v)) result.push_back(v);
+    }
+  }
+  return result;
+}
+
+// Checks both queries against the scan for every query geometry, and that
+// the data produces both touching and strictly intersecting matches.
+template <typename Value, typename Query>
+void ExpectMatchesScan(const std::vector<Value>& values,
+                       const std::vector<Query>& queries) {
+  Rtree<Value> rtree(values);
+  std::size_t num_strict = 0;
+  std::size_t num_touch = 0;
+  for (const Query& q : queries) {
+    const std::vector<Value> strict =
+        Scan(values, [&q](const auto& k) { return IsStrictlyIntersect(k, q); });
+    const std::vector<Value> touch =
+        Scan(values, [&q](const auto& k) { return IsTouch(k, q); });
+    EXPECT_EQ(Sorted(rtree.QueryStrictlyIntersects(q)), Sorted(strict))
+        << "query " << q;
+    EXPECT_EQ(Sorted(rtree.QueryTouches(q)), Sorted(touch)) << "query " << q;
+    num_strict += strict.size();
+    num_touch += touch.size();
+  }
+  EXPECT_GT(num_strict, 0u);
+  EXPECT_GT(num_touch, 0u);
+}
+
+}  // namespace brute_force
+
+TEST(RtreeBruteForceTest, BoxValuesBoxQueries) {
+  std::mt19937 rng(1);
+  brute_force::ExpectMatchesScan(
+      brute_force::RandomGridBoxes(rng, 2000, 2000, 100),
+      brute_force::RandomGridBoxes(rng, 300, 2000, 300));
+}
+
+TEST(RtreeBruteForceTest, BoxMapValuesBoxQueries) {
+  std::mt19937 rng(2);
+  std::vector<std::pair<Box2_i, int>> values;
+  for (const Box2_i& b : brute_force::RandomGridBoxes(rng, 2000, 2000, 100)) {
+    values.emplace_back(b, static_cast<int>(values.size()));
+  }
+  const std::vector<Box2_i> queries =
+      brute_force::RandomGridBoxes(rng, 300, 2000, 300);
+  brute_force::ExpectMatchesScan(values, queries);
+
+  // The Query<I> overloads return the same matches, projected.
+  RtreeMapBox2_i<int> rtree(values);
+  for (const Box2_i& q : queries) {
+    std::vector<int> expected;
+    for (const auto& [box, id] : rtree.QueryStrictlyIntersects(q)) {
+      expected.push_back(id);
+    }
+    EXPECT_EQ(rtree.QueryStrictlyIntersects<1>(q), expected);
+    expected.clear();
+    for (const auto& [box, id] : rtree.QueryTouches(q)) {
+      expected.push_back(id);
+    }
+    EXPECT_EQ(rtree.QueryTouches<1>(q), expected);
+  }
+}
+
+TEST(RtreeBruteForceTest, TupleValuesBoxQueries) {
+  std::mt19937 rng(3);
+  std::vector<std::tuple<Box2_i, int, int>> values;
+  for (const Box2_i& b : brute_force::RandomGridBoxes(rng, 1000, 1500, 100)) {
+    const int id = static_cast<int>(values.size());
+    values.emplace_back(b, id, -id);
+  }
+  brute_force::ExpectMatchesScan(
+      values, brute_force::RandomGridBoxes(rng, 200, 1500, 300));
 }
 
 }  // namespace moab
