@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "absl/log/check.h"
+#include "absl/numeric/int128.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
@@ -116,6 +117,18 @@ class Ring2 {
   // Returns the ring's max boxes (see MaxBoxes) bloated by 'x' and 'y', as
   // rings. 'x' and 'y' must be non-negative.
   std::vector<Ring2<T>> BloatedRings(T x, T y) const;
+  // Operations - Simplify
+  // Removes the redundant points of the ring and returns *this: consecutive
+  // duplicates, and vertices on the straight line through their neighbors
+  // (collinear points, including the tip of a zero-width spike), also across
+  // the seam where the ring closes. The ring may be open or closed; the result
+  // is closed (its last point repeats its first) and starts at the first input
+  // vertex that remains. A ring left with fewer than three vertices has no
+  // area and becomes empty. For integer coordinates the collinearity test is
+  // exact for any int32 coordinates and for int64 coordinates up to 2^62 in
+  // magnitude; for floating-point coordinates a point counts as collinear only
+  // if the cross product is exactly zero.
+  Ring2& Simplify();
 
   // Iterators.
   mutable_iterator_type begin() { return d_.begin(); }
@@ -167,6 +180,11 @@ class Ring2 {
   }
 
  private:
+  // Returns true if 'b' repeats 'a' or lies on the straight line through 'a'
+  // and 'c'.
+  static bool IsRedundant(const Point2<T>& a, const Point2<T>& b,
+                          const Point2<T>& c);
+
   std::vector<Point2<T>> d_;
 };
 
@@ -174,6 +192,63 @@ class Ring2 {
 using Ring2_i = Ring2<int>;
 using Ring2_i32 = Ring2<int32_t>;
 using Ring2_i64 = Ring2<int64_t>;
+
+template <typename T>
+bool Ring2<T>::IsRedundant(const Point2<T>& a, const Point2<T>& b,
+                           const Point2<T>& c) {
+  if constexpr (std::is_integral_v<T>) {
+    // Products of int32 differences reach 2^64 and of int64 differences
+    // 2^126, past int64_t, so compute in 128 bits.
+    const absl::int128 cross =
+        (absl::int128(b.x()) - a.x()) * (absl::int128(c.y()) - b.y()) -
+        (absl::int128(b.y()) - a.y()) * (absl::int128(c.x()) - b.x());
+    return cross == 0;
+  } else {
+    return (b.x() - a.x()) * (c.y() - b.y()) -
+               (b.y() - a.y()) * (c.x() - b.x()) ==
+           0;
+  }
+}
+
+template <typename T>
+Ring2<T>& Ring2<T>::Simplify() {
+  std::vector<Point2<T>> out;
+  out.reserve(d_.size());
+  for (const Point2<T>& p : d_) {
+    if (!out.empty() && out.back() == p) {
+      continue;
+    }
+    while (out.size() >= 2 && IsRedundant(out[out.size() - 2], out.back(), p)) {
+      out.pop_back();
+    }
+    out.push_back(p);
+  }
+  // Drop the closing point, then the vertices around the seam (the last and
+  // the first) while they are redundant.
+  if (out.size() >= 2 && out.back() == out.front()) {
+    out.pop_back();
+  }
+  std::size_t first = 0;
+  bool changed = true;
+  while (changed && out.size() - first >= 3) {
+    changed = false;
+    if (IsRedundant(out[out.size() - 2], out.back(), out[first])) {
+      out.pop_back();
+      changed = true;
+    } else if (IsRedundant(out.back(), out[first], out[first + 1])) {
+      ++first;
+      changed = true;
+    }
+  }
+  out.erase(out.begin(), out.begin() + first);
+  if (out.size() < 3) {
+    out.clear();
+  } else {
+    out.push_back(out.front());
+  }
+  d_ = std::move(out);
+  return *this;
+}
 
 template <typename T>
 std::vector<Ring2<T>> Ring2<T>::BloatedRings(T x, T y) const {

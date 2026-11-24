@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -607,6 +608,160 @@ TEST(Ring2BloatedRingsDeathTest, NegativeAmount) {
                "Bloat values must be non-negative");
 }
 #endif
+
+// =============================================================
+// Operations - Simplify
+// =============================================================
+
+// A ring as integer (x, y) points and the closed ring Simplify leaves.
+struct SimplifyCase {
+  std::string name;
+  std::vector<std::pair<int, int>> input;
+  std::vector<std::pair<int, int>> expected;
+};
+
+template <typename T>
+Ring2<T> RingOf(const std::vector<std::pair<int, int>>& xy) {
+  Ring2<T> r;
+  for (const auto& [x, y] : xy) r.Append(Point2<T>(x, y));
+  return r;
+}
+
+const std::vector<SimplifyCase>& SimplifyCases() {
+  static const auto* const kCases = new std::vector<SimplifyCase>{
+      {"a closed rectangle without redundant points stays the same",
+       {{0, 0}, {4, 0}, {4, 2}, {0, 2}, {0, 0}},
+       {{0, 0}, {4, 0}, {4, 2}, {0, 2}, {0, 0}}},
+      {"an open rectangle gets closed",
+       {{0, 0}, {4, 0}, {4, 2}, {0, 2}},
+       {{0, 0}, {4, 0}, {4, 2}, {0, 2}, {0, 0}}},
+      {"a point on an edge",
+       {{0, 0}, {2, 0}, {4, 0}, {4, 2}, {0, 2}},
+       {{0, 0}, {4, 0}, {4, 2}, {0, 2}, {0, 0}}},
+      {"several points in a row on edges",
+       {{0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {4, 1}, {4, 2}, {0, 2}, {0, 0}},
+       {{0, 0}, {4, 0}, {4, 2}, {0, 2}, {0, 0}}},
+      {"a redundant start point",
+       {{2, 0}, {4, 0}, {4, 2}, {0, 2}, {0, 0}},
+       {{4, 0}, {4, 2}, {0, 2}, {0, 0}, {4, 0}}},
+      {"a redundant start point, closed",
+       {{2, 0}, {4, 0}, {4, 2}, {0, 2}, {0, 0}, {2, 0}},
+       {{4, 0}, {4, 2}, {0, 2}, {0, 0}, {4, 0}}},
+      {"the closing point and a last point on an edge",
+       {{0, 0}, {4, 0}, {4, 2}, {0, 2}, {0, 1}, {0, 0}},
+       {{0, 0}, {4, 0}, {4, 2}, {0, 2}, {0, 0}}},
+      {"consecutive duplicates",
+       {{0, 0}, {0, 0}, {4, 0}, {4, 2}, {4, 2}, {0, 2}, {0, 0}, {0, 0}},
+       {{0, 0}, {4, 0}, {4, 2}, {0, 2}, {0, 0}}},
+      {"a zero-width spike out of the top edge",
+       {{0, 0}, {4, 0}, {4, 2}, {2, 2}, {2, 5}, {2, 2}, {0, 2}},
+       {{0, 0}, {4, 0}, {4, 2}, {0, 2}, {0, 0}}},
+      // The tip of the spike and the point under it both start the ring, so
+      // the first vertex that remains is (0 2).
+      {"a zero-width spike at the seam",
+       {{2, 5}, {2, 2}, {0, 2}, {0, 0}, {4, 0}, {4, 2}, {2, 2}},
+       {{0, 2}, {0, 0}, {4, 0}, {4, 2}, {0, 2}}},
+      {"a point on a diagonal edge",
+       {{0, 0}, {4, 0}, {2, 2}, {0, 4}},
+       {{0, 0}, {4, 0}, {0, 4}, {0, 0}}},
+      // An L-shape clipped at a row seam (y = 144) on its left edge.
+      {"the corners of an L-shape",
+       {{3444, 432},
+        {0, 432},
+        {0, 288},
+        {0, 144},
+        {3276, 144},
+        {3276, 288},
+        {3444, 288},
+        {3444, 432}},
+       {{3444, 432},
+        {0, 432},
+        {0, 144},
+        {3276, 144},
+        {3276, 288},
+        {3444, 288},
+        {3444, 432}}},
+      {"an empty ring", {}, {}},
+      {"one repeated point", {{3, 3}, {3, 3}, {3, 3}, {3, 3}, {3, 3}}, {}},
+      {"a ring folded onto one segment", {{0, 0}, {4, 0}, {4, 0}, {0, 0}}, {}},
+      {"collinear points only", {{0, 0}, {2, 0}, {4, 0}, {0, 0}}, {}},
+  };
+  return *kCases;
+}
+
+TYPED_TEST(Ring2Operation, SimplifyRemovesRedundantPoints) {
+  using T = TypeParam;
+  for (const SimplifyCase& c : SimplifyCases()) {
+    SCOPED_TRACE(c.name);
+    Ring2<T> r = RingOf<T>(c.input);
+    const auto area = r.Area();
+
+    EXPECT_EQ(&r.Simplify(), &r);
+
+    EXPECT_EQ(r.Points(), RingOf<T>(c.expected).Points());
+    EXPECT_EQ(r.Area(), area);
+    // Simplifying again changes nothing.
+    const std::vector<Point2<T>> once = r.Points();
+    r.Simplify();
+    EXPECT_EQ(r.Points(), once);
+  }
+}
+
+TYPED_TEST(Ring2Operation, SimplifyGivesTheSameRingForOpenAndClosedInput) {
+  using T = TypeParam;
+  Ring2<T> open = RingOf<T>({{0, 0}, {2, 0}, {4, 0}, {4, 2}, {0, 2}});
+  Ring2<T> closed = RingOf<T>({{0, 0}, {2, 0}, {4, 0}, {4, 2}, {0, 2}, {0, 0}});
+
+  EXPECT_EQ(open.Simplify().Points(), closed.Simplify().Points());
+}
+
+// The corners of a square spanning all of int32 need the cross product of
+// differences up to 2^32 - 1, whose products (about 1.8e19) are past int64_t.
+TEST(Ring2SimplifyLargeCoordinates, Int32Extremes) {
+  constexpr int32_t kMin = std::numeric_limits<int32_t>::min();
+  constexpr int32_t kMax = std::numeric_limits<int32_t>::max();
+  Ring2_i32 r{Point2_i32(kMin, kMin), Point2_i32(0, kMin),
+              Point2_i32(kMax, kMin), Point2_i32(kMax, kMax),
+              Point2_i32(-1, -1),     Point2_i32(kMin, kMin)};
+
+  r.Simplify();
+
+  // (0 kMin) is on the bottom edge and (-1 -1) on the diagonal y = x back to
+  // the start, so only the three corners remain.
+  EXPECT_THAT(r.Points(),
+              ElementsAre(Point2_i32(kMin, kMin), Point2_i32(kMax, kMin),
+                          Point2_i32(kMax, kMax), Point2_i32(kMin, kMin)));
+}
+
+// The cross product at (2^32 0) is exactly 2^64, which wraps to 0 in int64_t
+// arithmetic and would make that corner look collinear; the triangle must keep
+// all three corners.
+TEST(Ring2SimplifyLargeCoordinates, Int64CrossProductOf2To64) {
+  constexpr int64_t k2To32 = int64_t{1} << 32;
+  Ring2_i64 r{Point2_i64(0, 0), Point2_i64(k2To32, 0),
+              Point2_i64(k2To32, k2To32), Point2_i64(0, 0)};
+
+  r.Simplify();
+
+  EXPECT_THAT(r.Points(),
+              ElementsAre(Point2_i64(0, 0), Point2_i64(k2To32, 0),
+                          Point2_i64(k2To32, k2To32), Point2_i64(0, 0)));
+}
+
+TEST(Ring2SimplifyLargeCoordinates, Int64) {
+  constexpr int64_t kBig = 1'000'000'000'000'000'000;  // 1e18
+  Ring2_i64 r{Point2_i64(-kBig, -kBig), Point2_i64(0, -kBig),
+              Point2_i64(kBig, -kBig),  Point2_i64(kBig, kBig),
+              Point2_i64(-kBig, kBig),  Point2_i64(-kBig, 0),
+              Point2_i64(-kBig, -kBig)};
+
+  r.Simplify();
+
+  EXPECT_THAT(r.Points(),
+              ElementsAre(Point2_i64(-kBig, -kBig), Point2_i64(kBig, -kBig),
+                          Point2_i64(kBig, kBig), Point2_i64(-kBig, kBig),
+                          Point2_i64(-kBig, -kBig)));
+}
 
 // =============================================================
 // Iterators
