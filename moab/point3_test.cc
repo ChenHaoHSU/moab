@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <string>
+#include <type_traits>
 
 #include "absl/hash/hash_testing.h"
 #include "absl/status/status.h"
@@ -637,5 +638,28 @@ TEST(OperatorsDeathTest, SubscriptOutOfRange) {
   EXPECT_DEATH((void)const_v[3], "Check failed: i < d_.size");
 }
 #endif
+
+TEST(Distance, ManhattanDistance) {
+  const Point3_i p(1, 2, 3);
+  const Point3_i q(4, 6, 15);
+
+  EXPECT_EQ(p.ManhattanDistance(q), 19);
+  EXPECT_EQ(p.Distance(q), p.ManhattanDistance(q));
+}
+
+TEST(Distance, SquaredEuclideanDistance) {
+  static_assert(std::is_same_v<Point3_i::area_type, int64_t>);
+
+  EXPECT_EQ(Point3_i(1, 2, 3).SquaredEuclideanDistance(Point3_i(4, 6, 15)),
+            169);
+  EXPECT_EQ(Point3_i(0, 0, -1000000000)
+                .SquaredEuclideanDistance(Point3_i(0, 0, 1000000000)),
+            int64_t{4000000000000000000});
+}
+
+TEST(Distance, EuclideanDistance) {
+  EXPECT_DOUBLE_EQ(Point3_i(1, 2, 3).EuclideanDistance(Point3_i(4, 6, 15)),
+                   13.0);
+}
 
 }  // namespace moab

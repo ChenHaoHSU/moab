@@ -1,7 +1,9 @@
 #ifndef MOAB_BOX2_H_
 #define MOAB_BOX2_H_
 
+#include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
@@ -112,6 +114,27 @@ class Box2 {
   }
   T HalfPerimeter() const { return (Width() + Height()); }
   T Perimeter() const { return 2 * (Width() + Height()); }
+
+  // Distance.
+  // Returns the squared Euclidean distance between the closest points of this
+  // box and 'b': dx^2 + dy^2, where dx and dy are the gaps between the boxes
+  // along x and y (0 where their projections overlap or touch). It is 0 when
+  // the boxes overlap or touch. Computed exactly in area_type, so compare it
+  // against a squared spacing: SquaredEuclideanDistance(b) < s * s.
+  area_type SquaredEuclideanDistance(const Box2& b) const {
+    const area_type dx = std::max<area_type>(
+        {0, static_cast<area_type>(b.xl()) - static_cast<area_type>(xh()),
+         static_cast<area_type>(xl()) - static_cast<area_type>(b.xh())});
+    const area_type dy = std::max<area_type>(
+        {0, static_cast<area_type>(b.yl()) - static_cast<area_type>(yh()),
+         static_cast<area_type>(yl()) - static_cast<area_type>(b.yh())});
+    return dx * dx + dy * dy;
+  }
+  // Returns the Euclidean (L2) distance between the closest points of this box
+  // and 'b'. It is 0 when the boxes overlap or touch.
+  double EuclideanDistance(const Box2& b) const {
+    return std::sqrt(static_cast<double>(SquaredEuclideanDistance(b)));
+  }
 
   // Mutators.
   void Set(T xl, T yl, T xh, T yh) {

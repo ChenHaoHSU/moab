@@ -64,9 +64,9 @@ class Segment2 {
 
   std::pair<Point2<T>, Point2<T>> ToPair() const { return {d_[0], d_[1]}; }
 
-  // Returns the Manhattan (L1) length, i.e. p0().Distance(p1()). Not the
-  // Euclidean length.
-  T Length() const { return d_[0].Distance(d_[1]); }
+  // Returns the Manhattan (L1) length, i.e. p0().ManhattanDistance(p1()). Not
+  // the Euclidean length.
+  T Length() const { return d_[0].ManhattanDistance(d_[1]); }
 
   T xl() const { return d_[0].x() < d_[1].x() ? d_[0].x() : d_[1].x(); }
   T yl() const { return d_[0].y() < d_[1].y() ? d_[0].y() : d_[1].y(); }

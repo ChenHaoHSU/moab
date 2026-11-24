@@ -3,10 +3,13 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
+#include <limits>
 #include <list>
 #include <optional>
+#include <random>
 #include <set>
 #include <string>
 #include <type_traits>
@@ -934,5 +937,67 @@ TEST(InvariantDeathTest, InvertedBoxSize) {
   EXPECT_DEATH((void)b.Area(), "Box is inverted");
 }
 #endif
+
+TEST(Distance, SquaredEuclideanDistanceOverlapOrTouch) {
+  const Box2_i b(0, 0, 10, 10);
+
+  EXPECT_EQ(b.SquaredEuclideanDistance(Box2_i(5, 5, 15, 15)), 0);    // overlap
+  EXPECT_EQ(b.SquaredEuclideanDistance(Box2_i(2, 2, 3, 3)), 0);      // inside
+  EXPECT_EQ(b.SquaredEuclideanDistance(Box2_i(10, 0, 20, 10)), 0);   // edge
+  EXPECT_EQ(b.SquaredEuclideanDistance(Box2_i(10, 10, 20, 20)), 0);  // corner
+}
+
+TEST(Distance, SquaredEuclideanDistanceGaps) {
+  const Box2_i b(0, 0, 10, 10);
+
+  // Gap along x only: the y projections overlap.
+  EXPECT_EQ(b.SquaredEuclideanDistance(Box2_i(15, 2, 20, 8)), 25);
+  // Gap along y only.
+  EXPECT_EQ(b.SquaredEuclideanDistance(Box2_i(-5, -7, 3, -3)), 9);
+  // Diagonal: corner to corner, dx = 3 and dy = 4.
+  EXPECT_EQ(b.SquaredEuclideanDistance(Box2_i(13, 14, 20, 20)), 25);
+  EXPECT_DOUBLE_EQ(b.EuclideanDistance(Box2_i(13, 14, 20, 20)), 5.0);
+  // Symmetric.
+  EXPECT_EQ(Box2_i(13, 14, 20, 20).SquaredEuclideanDistance(b), 25);
+}
+
+TEST(Distance, SquaredEuclideanDistanceNoOverflow) {
+  const Box2_i a(-1000000000, 0, -999999999, 1);
+  const Box2_i b(1000000000, 0, 1000000001, 1);
+
+  // dx = 1999999999, which does not fit in a product of ints.
+  EXPECT_EQ(a.SquaredEuclideanDistance(b), int64_t{1999999999} * 1999999999);
+}
+
+TEST(Distance, EuclideanDistanceFloatingPoint) {
+  EXPECT_DOUBLE_EQ(
+      Box2<double>(0, 0, 1, 1).EuclideanDistance(Box2<double>(2.5, 3, 4, 4)),
+      2.5);
+}
+
+// The closest points of two integer boxes have integer coordinates, so the
+// minimum over all integer point pairs is the exact squared distance.
+TEST(Distance, SquaredEuclideanDistanceMatchesPointScan) {
+  std::mt19937 rng(11);
+  std::uniform_int_distribution<int> pos(0, 20);
+  std::uniform_int_distribution<int> size(0, 5);
+  for (int iter = 0; iter < 300; ++iter) {
+    const int ax = pos(rng), ay = pos(rng), bx = pos(rng), by = pos(rng);
+    const Box2_i a(ax, ay, ax + size(rng), ay + size(rng));
+    const Box2_i b(bx, by, bx + size(rng), by + size(rng));
+    int64_t best = std::numeric_limits<int64_t>::max();
+    for (int x0 = a.xl(); x0 <= a.xh(); ++x0) {
+      for (int y0 = a.yl(); y0 <= a.yh(); ++y0) {
+        for (int x1 = b.xl(); x1 <= b.xh(); ++x1) {
+          for (int y1 = b.yl(); y1 <= b.yh(); ++y1) {
+            best = std::min(best, Point2_i(x0, y0).SquaredEuclideanDistance(
+                                      Point2_i(x1, y1)));
+          }
+        }
+      }
+    }
+    EXPECT_EQ(a.SquaredEuclideanDistance(b), best) << a << " " << b;
+  }
+}
 
 }  // namespace moab

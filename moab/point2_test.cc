@@ -3,8 +3,10 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <cmath>
 #include <cstdint>
 #include <string>
+#include <type_traits>
 
 #include "absl/hash/hash_testing.h"
 #include "absl/status/status.h"
@@ -551,5 +553,35 @@ TEST(OperatorsDeathTest, SubscriptOutOfRange) {
   EXPECT_DEATH((void)const_v[2], "Check failed: i < d_.size");
 }
 #endif
+
+TEST(Distance, ManhattanDistance) {
+  const Point2_i p(1, 2);
+  const Point2_i q(4, -2);
+
+  EXPECT_EQ(p.ManhattanDistance(q), 7);
+  EXPECT_EQ(p.Distance(q), p.ManhattanDistance(q));
+}
+
+TEST(Distance, SquaredEuclideanDistance) {
+  static_assert(std::is_same_v<Point2_i::area_type, int64_t>);
+  static_assert(std::is_same_v<Point2<double>::area_type, double>);
+
+  EXPECT_EQ(Point2_i(1, 2).SquaredEuclideanDistance(Point2_i(4, -2)), 25);
+  EXPECT_EQ(Point2_i(4, -2).SquaredEuclideanDistance(Point2_i(1, 2)), 25);
+  EXPECT_EQ(Point2_i(3, 3).SquaredEuclideanDistance(Point2_i(3, 3)), 0);
+}
+
+TEST(Distance, SquaredEuclideanDistanceNoOverflow) {
+  // dx = 2e9 does not fit in an int, and dx^2 = 4e18 needs int64_t.
+  EXPECT_EQ(Point2_i(-1000000000, 0)
+                .SquaredEuclideanDistance(Point2_i(1000000000, 0)),
+            int64_t{4000000000000000000});
+}
+
+TEST(Distance, EuclideanDistance) {
+  EXPECT_DOUBLE_EQ(Point2_i(1, 2).EuclideanDistance(Point2_i(4, -2)), 5.0);
+  EXPECT_DOUBLE_EQ(Point2<double>(0, 0).EuclideanDistance(Point2<double>(1, 1)),
+                   std::sqrt(2.0));
+}
 
 }  // namespace moab

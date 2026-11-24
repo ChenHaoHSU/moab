@@ -36,6 +36,9 @@ class Point3 {
  public:
   // Type aliases. (Required by Boost geometry/polygon traits.)
   using coordinate_type = T;
+  // Type of squared lengths (and areas). int64_t for integral coordinates to
+  // avoid overflow.
+  using area_type = std::conditional_t<std::is_integral_v<T>, int64_t, T>;
 
   // Constructors.
   Point3() : d_({0, 0, 0}) {}
@@ -187,11 +190,28 @@ class Point3 {
   }
 
   // Distance.
-  // Returns the Manhattan (L1) distance to 'p': |dx| + |dy| + |dz|. Not the
-  // Euclidean distance.
-  T Distance(const Point3& p) const {
+  // Returns the Manhattan (L1) distance to 'p': |dx| + |dy| + |dz|.
+  T ManhattanDistance(const Point3& p) const {
     return std::abs(d_[0] - p.d_[0]) + std::abs(d_[1] - p.d_[1]) +
            std::abs(d_[2] - p.d_[2]);
+  }
+  // Same as ManhattanDistance. Prefer ManhattanDistance, which names the
+  // metric.
+  T Distance(const Point3& p) const { return ManhattanDistance(p); }
+  // Returns the squared Euclidean distance to 'p', dx^2 + dy^2 + dz^2,
+  // computed exactly in area_type.
+  area_type SquaredEuclideanDistance(const Point3& p) const {
+    const area_type dx =
+        static_cast<area_type>(d_[0]) - static_cast<area_type>(p.d_[0]);
+    const area_type dy =
+        static_cast<area_type>(d_[1]) - static_cast<area_type>(p.d_[1]);
+    const area_type dz =
+        static_cast<area_type>(d_[2]) - static_cast<area_type>(p.d_[2]);
+    return dx * dx + dy * dy + dz * dz;
+  }
+  // Returns the Euclidean (L2) distance to 'p'.
+  double EuclideanDistance(const Point3& p) const {
+    return std::sqrt(static_cast<double>(SquaredEuclideanDistance(p)));
   }
 
   // String conversion.
