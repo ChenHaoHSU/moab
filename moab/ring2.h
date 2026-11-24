@@ -99,6 +99,8 @@ class Ring2 {
 
   // Operations.
   // Operations - Bloat
+  // Returns the ring's max boxes (see MaxBoxes) bloated by 'x' and 'y', as
+  // rings. 'x' and 'y' must be non-negative.
   std::vector<Ring2<T>> BloatedRings(T x, T y) const;
 
   // Iterators.
@@ -152,7 +154,7 @@ using Ring2_i64 = Ring2<int64_t>;
 
 template <typename T>
 std::vector<Ring2<T>> Ring2<T>::BloatedRings(T x, T y) const {
-  CHECK(x >= 0 && y >= 0) << "Bloat values must be non-negative.";
+  DCHECK(x >= 0 && y >= 0) << "Bloat values must be non-negative.";
   std::vector<Box2<T>> bloated_boxes;
   for (moab::Box2<T> box : MaxBoxes()) {
     bloated_boxes.push_back(box.Bloat(x, y));

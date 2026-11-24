@@ -4,11 +4,16 @@
 #include <array>
 #include <cstdint>
 #include <initializer_list>
+#include <optional>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 
 #include "absl/log/check.h"
+#include "absl/status/status.h"
+#include "absl/status/status_macros.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/string_view.h"
 #include "boost/geometry/core/access.hpp"
 #include "boost/geometry/core/coordinate_dimension.hpp"
 #include "boost/geometry/core/coordinate_system.hpp"
@@ -17,6 +22,7 @@
 #include "boost/geometry/geometries/concepts/box_concept.hpp"
 #include "boost/polygon/polygon.hpp"
 #include "moab/box2.pb.h"
+#include "moab/coordinate_conversion.h"
 #include "moab/interval.h"
 #include "moab/point2.h"
 #include "moab/point2.pb.h"
@@ -39,7 +45,8 @@ class Box2 {
   Box2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
   explicit Box2(const Point2<T>& p1, const Point2<T>& p2) { Set(p1, p2); }
   explicit Box2(T xl, T yl, T xh, T yh) { Set(xl, yl, xh, yh); }
-  explicit Box2(const Box2Proto& proto) { SetFromProto(proto); }
+  // Aborts if 'proto' is invalid (see FromProto). Prefer FromProto.
+  explicit Box2(const Box2Proto& proto) { CHECK_OK(SetFromProto(proto)); }
   Box2(const Box2&) = default;
   Box2(Box2&&) = default;
   ~Box2() = default;
@@ -165,9 +172,12 @@ class Box2 {
   bool operator>=(const Box2& b) const { return !(*this < b); }
 
   // Utilities.
+  // Returns the smallest box that contains all 'points', or std::nullopt if
+  // 'points' is empty.
   template <typename Container>
-  static Box2 BoundingBox(const Container& points);
-  static Box2 BoundingBox(std::initializer_list<Point2<T>> points) {
+  static std::optional<Box2> BoundingBox(const Container& points);
+  static std::optional<Box2> BoundingBox(
+      std::initializer_list<Point2<T>> points) {
     return BoundingBox<std::initializer_list<Point2<T>>>(points);
   }
 
@@ -191,8 +201,13 @@ class Box2 {
   // Protobuf.
   // Returns a Box2Proto.
   Box2Proto ToProto() const;
-  // Sets the Box2 from a Box2Proto.
-  void SetFromProto(const Box2Proto& proto);
+  // Sets the Box2 from a Box2Proto. On error, returns the error from FromProto
+  // and leaves the Box2 unchanged.
+  absl::Status SetFromProto(const Box2Proto& proto);
+  // Returns the Box2 in 'proto'. Returns InvalidArgument if no coordinate
+  // type is set, or if a coordinate is not finite, does not fit in T, or is
+  // not a whole number for an integral T.
+  static absl::StatusOr<Box2> FromProto(const Box2Proto& proto);
 
  private:
   std::array<Point2<T>, 2> d_;
@@ -229,32 +244,52 @@ Box2Proto Box2<T>::ToProto() const {
 }
 
 template <typename T>
-void Box2<T>::SetFromProto(const Box2Proto& proto) {
-  if (proto.has_box_int32()) {
-    Set(proto.box_int32().min_corner().x(), proto.box_int32().min_corner().y(),
-        proto.box_int32().max_corner().x(), proto.box_int32().max_corner().y());
-  } else if (proto.has_box_int64()) {
-    Set(proto.box_int64().min_corner().x(), proto.box_int64().min_corner().y(),
-        proto.box_int64().max_corner().x(), proto.box_int64().max_corner().y());
-  } else if (proto.has_box_float()) {
-    Set(proto.box_float().min_corner().x(), proto.box_float().min_corner().y(),
-        proto.box_float().max_corner().x(), proto.box_float().max_corner().y());
-  } else if (proto.has_box_double()) {
-    Set(proto.box_double().min_corner().x(),
-        proto.box_double().min_corner().y(),
-        proto.box_double().max_corner().x(),
-        proto.box_double().max_corner().y());
-  } else {
-    LOG(FATAL) << "Unsupported type.";
+absl::Status Box2<T>::SetFromProto(const Box2Proto& proto) {
+  ABSL_ASSIGN_OR_RETURN(*this, FromProto(proto));
+  return absl::OkStatus();
+}
+
+template <typename T>
+absl::StatusOr<Box2<T>> Box2<T>::FromProto(const Box2Proto& proto) {
+  const auto from = [](const auto& p) -> absl::StatusOr<Box2<T>> {
+    ABSL_ASSIGN_OR_RETURN(
+        const T xl, internal::ConvertCoordinate<T>(p.min_corner().x(),
+                                                   "[Box2] min_corner.x"));
+    ABSL_ASSIGN_OR_RETURN(
+        const T yl, internal::ConvertCoordinate<T>(p.min_corner().y(),
+                                                   "[Box2] min_corner.y"));
+    ABSL_ASSIGN_OR_RETURN(
+        const T xh, internal::ConvertCoordinate<T>(p.max_corner().x(),
+                                                   "[Box2] max_corner.x"));
+    ABSL_ASSIGN_OR_RETURN(
+        const T yh, internal::ConvertCoordinate<T>(p.max_corner().y(),
+                                                   "[Box2] max_corner.y"));
+    return Box2<T>(xl, yl, xh, yh);
+  };
+  switch (proto.type_variant_case()) {
+    case Box2Proto::kBoxInt32:
+      return from(proto.box_int32());
+    case Box2Proto::kBoxInt64:
+      return from(proto.box_int64());
+    case Box2Proto::kBoxFloat:
+      return from(proto.box_float());
+    case Box2Proto::kBoxDouble:
+      return from(proto.box_double());
+    case Box2Proto::TYPE_VARIANT_NOT_SET:
+      break;
   }
+  return absl::InvalidArgumentError(
+      "[Box2] The proto has no coordinate type set.");
 }
 
 template <typename T>
 template <typename Container>
-Box2<T> Box2<T>::BoundingBox(const Container& points) {
+std::optional<Box2<T>> Box2<T>::BoundingBox(const Container& points) {
   static_assert(std::is_same_v<typename Container::value_type, Point2<T>>,
                 "Container must hold Point2<T> elements.");
-  CHECK(points.begin() != points.end()) << "Points container is empty.";
+  if (points.begin() == points.end()) {
+    return std::nullopt;
+  }
   Box2<T> box(*points.begin(), *points.begin());
   for (const Point2<T>& p : points) {
     box.Encompass(p);

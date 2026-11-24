@@ -9,9 +9,13 @@
 #include <utility>
 
 #include "absl/hash/hash.h"
-#include "absl/log/log.h"
+#include "absl/log/check.h"
+#include "absl/status/status.h"
+#include "absl/status/status_macros.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
 #include "boost/geometry/core/access.hpp"
 #include "boost/geometry/core/coordinate_dimension.hpp"
 #include "boost/geometry/core/coordinate_system.hpp"
@@ -19,6 +23,7 @@
 #include "boost/geometry/core/tag.hpp"
 #include "boost/geometry/geometries/concepts/point_concept.hpp"
 #include "boost/polygon/point_concept.hpp"
+#include "moab/coordinate_conversion.h"
 #include "moab/point2.pb.h"
 
 namespace moab {
@@ -32,7 +37,8 @@ class Point2 {
   // Constructors.
   Point2() : d_({0, 0}) {}
   explicit Point2(T x, T y) : d_({x, y}) {}
-  explicit Point2(const Point2Proto& proto) { SetFromProto(proto); }
+  // Aborts if 'proto' is invalid (see FromProto). Prefer FromProto.
+  explicit Point2(const Point2Proto& proto) { CHECK_OK(SetFromProto(proto)); }
   Point2(const Point2&) = default;
   Point2(Point2&&) = default;
   ~Point2() = default;
@@ -163,8 +169,13 @@ class Point2 {
   // Protobuf.
   // Returns a Point2Proto.
   Point2Proto ToProto() const;
-  // Sets the Point2 from a Point2Proto.
-  void SetFromProto(const Point2Proto& proto);
+  // Sets the Point2 from a Point2Proto. On error, returns the error from
+  // FromProto and leaves the Point2 unchanged.
+  absl::Status SetFromProto(const Point2Proto& proto);
+  // Returns the Point2 in 'proto'. Returns InvalidArgument if no coordinate
+  // type is set, or if a coordinate is not finite, does not fit in T, or is
+  // not a whole number for an integral T.
+  static absl::StatusOr<Point2> FromProto(const Point2Proto& proto);
 
  private:
   std::array<T, 2> d_;  // <x, y>
@@ -193,22 +204,34 @@ Point2Proto Point2<T>::ToProto() const {
 }
 
 template <typename T>
-void Point2<T>::SetFromProto(const Point2Proto& proto) {
-  if (proto.has_point_int32()) {
-    d_[0] = proto.point_int32().x();
-    d_[1] = proto.point_int32().y();
-  } else if (proto.has_point_int64()) {
-    d_[0] = proto.point_int64().x();
-    d_[1] = proto.point_int64().y();
-  } else if (proto.has_point_float()) {
-    d_[0] = proto.point_float().x();
-    d_[1] = proto.point_float().y();
-  } else if (proto.has_point_double()) {
-    d_[0] = proto.point_double().x();
-    d_[1] = proto.point_double().y();
-  } else {
-    LOG(FATAL) << "Unsupported type.";
+absl::Status Point2<T>::SetFromProto(const Point2Proto& proto) {
+  ABSL_ASSIGN_OR_RETURN(*this, FromProto(proto));
+  return absl::OkStatus();
+}
+
+template <typename T>
+absl::StatusOr<Point2<T>> Point2<T>::FromProto(const Point2Proto& proto) {
+  const auto from = [](const auto& p) -> absl::StatusOr<Point2<T>> {
+    ABSL_ASSIGN_OR_RETURN(const T x,
+                          internal::ConvertCoordinate<T>(p.x(), "[Point2] x"));
+    ABSL_ASSIGN_OR_RETURN(const T y,
+                          internal::ConvertCoordinate<T>(p.y(), "[Point2] y"));
+    return Point2<T>(x, y);
+  };
+  switch (proto.type_variant_case()) {
+    case Point2Proto::kPointInt32:
+      return from(proto.point_int32());
+    case Point2Proto::kPointInt64:
+      return from(proto.point_int64());
+    case Point2Proto::kPointFloat:
+      return from(proto.point_float());
+    case Point2Proto::kPointDouble:
+      return from(proto.point_double());
+    case Point2Proto::TYPE_VARIANT_NOT_SET:
+      break;
   }
+  return absl::InvalidArgumentError(
+      "[Point2] The proto has no coordinate type set.");
 }
 
 // Aliases.

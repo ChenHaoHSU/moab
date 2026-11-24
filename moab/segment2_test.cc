@@ -6,6 +6,8 @@
 #include <string>
 
 #include "absl/hash/hash_testing.h"
+#include "absl/status/status.h"
+#include "absl/status/status_matchers.h"
 #include "absl/strings/str_format.h"
 #include "moab/point2.h"
 #include "moab/segment2.pb.h"
@@ -342,7 +344,7 @@ TEST(Protobuf, SetFromProto) {
   proto.mutable_segment_int32()->mutable_p1()->set_y(4);
 
   Segment2_i s;
-  s.SetFromProto(proto);
+  ASSERT_THAT(s.SetFromProto(proto), ::absl_testing::IsOk());
 
   EXPECT_EQ(s.p0(), Point2_i(1, 2));
   EXPECT_EQ(s.p1(), Point2_i(3, 4));
@@ -426,6 +428,44 @@ TEST(BoostPolygon, ScaleUp) {
 TEST(StringConversion, ToStringFloatingPoint) {
   EXPECT_THAT(Segment2<double>(0.5, 1, 2, 3.5).ToString(),
               StrEq("((0.5 1) (2 3.5))"));
+}
+
+using ::absl_testing::IsOkAndHolds;
+using ::absl_testing::StatusIs;
+using ::testing::HasSubstr;
+
+TEST(Protobuf, FromProtoRoundTrip) {
+  EXPECT_THAT(Segment2_i::FromProto(Segment2_i(4, 3, 2, 1).ToProto()),
+              IsOkAndHolds(Segment2_i(4, 3, 2, 1)));
+  EXPECT_THAT(
+      Segment2<double>::FromProto(Segment2<double>(0.5, 1, 2, 3.5).ToProto()),
+      IsOkAndHolds(Segment2<double>(0.5, 1, 2, 3.5)));
+}
+
+TEST(Protobuf, FromProtoNotSet) {
+  EXPECT_THAT(Segment2_i::FromProto(Segment2Proto()),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("[Segment2] The proto has no coordinate type "
+                                 "set.")));
+}
+
+TEST(Protobuf, FromProtoOutOfRange) {
+  Segment2Proto proto;
+  proto.mutable_segment_int64()->mutable_p0()->set_x(0);
+  proto.mutable_segment_int64()->mutable_p1()->set_x(int64_t{1} << 40);
+
+  EXPECT_THAT(Segment2_i::FromProto(proto),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("[Segment2] p1.x: coordinate 1099511627776 "
+                                 "does not fit in int32.")));
+}
+
+TEST(Protobuf, SetFromProtoNotSetLeavesValueUnchanged) {
+  Segment2_i v = Segment2_i(1, 2, 3, 4);
+
+  EXPECT_THAT(v.SetFromProto(Segment2Proto()),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+  EXPECT_EQ(v, Segment2_i(1, 2, 3, 4));
 }
 
 }  // namespace moab

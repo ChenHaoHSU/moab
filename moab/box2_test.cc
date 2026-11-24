@@ -6,12 +6,15 @@
 #include <array>
 #include <cstdint>
 #include <list>
+#include <optional>
 #include <set>
 #include <string>
 #include <type_traits>
 #include <vector>
 
 #include "absl/hash/hash_testing.h"
+#include "absl/status/status.h"
+#include "absl/status/status_matchers.h"
 #include "absl/strings/str_format.h"
 #include "moab/box2.pb.h"
 #include "moab/point2.h"
@@ -526,10 +529,11 @@ TEST(Operators, Inequality2) {
 TEST(Utilities, BoundingBoxVector1) {
   std::vector<Point2_i> points = {Point2_i(1, 2)};
 
-  Box2_i box = Box2_i::BoundingBox(points);
+  std::optional<Box2_i> box = Box2_i::BoundingBox(points);
+  ASSERT_TRUE(box.has_value());
 
-  EXPECT_EQ(box.ll(), Point2_i(1, 2));
-  EXPECT_EQ(box.ur(), Point2_i(1, 2));
+  EXPECT_EQ(box->ll(), Point2_i(1, 2));
+  EXPECT_EQ(box->ur(), Point2_i(1, 2));
 }
 
 TEST(Utilities, BoundingBoxVector2) {
@@ -540,10 +544,11 @@ TEST(Utilities, BoundingBoxVector2) {
       Point2_i(0, 0),
   };
 
-  Box2_i box = Box2_i::BoundingBox(points);
+  std::optional<Box2_i> box = Box2_i::BoundingBox(points);
+  ASSERT_TRUE(box.has_value());
 
-  EXPECT_EQ(box.ll(), Point2_i(-1, 0));
-  EXPECT_EQ(box.ur(), Point2_i(3, 5));
+  EXPECT_EQ(box->ll(), Point2_i(-1, 0));
+  EXPECT_EQ(box->ur(), Point2_i(3, 5));
 }
 
 TEST(Utilities, BoundingBoxVector3) {
@@ -554,10 +559,11 @@ TEST(Utilities, BoundingBoxVector3) {
       Point2_i(1, 2),
   };
 
-  Box2_i box = Box2_i::BoundingBox(points);
+  std::optional<Box2_i> box = Box2_i::BoundingBox(points);
+  ASSERT_TRUE(box.has_value());
 
-  EXPECT_EQ(box.ll(), Point2_i(1, 2));
-  EXPECT_EQ(box.ur(), Point2_i(1, 2));
+  EXPECT_EQ(box->ll(), Point2_i(1, 2));
+  EXPECT_EQ(box->ur(), Point2_i(1, 2));
 }
 
 TEST(Utilities, BoundingBoxVector4) {
@@ -566,18 +572,17 @@ TEST(Utilities, BoundingBoxVector4) {
       Point2_i(5, -5),    Point2_i(0, 0),
   };
 
-  Box2_i box = Box2_i::BoundingBox(points);
+  std::optional<Box2_i> box = Box2_i::BoundingBox(points);
+  ASSERT_TRUE(box.has_value());
 
-  EXPECT_EQ(box.ll(), Point2_i(-10, -20));
-  EXPECT_EQ(box.ur(), Point2_i(10, 20));
+  EXPECT_EQ(box->ll(), Point2_i(-10, -20));
+  EXPECT_EQ(box->ur(), Point2_i(10, 20));
 }
 
 TEST(Utilities, BoundingBoxVectorEmptyContainer) {
   std::vector<Point2_i> points;
 
-  EXPECT_DEATH(
-      { Box2_i box = Box2_i::BoundingBox(points); },
-      "Points container is empty.");
+  EXPECT_EQ(Box2_i::BoundingBox(points), std::nullopt);
 }
 
 TEST(Utilities, BoundingBoxArray) {
@@ -587,34 +592,33 @@ TEST(Utilities, BoundingBoxArray) {
       Point2_i(-1, 5),
   };
 
-  Box2_i box = Box2_i::BoundingBox(points);
+  std::optional<Box2_i> box = Box2_i::BoundingBox(points);
+  ASSERT_TRUE(box.has_value());
 
-  EXPECT_EQ(box.ll(), Point2_i(-1, 2));
-  EXPECT_EQ(box.ur(), Point2_i(3, 5));
+  EXPECT_EQ(box->ll(), Point2_i(-1, 2));
+  EXPECT_EQ(box->ur(), Point2_i(3, 5));
 }
 
 TEST(Utilities, BoundingBoxArrayEmptyContainer) {
   std::array<Point2_i, 0> points = {};
 
-  EXPECT_DEATH(
-      { Box2_i box = Box2_i::BoundingBox(points); },
-      "Points container is empty.");
+  EXPECT_EQ(Box2_i::BoundingBox(points), std::nullopt);
 }
 
 TEST(Utilities, BoundingBoxInitializerList) {
-  Box2_i box = Box2_i::BoundingBox({
+  std::optional<Box2_i> box = Box2_i::BoundingBox({
       Point2_i(1, 2),
       Point2_i(3, 4),
       Point2_i(-1, 5),
   });
+  ASSERT_TRUE(box.has_value());
 
-  EXPECT_EQ(box.ll(), Point2_i(-1, 2));
-  EXPECT_EQ(box.ur(), Point2_i(3, 5));
+  EXPECT_EQ(box->ll(), Point2_i(-1, 2));
+  EXPECT_EQ(box->ur(), Point2_i(3, 5));
 }
 
 TEST(Utilities, BoundingBoxInitializerListEmptyContainer) {
-  EXPECT_DEATH(
-      { Box2_i box = Box2_i::BoundingBox({}); }, "Points container is empty.");
+  EXPECT_EQ(Box2_i::BoundingBox({}), std::nullopt);
 }
 
 TEST(Utilities, BoundingBoxList) {
@@ -624,18 +628,17 @@ TEST(Utilities, BoundingBoxList) {
       Point2_i(-1, 5),
   };
 
-  Box2_i box = Box2_i::BoundingBox(points);
+  std::optional<Box2_i> box = Box2_i::BoundingBox(points);
+  ASSERT_TRUE(box.has_value());
 
-  EXPECT_EQ(box.ll(), Point2_i(-1, 2));
-  EXPECT_EQ(box.ur(), Point2_i(3, 5));
+  EXPECT_EQ(box->ll(), Point2_i(-1, 2));
+  EXPECT_EQ(box->ur(), Point2_i(3, 5));
 }
 
 TEST(Utilities, BoundingBoxListEmptyContainer) {
   std::list<Point2_i> points;
 
-  EXPECT_DEATH(
-      { Box2_i box = Box2_i::BoundingBox(points); },
-      "Points container is empty.");
+  EXPECT_EQ(Box2_i::BoundingBox(points), std::nullopt);
 }
 
 TEST(Utilities, BoundingBoxSet) {
@@ -645,18 +648,17 @@ TEST(Utilities, BoundingBoxSet) {
       Point2_i(-1, 5),
   };
 
-  Box2_i box = Box2_i::BoundingBox(points);
+  std::optional<Box2_i> box = Box2_i::BoundingBox(points);
+  ASSERT_TRUE(box.has_value());
 
-  EXPECT_EQ(box.ll(), Point2_i(-1, 2));
-  EXPECT_EQ(box.ur(), Point2_i(3, 5));
+  EXPECT_EQ(box->ll(), Point2_i(-1, 2));
+  EXPECT_EQ(box->ur(), Point2_i(3, 5));
 }
 
 TEST(Utilities, BoundingBoxSetEmptyContainer) {
   std::set<Point2_i> points;
 
-  EXPECT_DEATH(
-      { Box2_i box = Box2_i::BoundingBox(points); },
-      "Points container is empty.");
+  EXPECT_EQ(Box2_i::BoundingBox(points), std::nullopt);
 }
 
 TEST(StringConversion, ToString) {
@@ -701,7 +703,7 @@ TEST(Protobuf, SetFromProto) {
   proto.mutable_box_int32()->mutable_max_corner()->set_y(4);
 
   Box2_i b;
-  b.SetFromProto(proto);
+  ASSERT_THAT(b.SetFromProto(proto), ::absl_testing::IsOk());
 
   EXPECT_EQ(b.ll(), Point2_i(1, 2));
   EXPECT_EQ(b.ur(), Point2_i(3, 4));
@@ -763,6 +765,54 @@ TEST(Protobuf, RoundTripDouble) {
 TEST(StringConversion, ToStringFloatingPoint) {
   EXPECT_THAT(Box2<double>(0.5, 1, 2, 3.5).ToString(),
               StrEq("((0.5 1) (2 3.5))"));
+}
+
+using ::absl_testing::IsOkAndHolds;
+using ::absl_testing::StatusIs;
+using ::testing::HasSubstr;
+
+TEST(Protobuf, FromProtoRoundTrip) {
+  EXPECT_THAT(Box2_i::FromProto(Box2_i(-1, 2, 3, 4).ToProto()),
+              IsOkAndHolds(Box2_i(-1, 2, 3, 4)));
+  EXPECT_THAT(Box2_i64::FromProto(
+                  Box2_i64(0, 0, int64_t{1} << 40, int64_t{1} << 41).ToProto()),
+              IsOkAndHolds(Box2_i64(0, 0, int64_t{1} << 40, int64_t{1} << 41)));
+  EXPECT_THAT(Box2<double>::FromProto(Box2<double>(0.5, 1, 2, 3.5).ToProto()),
+              IsOkAndHolds(Box2<double>(0.5, 1, 2, 3.5)));
+}
+
+TEST(Protobuf, FromProtoNormalizesCorners) {
+  Box2Proto proto;
+  proto.mutable_box_int32()->mutable_min_corner()->set_x(10);
+  proto.mutable_box_int32()->mutable_min_corner()->set_y(20);
+  proto.mutable_box_int32()->mutable_max_corner()->set_x(0);
+  proto.mutable_box_int32()->mutable_max_corner()->set_y(5);
+
+  EXPECT_THAT(Box2_i::FromProto(proto), IsOkAndHolds(Box2_i(0, 5, 10, 20)));
+}
+
+TEST(Protobuf, FromProtoNotSet) {
+  EXPECT_THAT(Box2_i::FromProto(Box2Proto()),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("[Box2] The proto has no coordinate type "
+                                 "set.")));
+}
+
+TEST(Protobuf, FromProtoOutOfRange) {
+  Box2Proto proto;
+  proto.mutable_box_double()->mutable_max_corner()->set_y(3e9);
+
+  EXPECT_THAT(Box2_i::FromProto(proto),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("[Box2] max_corner.y: coordinate")));
+}
+
+TEST(Protobuf, SetFromProtoNotSetLeavesValueUnchanged) {
+  Box2_i v = Box2_i(1, 2, 3, 4);
+
+  EXPECT_THAT(v.SetFromProto(Box2Proto()),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+  EXPECT_EQ(v, Box2_i(1, 2, 3, 4));
 }
 
 }  // namespace moab

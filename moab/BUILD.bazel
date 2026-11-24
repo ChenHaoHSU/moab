@@ -63,11 +63,38 @@ cc_proto_library(
 )
 
 cc_library(
+    name = "coordinate_conversion",
+    hdrs = ["coordinate_conversion.h"],
+    deps = [
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+cc_test(
+    name = "coordinate_conversion_test",
+    size = "small",
+    srcs = ["coordinate_conversion_test.cc"],
+    deps = [
+        ":coordinate_conversion",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_matchers",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "point2",
     hdrs = ["point2.h"],
     deps = [
+        ":coordinate_conversion",
         ":point2_cc_proto",
-        "@abseil-cpp//absl/log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_macros",
+        "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/log:check",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
@@ -81,6 +108,8 @@ cc_test(
     size = "small",
     srcs = ["point2_test.cc"],
     deps = [
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_matchers",
         ":point2",
         ":point2_cc_proto",
         "@abseil-cpp//absl/hash:hash_testing",
@@ -94,9 +123,12 @@ cc_library(
     name = "point3",
     hdrs = ["point3.h"],
     deps = [
+        ":coordinate_conversion",
         ":point2",
         ":point3_cc_proto",
-        "@abseil-cpp//absl/log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_macros",
+        "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/log:check",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
@@ -109,6 +141,8 @@ cc_test(
     size = "small",
     srcs = ["point3_test.cc"],
     deps = [
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_matchers",
         ":point3",
         ":point3_cc_proto",
         "@abseil-cpp//absl/hash:hash_testing",
@@ -122,9 +156,12 @@ cc_library(
     name = "segment2",
     hdrs = ["segment2.h"],
     deps = [
+        ":coordinate_conversion",
         ":point2",
         ":segment2_cc_proto",
-        "@abseil-cpp//absl/log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_macros",
+        "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/log:check",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
@@ -138,6 +175,8 @@ cc_test(
     size = "small",
     srcs = ["segment2_test.cc"],
     deps = [
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_matchers",
         ":segment2",
         ":segment2_cc_proto",
         "@abseil-cpp//absl/hash:hash_testing",
@@ -151,9 +190,12 @@ cc_library(
     name = "segment3",
     hdrs = ["segment3.h"],
     deps = [
+        ":coordinate_conversion",
         ":point3",
         ":segment3_cc_proto",
-        "@abseil-cpp//absl/log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_macros",
+        "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/log:check",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
@@ -167,6 +209,8 @@ cc_test(
     size = "small",
     srcs = ["segment3_test.cc"],
     deps = [
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_matchers",
         ":segment3",
         ":segment3_cc_proto",
         "@abseil-cpp//absl/hash:hash_testing",
@@ -206,12 +250,15 @@ cc_library(
     name = "box2",
     hdrs = ["box2.h"],
     deps = [
+        ":coordinate_conversion",
         ":box2_cc_proto",
         ":interval",
         ":point2",
         ":point2_cc_proto",
-        "@abseil-cpp//absl/log",
         "@abseil-cpp//absl/log:check",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_macros",
+        "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
         "@boost.geometry",
@@ -224,6 +271,8 @@ cc_test(
     size = "small",
     srcs = ["box2_test.cc"],
     deps = [
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_matchers",
         ":box2",
         ":box2_cc_proto",
         ":point2",
@@ -327,6 +376,7 @@ cc_library(
     hdrs = ["moab.h"],
     deps = [
         ":box2",
+        ":coordinate_conversion",
         ":interval",
         ":operation",
         ":point2",

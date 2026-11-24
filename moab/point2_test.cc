@@ -7,6 +7,8 @@
 #include <string>
 
 #include "absl/hash/hash_testing.h"
+#include "absl/status/status.h"
+#include "absl/status/status_matchers.h"
 #include "absl/strings/str_format.h"
 #include "moab/point2.pb.h"
 
@@ -443,7 +445,7 @@ TEST(Protobuf, SetFromProto) {
   proto.mutable_point_int32()->set_y(2);
 
   Point2_i p;
-  p.SetFromProto(proto);
+  ASSERT_THAT(p.SetFromProto(proto), ::absl_testing::IsOk());
 
   EXPECT_EQ(p.x(), 1);
   EXPECT_EQ(p.y(), 2);
@@ -467,6 +469,76 @@ TEST(StringConversion, ToStringFloatingPoint) {
 TEST(StringConversion, ToStringInt64) {
   EXPECT_THAT(Point2_i64(int64_t{1} << 40, -1).ToString(),
               StrEq("(1099511627776 -1)"));
+}
+
+using ::absl_testing::IsOkAndHolds;
+using ::absl_testing::StatusIs;
+using ::testing::HasSubstr;
+
+TEST(Protobuf, FromProtoInt32) {
+  Point2Proto proto;
+  proto.mutable_point_int32()->set_x(1);
+  proto.mutable_point_int32()->set_y(-2);
+
+  EXPECT_THAT(Point2_i::FromProto(proto), IsOkAndHolds(Point2_i(1, -2)));
+}
+
+TEST(Protobuf, FromProtoRoundTrip) {
+  EXPECT_THAT(Point2_i::FromProto(Point2_i(3, -4).ToProto()),
+              IsOkAndHolds(Point2_i(3, -4)));
+  EXPECT_THAT(Point2_i64::FromProto(Point2_i64(int64_t{1} << 40, 5).ToProto()),
+              IsOkAndHolds(Point2_i64(int64_t{1} << 40, 5)));
+  EXPECT_THAT(Point2<float>::FromProto(Point2<float>(0.5f, -1.25f).ToProto()),
+              IsOkAndHolds(Point2<float>(0.5f, -1.25f)));
+  EXPECT_THAT(Point2<double>::FromProto(Point2<double>(0.1, 2.5).ToProto()),
+              IsOkAndHolds(Point2<double>(0.1, 2.5)));
+}
+
+TEST(Protobuf, FromProtoConvertsType) {
+  Point2Proto proto;
+  proto.mutable_point_double()->set_x(2.0);
+  proto.mutable_point_double()->set_y(-3.0);
+
+  EXPECT_THAT(Point2_i::FromProto(proto), IsOkAndHolds(Point2_i(2, -3)));
+  EXPECT_THAT(Point2<double>::FromProto(Point2_i(1, 2).ToProto()),
+              IsOkAndHolds(Point2<double>(1, 2)));
+}
+
+TEST(Protobuf, FromProtoNotSet) {
+  EXPECT_THAT(Point2_i::FromProto(Point2Proto()),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("[Point2] The proto has no coordinate type "
+                                 "set.")));
+}
+
+TEST(Protobuf, FromProtoOutOfRange) {
+  Point2Proto proto;
+  proto.mutable_point_int64()->set_x(0);
+  proto.mutable_point_int64()->set_y(int64_t{1} << 40);
+
+  EXPECT_THAT(Point2_i::FromProto(proto),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("[Point2] y: coordinate 1099511627776 does "
+                                 "not fit in int32.")));
+}
+
+TEST(Protobuf, FromProtoNotWholeNumber) {
+  Point2Proto proto;
+  proto.mutable_point_double()->set_x(1.5);
+  proto.mutable_point_double()->set_y(0);
+
+  EXPECT_THAT(Point2_i::FromProto(proto),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("[Point2] x: coordinate 1.5 is not a whole "
+                                 "number")));
+}
+
+TEST(Protobuf, SetFromProtoNotSetLeavesValueUnchanged) {
+  Point2_i v = Point2_i(7, 8);
+
+  EXPECT_THAT(v.SetFromProto(Point2Proto()),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+  EXPECT_EQ(v, Point2_i(7, 8));
 }
 
 }  // namespace moab

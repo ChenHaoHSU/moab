@@ -7,6 +7,8 @@
 #include <string>
 
 #include "absl/hash/hash_testing.h"
+#include "absl/status/status.h"
+#include "absl/status/status_matchers.h"
 #include "absl/strings/str_format.h"
 #include "moab/point2.h"
 #include "moab/point3.pb.h"
@@ -558,7 +560,7 @@ TEST(Protobuf, SetFromProto) {
   proto.mutable_point_int32()->set_z(3);
 
   Point3_i p;
-  p.SetFromProto(proto);
+  ASSERT_THAT(p.SetFromProto(proto), ::absl_testing::IsOk());
 
   EXPECT_EQ(p.x(), 1);
   EXPECT_EQ(p.y(), 2);
@@ -582,6 +584,47 @@ TEST(StringConversion, ToStringFloatingPoint) {
 TEST(StringConversion, ToStringInt64) {
   EXPECT_THAT(Point3_i64(int64_t{1} << 40, -1, 2).ToString(),
               StrEq("(1099511627776 -1 2)"));
+}
+
+using ::absl_testing::IsOkAndHolds;
+using ::absl_testing::StatusIs;
+using ::testing::HasSubstr;
+
+TEST(Protobuf, FromProtoRoundTrip) {
+  EXPECT_THAT(Point3_i::FromProto(Point3_i(1, -2, 3).ToProto()),
+              IsOkAndHolds(Point3_i(1, -2, 3)));
+  EXPECT_THAT(
+      Point3_i64::FromProto(Point3_i64(int64_t{1} << 40, 5, -6).ToProto()),
+      IsOkAndHolds(Point3_i64(int64_t{1} << 40, 5, -6)));
+  EXPECT_THAT(Point3<double>::FromProto(Point3<double>(0.1, 2.5, -3).ToProto()),
+              IsOkAndHolds(Point3<double>(0.1, 2.5, -3)));
+}
+
+TEST(Protobuf, FromProtoNotSet) {
+  EXPECT_THAT(Point3_i::FromProto(Point3Proto()),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("[Point3] The proto has no coordinate type "
+                                 "set.")));
+}
+
+TEST(Protobuf, FromProtoOutOfRange) {
+  Point3Proto proto;
+  proto.mutable_point_float()->set_x(0);
+  proto.mutable_point_float()->set_y(0);
+  proto.mutable_point_float()->set_z(0.5f);
+
+  EXPECT_THAT(Point3_i::FromProto(proto),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("[Point3] z: coordinate 0.5 is not a whole "
+                                 "number")));
+}
+
+TEST(Protobuf, SetFromProtoNotSetLeavesValueUnchanged) {
+  Point3_i v = Point3_i(7, 8, 9);
+
+  EXPECT_THAT(v.SetFromProto(Point3Proto()),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+  EXPECT_EQ(v, Point3_i(7, 8, 9));
 }
 
 }  // namespace moab

@@ -2,6 +2,7 @@
 #define MOAB_MOAB_H_
 
 #include "moab/box2.h"
+#include "moab/coordinate_conversion.h"
 #include "moab/interval.h"
 #include "moab/operation.h"
 #include "moab/point2.h"

@@ -6,6 +6,8 @@
 #include <string>
 
 #include "absl/hash/hash_testing.h"
+#include "absl/status/status.h"
+#include "absl/status/status_matchers.h"
 #include "absl/strings/str_format.h"
 #include "moab/point3.h"
 #include "moab/segment3.pb.h"
@@ -364,10 +366,44 @@ TEST(Protobuf, SetFromProto) {
   proto.mutable_segment_int32()->mutable_p1()->set_z(6);
 
   Segment3_i s;
-  s.SetFromProto(proto);
+  ASSERT_THAT(s.SetFromProto(proto), ::absl_testing::IsOk());
 
   EXPECT_EQ(s.p0(), Point3_i(1, 2, 3));
   EXPECT_EQ(s.p1(), Point3_i(4, 5, 6));
+}
+
+using ::absl_testing::IsOkAndHolds;
+using ::absl_testing::StatusIs;
+using ::testing::HasSubstr;
+
+TEST(Protobuf, FromProtoRoundTrip) {
+  EXPECT_THAT(Segment3_i::FromProto(Segment3_i(6, 5, 4, 3, 2, 1).ToProto()),
+              IsOkAndHolds(Segment3_i(6, 5, 4, 3, 2, 1)));
+}
+
+TEST(Protobuf, FromProtoNotSet) {
+  EXPECT_THAT(Segment3_i::FromProto(Segment3Proto()),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("[Segment3] The proto has no coordinate type "
+                                 "set.")));
+}
+
+TEST(Protobuf, FromProtoNotWholeNumber) {
+  Segment3Proto proto;
+  proto.mutable_segment_double()->mutable_p0()->set_z(2.25);
+
+  EXPECT_THAT(Segment3_i::FromProto(proto),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("[Segment3] p0.z: coordinate 2.25 is not a "
+                                 "whole number")));
+}
+
+TEST(Protobuf, SetFromProtoNotSetLeavesValueUnchanged) {
+  Segment3_i v = Segment3_i(1, 2, 3, 4, 5, 6);
+
+  EXPECT_THAT(v.SetFromProto(Segment3Proto()),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+  EXPECT_EQ(v, Segment3_i(1, 2, 3, 4, 5, 6));
 }
 
 }  // namespace moab

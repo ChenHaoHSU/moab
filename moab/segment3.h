@@ -9,15 +9,19 @@
 
 #include "absl/hash/hash.h"
 #include "absl/log/check.h"
-#include "absl/log/log.h"
+#include "absl/status/status.h"
+#include "absl/status/status_macros.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
 #include "boost/geometry/core/access.hpp"
 #include "boost/geometry/core/coordinate_dimension.hpp"
 #include "boost/geometry/core/coordinate_system.hpp"
 #include "boost/geometry/core/cs.hpp"
 #include "boost/geometry/core/tag.hpp"
 #include "boost/geometry/geometries/concepts/segment_concept.hpp"
+#include "moab/coordinate_conversion.h"
 #include "moab/point3.h"
 #include "moab/segment3.pb.h"
 
@@ -36,7 +40,10 @@ class Segment3 {
   explicit Segment3(T x0, T y0, T z0, T x1, T y1, T z1) {
     Set(x0, y0, z0, x1, y1, z1);
   }
-  explicit Segment3(const Segment3Proto& proto) { SetFromProto(proto); }
+  // Aborts if 'proto' is invalid (see FromProto). Prefer FromProto.
+  explicit Segment3(const Segment3Proto& proto) {
+    CHECK_OK(SetFromProto(proto));
+  }
   Segment3(const Segment3&) = default;
   Segment3(Segment3&&) = default;
   ~Segment3() = default;
@@ -150,8 +157,13 @@ class Segment3 {
   // Protobuf.
   // Returns a Segment3Proto.
   Segment3Proto ToProto() const;
-  // Sets the Segment3 from a Segment3Proto.
-  void SetFromProto(const Segment3Proto& proto);
+  // Sets the Segment3 from a Segment3Proto. On error, returns the error from
+  // FromProto and leaves the Segment3 unchanged.
+  absl::Status SetFromProto(const Segment3Proto& proto);
+  // Returns the Segment3 in 'proto'. Returns InvalidArgument if no coordinate
+  // type is set, or if a coordinate is not finite, does not fit in T, or is
+  // not a whole number for an integral T.
+  static absl::StatusOr<Segment3> FromProto(const Segment3Proto& proto);
 
  private:
   std::array<Point3<T>, 2> d_;  // <p0, p1>
@@ -196,26 +208,42 @@ Segment3Proto Segment3<T>::ToProto() const {
 }
 
 template <typename T>
-void Segment3<T>::SetFromProto(const Segment3Proto& proto) {
-  if (proto.has_segment_int32()) {
-    Set(proto.segment_int32().p0().x(), proto.segment_int32().p0().y(),
-        proto.segment_int32().p0().z(), proto.segment_int32().p1().x(),
-        proto.segment_int32().p1().y(), proto.segment_int32().p1().z());
-  } else if (proto.has_segment_int64()) {
-    Set(proto.segment_int64().p0().x(), proto.segment_int64().p0().y(),
-        proto.segment_int64().p0().z(), proto.segment_int64().p1().x(),
-        proto.segment_int64().p1().y(), proto.segment_int64().p1().z());
-  } else if (proto.has_segment_float()) {
-    Set(proto.segment_float().p0().x(), proto.segment_float().p0().y(),
-        proto.segment_float().p0().z(), proto.segment_float().p1().x(),
-        proto.segment_float().p1().y(), proto.segment_float().p1().z());
-  } else if (proto.has_segment_double()) {
-    Set(proto.segment_double().p0().x(), proto.segment_double().p0().y(),
-        proto.segment_double().p0().z(), proto.segment_double().p1().x(),
-        proto.segment_double().p1().y(), proto.segment_double().p1().z());
-  } else {
-    LOG(FATAL) << "Unsupported type.";
+absl::Status Segment3<T>::SetFromProto(const Segment3Proto& proto) {
+  ABSL_ASSIGN_OR_RETURN(*this, FromProto(proto));
+  return absl::OkStatus();
+}
+
+template <typename T>
+absl::StatusOr<Segment3<T>> Segment3<T>::FromProto(const Segment3Proto& proto) {
+  const auto from = [](const auto& p) -> absl::StatusOr<Segment3<T>> {
+    ABSL_ASSIGN_OR_RETURN(const T x0, internal::ConvertCoordinate<T>(
+                                          p.p0().x(), "[Segment3] p0.x"));
+    ABSL_ASSIGN_OR_RETURN(const T y0, internal::ConvertCoordinate<T>(
+                                          p.p0().y(), "[Segment3] p0.y"));
+    ABSL_ASSIGN_OR_RETURN(const T z0, internal::ConvertCoordinate<T>(
+                                          p.p0().z(), "[Segment3] p0.z"));
+    ABSL_ASSIGN_OR_RETURN(const T x1, internal::ConvertCoordinate<T>(
+                                          p.p1().x(), "[Segment3] p1.x"));
+    ABSL_ASSIGN_OR_RETURN(const T y1, internal::ConvertCoordinate<T>(
+                                          p.p1().y(), "[Segment3] p1.y"));
+    ABSL_ASSIGN_OR_RETURN(const T z1, internal::ConvertCoordinate<T>(
+                                          p.p1().z(), "[Segment3] p1.z"));
+    return Segment3<T>(x0, y0, z0, x1, y1, z1);
+  };
+  switch (proto.type_variant_case()) {
+    case Segment3Proto::kSegmentInt32:
+      return from(proto.segment_int32());
+    case Segment3Proto::kSegmentInt64:
+      return from(proto.segment_int64());
+    case Segment3Proto::kSegmentFloat:
+      return from(proto.segment_float());
+    case Segment3Proto::kSegmentDouble:
+      return from(proto.segment_double());
+    case Segment3Proto::TYPE_VARIANT_NOT_SET:
+      break;
   }
+  return absl::InvalidArgumentError(
+      "[Segment3] The proto has no coordinate type set.");
 }
 
 // Aliases.
