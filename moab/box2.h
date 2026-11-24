@@ -2,9 +2,12 @@
 #define MOAB_BOX2_H_
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
+#include <ostream>
+#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -13,7 +16,8 @@
 #include "absl/status/status.h"
 #include "absl/status/status_macros.h"
 #include "absl/status/statusor.h"
-#include "absl/strings/string_view.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "boost/geometry/core/access.hpp"
 #include "boost/geometry/core/coordinate_dimension.hpp"
 #include "boost/geometry/core/coordinate_system.hpp"

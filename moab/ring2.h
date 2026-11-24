@@ -1,14 +1,21 @@
 #ifndef MOAB_RING2_H_
 #define MOAB_RING2_H_
 
+#include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <ostream>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "absl/log/check.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
+#include "boost/geometry.hpp"
+#include "boost/polygon/polygon.hpp"
 #include "moab/box2.h"
 #include "moab/operation.h"
 #include "moab/point2.h"

@@ -1,14 +1,17 @@
 #ifndef MOAB_RTREE_H_
 #define MOAB_RTREE_H_
 
+#include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <ostream>
 #include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "boost/geometry.hpp"

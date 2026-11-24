@@ -2,9 +2,12 @@
 #define MOAB_INTERVAL_H_
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
+#include <ostream>
+#include <string>
+#include <utility>
 
-#include "absl/log/check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "boost/polygon/polygon.hpp"

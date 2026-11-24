@@ -3,9 +3,12 @@
 
 #include <array>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <ostream>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include "absl/hash/hash.h"
@@ -15,7 +18,6 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
-#include "absl/strings/string_view.h"
 #include "boost/geometry/core/access.hpp"
 #include "boost/geometry/core/coordinate_dimension.hpp"
 #include "boost/geometry/core/coordinate_system.hpp"
