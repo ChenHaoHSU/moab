@@ -1,9 +1,11 @@
 #ifndef MOAB_RTREE_H_
 #define MOAB_RTREE_H_
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
 #include <ostream>
 #include <string>
 #include <tuple>
@@ -194,9 +196,7 @@ class Rtree {
   template <typename Predicates>
   std::vector<T> Query(const Predicates& predicates) const {
     std::vector<T> result;
-    rtree_.query(predicates,
-                 boost::make_function_output_iterator(
-                     [&result](const T& v) { result.push_back(v); }));
+    ForEach(predicates, [&result](const T& v) { result.push_back(v); });
     return result;
   }
   template <typename Indexable>
@@ -236,6 +236,60 @@ class Rtree {
     return Query(index::StrictlyIntersects(indexable));
   }
 
+  // Queries without a result vector. They take the same predicates as Query.
+  // Calls 'f' with each value that satisfies 'predicates', in the order Query
+  // returns them. Unlike Query, it walks the live R-tree, so the R-tree must
+  // not be changed until ForEach returns, including from 'f'.
+  template <typename Predicates, typename F>
+  void ForEach(const Predicates& predicates, F&& f) const {
+    rtree_.query(predicates, boost::make_function_output_iterator(
+                                 [&f](const T& v) { f(v); }));
+  }
+  // Returns true if any value satisfies 'predicates'. It stops at the first
+  // match.
+  template <typename Predicates>
+  bool AnyOf(const Predicates& predicates) const {
+    return rtree_.qbegin(predicates) != rtree_.qend();
+  }
+  // Returns the number of values that satisfy 'predicates'. (Count(v) counts
+  // the values equal to v.)
+  template <typename Predicates>
+  std::size_t CountIf(const Predicates& predicates) const {
+    return rtree_.query(predicates,
+                        boost::make_function_output_iterator([](const T&) {}));
+  }
+  // Returns the 'k' values nearest to 'g' (all of them if there are fewer),
+  // closest first. The distance is Euclidean and is 0 for a value that
+  // touches or overlaps 'g'; for maps it is measured to the key. Values at
+  // the same distance come in no particular order.
+  template <typename Geometry>
+  std::vector<T> Nearest(const Geometry& g, std::size_t k) const {
+    std::vector<T> found;
+    if (k == 0) {
+      return found;
+    }
+    // Query finds the k nearest without the allocating sorted iterator; then
+    // only those k are sorted, each distance computed once.
+    found.reserve(std::min(k, Size()));
+    rtree_.query(bgi::nearest(g, k), std::back_inserter(found));
+    const auto& indexable = rtree_.indexable_get();
+    using Distance = decltype(boost::geometry::comparable_distance(
+        g, indexable(std::declval<const T&>())));
+    std::vector<std::pair<Distance, std::size_t>> order;
+    order.reserve(found.size());
+    for (std::size_t i = 0; i < found.size(); ++i) {
+      order.emplace_back(
+          boost::geometry::comparable_distance(g, indexable(found[i])), i);
+    }
+    std::sort(order.begin(), order.end());
+    std::vector<T> result;
+    result.reserve(found.size());
+    for (const auto& [distance, i] : order) {
+      result.push_back(std::move(found[i]));
+    }
+    return result;
+  }
+
   // Rtree map / multi-map queries.
   // Same as Query, but returns only element I of each matching pair or tuple.
   // For a map, I = 0 is the key and I = 1 is the value.
@@ -246,10 +300,8 @@ class Rtree {
     if constexpr (is_pair_v<T> || is_tuple_v<T>) {
       static_assert(I < std::tuple_size_v<T>, "I is out of bounds");
       std::vector<std::tuple_element_t<I, T>> result;
-      rtree_.query(predicates,
-                   boost::make_function_output_iterator([&result](const T& v) {
-                     result.push_back(std::get<I>(v));
-                   }));
+      ForEach(predicates,
+              [&result](const T& v) { result.push_back(std::get<I>(v)); });
       return result;
     }
   }

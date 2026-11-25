@@ -217,6 +217,55 @@ class Box2 {
   bool Encompass(const Point2<T>& p) { return gtl::encompass(*this, p); }
   bool Encompass(const Box2& b) { return gtl::encompass(*this, b); }
 
+  // Queries.
+  // Returns true if 'p' (or all of 'b') lies in the box. Points on the sides
+  // count as inside. All four comparisons are evaluated ('&', not '&&'), so
+  // there is no branch to mispredict.
+  constexpr bool Contains(const Point2<T>& p) const {
+    return (xl() <= p.x()) & (p.x() <= xh()) & (yl() <= p.y()) &
+           (p.y() <= yh());
+  }
+  constexpr bool Contains(const Box2& b) const {
+    return (xl() <= b.xl()) & (b.xh() <= xh()) & (yl() <= b.yl()) &
+           (b.yh() <= yh());
+  }
+  // Returns the x (or y) range the box shares with 'b', or std::nullopt if
+  // their x (or y) ranges are apart. Ranges that only touch give a single
+  // value, such as [5 5].
+  constexpr std::optional<Interval<T>> OverlapX(const Box2& b) const {
+    return Overlap(xl(), xh(), b.xl(), b.xh());
+  }
+  constexpr std::optional<Interval<T>> OverlapY(const Box2& b) const {
+    return Overlap(yl(), yh(), b.yl(), b.yh());
+  }
+  // Returns the box shared with 'b', or std::nullopt if the boxes are apart.
+  // Boxes that only touch give a box of zero width or height (or a single
+  // point), so the result is the same as clipping one box to the other
+  // whenever they meet.
+  constexpr std::optional<Box2> Intersection(const Box2& b) const {
+    const T lx = xl() < b.xl() ? b.xl() : xl();
+    const T ly = yl() < b.yl() ? b.yl() : yl();
+    const T hx = xh() < b.xh() ? xh() : b.xh();
+    const T hy = yh() < b.yh() ? yh() : b.yh();
+    if (hx < lx || hy < ly) {
+      return std::nullopt;
+    }
+    // The corners are already ordered, so they skip the swapping in Set.
+    Box2 r;
+    r.d_[0] = Point2<T>(lx, ly);
+    r.d_[1] = Point2<T>(hx, hy);
+    return r;
+  }
+  // Same as Intersection, but boxes that only touch give std::nullopt: the
+  // result always has a positive area.
+  constexpr std::optional<Box2> StrictIntersection(const Box2& b) const {
+    const std::optional<Box2> r = Intersection(b);
+    if (r && r->xl() < r->xh() && r->yl() < r->yh()) {
+      return r;
+    }
+    return std::nullopt;
+  }
+
   // Operators.
   // Operators - Subscript
   constexpr const Point2<T>& operator[](std::size_t i) const {
@@ -282,6 +331,18 @@ class Box2 {
   friend struct boost::geometry::traits::indexed_access;
   template <typename Rectangle>
   friend struct boost::polygon::rectangle_mutable_traits;
+
+  // Returns the range [lo1 hi1] shares with [lo2 hi2], or std::nullopt if
+  // they are apart.
+  static constexpr std::optional<Interval<T>> Overlap(T lo1, T hi1, T lo2,
+                                                      T hi2) {
+    const T lo = lo1 < lo2 ? lo2 : lo1;
+    const T hi = hi1 < hi2 ? hi1 : hi2;
+    if (hi < lo) {
+      return std::nullopt;
+    }
+    return Interval<T>(lo, hi);
+  }
 
   // Returns (lo + hi) / 2, rounded toward zero for integers, without
   // overflowing T.

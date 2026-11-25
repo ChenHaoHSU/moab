@@ -926,6 +926,109 @@ TEST(Box2OperatorsDeathTest, SubscriptOutOfRange) {
 #endif
 
 // =============================================================
+// Queries
+// =============================================================
+
+template <typename T>
+class Box2Queries : public ::testing::Test {};
+TYPED_TEST_SUITE(Box2Queries, CoordinateTypes);
+
+TYPED_TEST(Box2Queries, ContainsPoint) {
+  using B = Box2<TypeParam>;
+  using P = Point2<TypeParam>;
+  const B b(0, 0, 4, 2);
+  EXPECT_TRUE(b.Contains(P(1, 1)));
+  EXPECT_TRUE(b.Contains(P(0, 0)));  // Corners and sides count.
+  EXPECT_TRUE(b.Contains(P(4, 1)));
+  EXPECT_FALSE(b.Contains(P(5, 1)));
+  EXPECT_FALSE(b.Contains(P(-1, 1)));
+  EXPECT_FALSE(b.Contains(P(1, 3)));
+  EXPECT_FALSE(b.Contains(P(1, -1)));
+}
+
+TYPED_TEST(Box2Queries, ContainsBox) {
+  using B = Box2<TypeParam>;
+  const B b(0, 0, 4, 4);
+  EXPECT_TRUE(b.Contains(B(1, 1, 2, 2)));
+  EXPECT_TRUE(b.Contains(b));
+  EXPECT_TRUE(b.Contains(B(4, 4, 4, 4)));
+  EXPECT_FALSE(b.Contains(B(-1, 1, 2, 2)));
+  EXPECT_FALSE(b.Contains(B(1, -1, 2, 2)));
+  EXPECT_FALSE(b.Contains(B(1, 1, 5, 2)));
+  EXPECT_FALSE(b.Contains(B(1, 1, 2, 5)));
+  EXPECT_FALSE(B(1, 1, 2, 2).Contains(b));
+}
+
+TYPED_TEST(Box2Queries, Overlap) {
+  using B = Box2<TypeParam>;
+  using I = Interval<TypeParam>;
+  const B b(0, 0, 4, 4);
+  EXPECT_EQ(b.OverlapX(B(2, 10, 6, 12)), I(2, 4));
+  EXPECT_EQ(b.OverlapY(B(10, 2, 12, 6)), I(2, 4));
+  EXPECT_EQ(b.OverlapX(B(4, 0, 6, 1)), I(4, 4));  // Touching.
+  EXPECT_EQ(b.OverlapX(B(5, 0, 6, 1)), std::nullopt);
+  EXPECT_EQ(b.OverlapY(B(0, -3, 1, -1)), std::nullopt);
+}
+
+TYPED_TEST(Box2Queries, Intersection) {
+  using B = Box2<TypeParam>;
+  struct Case {
+    std::string name;
+    B other;
+    std::optional<B> expected;
+  };
+  const std::vector<Case> cases = {
+      {"partial overlap", B(2, 1, 6, 3), B(2, 1, 4, 3)},
+      {"inside", B(1, 1, 2, 2), B(1, 1, 2, 2)},
+      {"around", B(-1, -1, 5, 5), B(0, 0, 4, 4)},
+      {"touching a side", B(4, 1, 6, 3), B(4, 1, 4, 3)},
+      {"touching a corner", B(4, 4, 6, 6), B(4, 4, 4, 4)},
+      {"apart in x", B(5, 0, 6, 4), std::nullopt},
+      {"apart in y", B(0, 5, 4, 6), std::nullopt},
+      // Clipping by hand would give the gap (4 4)-(5 5) here.
+      {"apart diagonally", B(5, 5, 6, 6), std::nullopt},
+  };
+  const B b(0, 0, 4, 4);
+  for (const Case& c : cases) {
+    SCOPED_TRACE(c.name);
+    EXPECT_EQ(b.Intersection(c.other), c.expected);
+    EXPECT_EQ(c.other.Intersection(b), c.expected);
+  }
+}
+
+// StrictIntersection drops results without area, so touching boxes give
+// nothing.
+TYPED_TEST(Box2Queries, StrictIntersection) {
+  using B = Box2<TypeParam>;
+  struct Case {
+    std::string name;
+    B other;
+    std::optional<B> expected;
+  };
+  const std::vector<Case> cases = {
+      {"partial overlap", B(2, 1, 6, 3), B(2, 1, 4, 3)},
+      {"touching a side", B(4, 1, 6, 3), std::nullopt},
+      {"touching the top", B(1, 4, 3, 6), std::nullopt},
+      {"touching a corner", B(4, 4, 6, 6), std::nullopt},
+      {"apart", B(5, 5, 6, 6), std::nullopt},
+  };
+  const B b(0, 0, 4, 4);
+  for (const Case& c : cases) {
+    SCOPED_TRACE(c.name);
+    EXPECT_EQ(b.StrictIntersection(c.other), c.expected);
+    EXPECT_EQ(c.other.StrictIntersection(b), c.expected);
+  }
+}
+
+TEST(Box2QueriesConstexpr, RunAtCompileTime) {
+  static_assert(Box2<int>(0, 0, 4, 4).Contains(Point2<int>(4, 0)));
+  static_assert(Box2<int>(0, 0, 4, 4).Contains(Box2<int>(1, 1, 2, 2)));
+  static_assert(*Box2<int>(0, 0, 4, 4).Intersection(Box2<int>(2, 2, 6, 6)) ==
+                Box2<int>(2, 2, 4, 4));
+  static_assert(!Box2<int>(0, 0, 4, 4).Intersection(Box2<int>(5, 5, 6, 6)));
+}
+
+// =============================================================
 // Utilities
 // =============================================================
 

@@ -1079,6 +1079,93 @@ TEST(RtreeQuery, QueryPropagatesPredicateException) {
   EXPECT_EQ(rtree.Size(), 2u);
 }
 
+// ForEach visits the values Query returns, in the same order, without
+// collecting them.
+TEST(RtreeQueryWithoutVector, ForEachVisitsWhatQueryReturns) {
+  const RtreeMapBox2_i<int> rtree = [] {
+    RtreeMapBox2_i<int> r;
+    const std::vector<Box2_i> boxes = RelationBoxes();
+    for (int i = 0; i < static_cast<int>(boxes.size()); ++i) {
+      r.Insert(boxes[i], i);
+    }
+    return r;
+  }();
+  for (const Box2_i& q :
+       {QueryBox(), Box2_i(8, 8, 8, 8), Box2_i(20, 20, 21, 21)}) {
+    SCOPED_TRACE(q.ToString());
+    std::vector<std::pair<Box2_i, int>> visited;
+    rtree.ForEach(
+        index::Intersects(q),
+        [&visited](const std::pair<Box2_i, int>& v) { visited.push_back(v); });
+    EXPECT_EQ(visited, rtree.QueryIntersects(q));
+  }
+}
+
+TEST(RtreeQueryWithoutVector, AnyOfAndCountIfMatchQuery) {
+  const RtreeBox2_i rtree(RelationBoxes());
+  struct Case {
+    std::string name;
+    Box2_i query;
+  };
+  const std::vector<Case> cases = {
+      {"several matches", QueryBox()},
+      {"one match", Box2_i(8, 8, 8, 8)},
+      {"no match", Box2_i(20, 20, 21, 21)},
+  };
+  for (const Case& c : cases) {
+    SCOPED_TRACE(c.name);
+    const std::vector<Box2_i> matches = rtree.QueryIntersects(c.query);
+    EXPECT_EQ(rtree.AnyOf(index::Intersects(c.query)), !matches.empty());
+    EXPECT_EQ(rtree.CountIf(index::Intersects(c.query)), matches.size());
+  }
+  // Combined and non-index predicates work too.
+  EXPECT_EQ(rtree.CountIf(index::Intersects(QueryBox()) &&
+                          !index::Within(QueryBox())),
+            3u);
+  EXPECT_FALSE(rtree.AnyOf(index::Touches(Box2_i(8, 8, 9, 9))));
+  // CountIf takes predicates; Count still counts equal values.
+  EXPECT_EQ(rtree.Count(Box2_i(0, 0, 2, 2)), 1u);
+}
+
+TEST(RtreeQueryWithoutVector, EmptyTree) {
+  const RtreeBox2_i rtree;
+  int calls = 0;
+  const auto count_calls = [&calls](const Box2_i&) { ++calls; };
+  rtree.ForEach(index::Intersects(QueryBox()), count_calls);
+  EXPECT_EQ(calls, 0);
+  // The same callback on a tree with values is called once per match.
+  RtreeBox2_i(RelationBoxes())
+      .ForEach(index::Intersects(Box2_i(8, 8, 8, 8)), count_calls);
+  EXPECT_EQ(calls, 1);
+  EXPECT_FALSE(rtree.AnyOf(index::Intersects(QueryBox())));
+  EXPECT_EQ(rtree.CountIf(index::Intersects(QueryBox())), 0u);
+  EXPECT_THAT(rtree.Nearest(Point2_i(0, 0), 3), IsEmpty());
+}
+
+// Nearest returns the closest values first. Distances from (0 0) to the
+// relation points: 0, 2.8, 7.1 and 4.5.
+TEST(RtreeNearest, ClosestFirst) {
+  const RtreePoint2_i rtree(RelationPoints());
+  EXPECT_THAT(rtree.Nearest(Point2_i(0, 0), 3),
+              ElementsAre(Point2_i(0, 0), Point2_i(2, 2), Point2_i(4, 2)));
+  EXPECT_THAT(rtree.Nearest(Point2_i(0, 0), 10),
+              ElementsAre(Point2_i(0, 0), Point2_i(2, 2), Point2_i(4, 2),
+                          Point2_i(5, 5)));
+  EXPECT_THAT(rtree.Nearest(Point2_i(0, 0), 0), IsEmpty());
+}
+
+// For maps the distance is to the key, and a key that overlaps the query is
+// at distance 0.
+TEST(RtreeNearest, MapUsesTheKey) {
+  RtreeMapBox2_i<int> rtree;
+  rtree.Insert(Box2_i(10, 0, 11, 1), 0);
+  rtree.Insert(Box2_i(0, 0, 4, 4), 1);
+  rtree.Insert(Box2_i(5, 0, 6, 1), 2);
+  EXPECT_THAT(
+      rtree.Nearest(Point2_i(2, 2), 2),
+      ElementsAre(Pair(Box2_i(0, 0, 4, 4), 1), Pair(Box2_i(5, 0, 6, 1), 2)));
+}
+
 // Relation boxes 0 inside, 1 partial, 2 touching, 3 apart, 4 around and
 // 5 equal against QueryBox() (0 0)-(4 4), and against its corner (0 0). Every
 // query method is checked on a plain tree, a map and a multi-map.
