@@ -145,9 +145,12 @@ class Ring2 {
 
   // Operations.
   // Operations - Bloat
-  // Returns the ring's max boxes (see MaxBoxes) bloated by 'x' and 'y', as
-  // rings. 'x' and 'y' must be non-negative. A ring with a diagonal edge gives
-  // no rings.
+  // Returns the ring grown by 'x' on the left and right and by 'y' at the
+  // bottom and top, as rings: the same area as bloating each of its max boxes
+  // (see MaxBoxes) and merging them. Boost.Polygon moves the outline and
+  // merges the result, which takes O(n log n) time in the number of points.
+  // Which collinear points remain on the edges depends on the input. 'x' and
+  // 'y' must be non-negative. A ring with a diagonal edge gives no rings.
   std::vector<Ring2<T>> BloatedRings(T x, T y) const;
   // Operations - Simplify
   // Removes the redundant points of the ring and returns *this: consecutive
@@ -465,12 +468,14 @@ Ring2<T>& Ring2<T>::Simplify() {
 template <typename T>
 std::vector<Ring2<T>> Ring2<T>::BloatedRings(T x, T y) const {
   DCHECK(x >= 0 && y >= 0) << "Bloat values must be non-negative.";
-  std::vector<Box2<T>> bloated_boxes;
-  for (moab::Box2<T> box : MaxBoxes()) {
-    bloated_boxes.push_back(box.Bloat(x, y));
-  }
   std::vector<Ring2<T>> bloated_rings;
-  moab::Assign(bloated_rings, bloated_boxes);
+  if (!IsManhattan()) {
+    return bloated_rings;
+  }
+  gtl::polygon_90_set_data<T> set;
+  set.insert(gtl::view_as<gtl::polygon_90_concept>(*this));
+  set.bloat(x, x, y, y);
+  moab::Assign(bloated_rings, set);
   return bloated_rings;
 }
 

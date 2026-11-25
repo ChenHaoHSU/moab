@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <iterator>
 #include <limits>
+#include <random>
 #include <sstream>
 #include <string>
 #include <type_traits>
@@ -802,6 +803,67 @@ TYPED_TEST(Ring2Operation, BloatedRingsCases) {
     for (size_t i = 0; i < rings.size(); ++i) {
       EXPECT_EQ(rings[i], c.expected[i]) << rings[i];
     }
+  }
+}
+
+// A notch narrower than twice the bloat closes up: the moved outline crosses
+// itself there, and the merge fills it.
+TYPED_TEST(Ring2Operation, BloatedRingsFillsNarrowNotch) {
+  // A U with a notch 2 wide, bloated by 3.
+  const Ring2<TypeParam> u = MakeRing<TypeParam>({{0, 0},
+                                                  {10, 0},
+                                                  {10, 10},
+                                                  {6, 10},
+                                                  {6, 4},
+                                                  {4, 4},
+                                                  {4, 10},
+                                                  {0, 10},
+                                                  {0, 0}});
+  const std::vector<Ring2<TypeParam>> rings = u.BloatedRings(3, 3);
+  ASSERT_EQ(rings.size(), 1u);
+  EXPECT_EQ(rings[0], Ring2<TypeParam>(Box2<TypeParam>(-3, -3, 13, 13)));
+  // Bloated by exactly half the notch width in x, the sides meet and the
+  // notch closes.
+  EXPECT_EQ(u.BloatedRings(1, 0).size(), 1u);
+  EXPECT_EQ(u.BloatedRings(1, 0)[0].Area(), 12 * 10);
+}
+
+TYPED_TEST(Ring2Operation, BloatedRingsOfClockwiseRing) {
+  const Ring2<TypeParam> cw =
+      MakeRing<TypeParam>({{0, 0}, {0, 2}, {2, 2}, {2, 0}, {0, 0}});
+  const std::vector<Ring2<TypeParam>> rings = cw.BloatedRings(1, 2);
+  ASSERT_EQ(rings.size(), 1u);
+  EXPECT_EQ(rings[0], Ring2<TypeParam>(Box2<TypeParam>(-1, -2, 3, 4)));
+}
+
+// BloatedRings covers the same area as bloating every max box and merging
+// them, which it replaced, for random shapes with notches of every width and
+// for different x and y.
+TEST(Ring2BloatedRings, MatchesBloatingEveryMaxBox) {
+  std::mt19937 rng(3);
+  std::uniform_int_distribution<int> pos(0, 60), size(1, 25), amount(0, 8);
+  for (int t = 0; t < 500; ++t) {
+    std::vector<Box2_i> boxes;
+    for (int i = 0; i < 1 + t % 30; ++i) {
+      const int x = pos(rng);
+      const int y = pos(rng);
+      boxes.push_back(Box2_i(x, y, x + size(rng), y + size(rng)));
+    }
+    std::vector<Ring2_i> shapes;
+    Assign(shapes, boxes);
+    const Ring2_i& ring = shapes[0];
+    const int x = amount(rng);
+    const int y = amount(rng);
+    std::vector<Box2_i> bloated;
+    for (Box2_i box : ring.MaxBoxes()) bloated.push_back(box.Bloat(x, y));
+    std::vector<Ring2_i> expected;
+    Assign(expected, bloated);
+
+    const std::vector<Ring2_i> rings = ring.BloatedRings(x, y);
+
+    ASSERT_TRUE(Equivalence(rings, expected))
+        << "ring " << ring << " x " << x << " y " << y;
+    ASSERT_EQ(rings.size(), expected.size());
   }
 }
 
