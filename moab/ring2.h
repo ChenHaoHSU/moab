@@ -186,7 +186,22 @@ class Ring2 {
   // Returns true if the rings cover the same area (see IsEqual), even if their
   // point lists differ, e.g. start at a different point. See the note on
   // AbslHashValue.
-  bool operator==(const Ring2& r) const { return moab::IsEqual(*this, r); }
+  // Cheap checks settle most pairs before the Boost.Geometry overlay: rings
+  // with the same point list are equal, and integer rings with a different
+  // bounding box or area are not. Both checks are O(n) and agree with
+  // IsEqual. Float rings skip the second check, since IsEqual allows a small
+  // tolerance there.
+  bool operator==(const Ring2& r) const {
+    if (d_ == r.d_) {
+      return true;
+    }
+    if constexpr (std::is_integral_v<T>) {
+      if (Area() != r.Area() || BoundingBox() != r.BoundingBox()) {
+        return false;
+      }
+    }
+    return moab::IsEqual(*this, r);
+  }
   bool operator!=(const Ring2& r) const { return !(*this == r); }
 
   // String conversion.

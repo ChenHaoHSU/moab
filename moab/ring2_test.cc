@@ -1084,6 +1084,36 @@ TYPED_TEST(Ring2Operator, EqualityComparesCoveredArea) {
   EXPECT_FALSE(r1 != r2);
 }
 
+// Every ring equals itself, including rings Boost.Geometry calls invalid,
+// since identical point lists return before the overlay.
+// Mirrored L-shapes share their bounding box and area, so the cheap checks
+// pass and the overlay decides.
+TYPED_TEST(Ring2Operator, EqualityWithSameBoxAndArea) {
+  const Ring2<TypeParam> l = MakeRing<TypeParam>(
+      {{0, 0}, {4, 0}, {4, 2}, {2, 2}, {2, 4}, {0, 4}, {0, 0}});
+  const Ring2<TypeParam> mirrored = MakeRing<TypeParam>(
+      {{0, 0}, {4, 0}, {4, 4}, {2, 4}, {2, 2}, {0, 2}, {0, 0}});
+  ASSERT_EQ(l.Area(), mirrored.Area());
+  ASSERT_EQ(l.BoundingBox(), mirrored.BoundingBox());
+  EXPECT_FALSE(l == mirrored);
+  EXPECT_TRUE(l ==
+              MakeRing<TypeParam>(
+                  {{2, 2}, {2, 4}, {0, 4}, {0, 0}, {4, 0}, {4, 2}, {2, 2}}));
+}
+
+TYPED_TEST(Ring2Operator, EqualityIsReflexive) {
+  const std::vector<Ring2<TypeParam>> rings = {
+      Ring2<TypeParam>(),
+      MakeRing<TypeParam>({{1, 1}}),
+      MakeRing<TypeParam>({{0, 0}, {2, 2}, {2, 0}, {0, 2}, {0, 0}}),
+      MakeRing<TypeParam>({{0, 0}, {0, 2}, {2, 2}, {2, 0}, {0, 0}}),
+  };
+  for (const Ring2<TypeParam>& r : rings) {
+    SCOPED_TRACE(r.ToString());
+    EXPECT_TRUE(r == Ring2<TypeParam>(r));
+  }
+}
+
 TYPED_TEST(Ring2Operator, EqualityCases) {
   using P = Point2<TypeParam>;
   const Ring2<TypeParam> square(SquarePoints<TypeParam>());
@@ -1100,6 +1130,9 @@ TYPED_TEST(Ring2Operator, EqualityCases) {
        false},
       {"larger", Ring2<TypeParam>(Box2<TypeParam>(0, 0, 3, 2)), false},
       {"contained", Ring2<TypeParam>(Box2<TypeParam>(0, 0, 1, 1)), false},
+      {"clockwise",
+       MakeRing<TypeParam>({{0, 0}, {0, 2}, {2, 2}, {2, 0}, {0, 0}}), false},
+      {"empty", Ring2<TypeParam>(), false},
   };
   for (const Case& c : cases) {
     SCOPED_TRACE(c.name);
