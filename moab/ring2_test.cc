@@ -723,6 +723,12 @@ TYPED_TEST(Ring2Mutator, Resize) {
   }
 }
 
+TYPED_TEST(Ring2Mutator, ReserveKeepsThePoints) {
+  Ring2<TypeParam> r(SquarePoints<TypeParam>());
+  r.Reserve(100);
+  EXPECT_EQ(r.Points(), SquarePoints<TypeParam>());
+}
+
 TYPED_TEST(Ring2Mutator, AssignIterator) {
   using P = Point2<TypeParam>;
   Ring2<TypeParam> r = {P(0, 0), P(1, 0), P(1, 1), P(0, 1), P(0, 0)};
@@ -1328,6 +1334,41 @@ TYPED_TEST(Ring2BoostPolygon, SetPointsFromAnotherPointType) {
   EXPECT_THAT(r.Points(),
               ElementsAre(Point2<TypeParam>(0, 0), Point2<TypeParam>(4, 0),
                           Point2<TypeParam>(4, 2)));
+}
+
+// An iterator that can be walked only once. set_points reserves only for
+// forward iterators, since counting would use up a single-pass range.
+template <typename It>
+class SinglePassIterator {
+ public:
+  using iterator_category = std::input_iterator_tag;
+  using value_type = typename std::iterator_traits<It>::value_type;
+  using difference_type = std::ptrdiff_t;
+  using pointer = const value_type*;
+  using reference = const value_type&;
+
+  explicit SinglePassIterator(It it) : it_(it) {}
+  pointer operator->() const { return &*it_; }
+  SinglePassIterator& operator++() {
+    ++it_;
+    return *this;
+  }
+  bool operator!=(const SinglePassIterator& o) const { return it_ != o.it_; }
+
+ private:
+  It it_;
+};
+
+TYPED_TEST(Ring2BoostPolygon, SetPointsFromSinglePassRange) {
+  using P = Point2<TypeParam>;
+  using It = typename std::vector<P>::const_iterator;
+  const std::vector<P> points = {P(0, 0), P(4, 0), P(4, 2), P(0, 2)};
+  Ring2<TypeParam> r = MakeRing<TypeParam>({{9, 9}});
+
+  gtl::set_points(r, SinglePassIterator<It>(points.begin()),
+                  SinglePassIterator<It>(points.end()));
+
+  EXPECT_EQ(r.Points(), points);
 }
 
 }  // namespace

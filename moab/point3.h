@@ -5,7 +5,6 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <cstdlib>
 #include <ostream>
 #include <string>
 #include <tuple>
@@ -41,8 +40,8 @@ class Point3 {
   using area_type = std::conditional_t<std::is_integral_v<T>, int64_t, T>;
 
   // Constructors.
-  Point3() : d_({0, 0, 0}) {}
-  explicit Point3(T x, T y, T z) : d_({x, y, z}) {}
+  constexpr Point3() : d_({0, 0, 0}) {}
+  explicit constexpr Point3(T x, T y, T z) : d_({x, y, z}) {}
   // Aborts if 'proto' is invalid (see FromProto). Prefer FromProto.
   explicit Point3(const Point3Proto& proto) { CHECK_OK(SetFromProto(proto)); }
   Point3(const Point3&) = default;
@@ -54,42 +53,42 @@ class Point3 {
   Point3& operator=(Point3&&) = default;
 
   // Accessors.
-  T x() const { return d_[0]; }
-  T y() const { return d_[1]; }
-  T z() const { return d_[2]; }
-  const T* data() const { return d_.data(); }
+  constexpr T x() const { return d_[0]; }
+  constexpr T y() const { return d_[1]; }
+  constexpr T z() const { return d_[2]; }
+  constexpr const T* data() const { return d_.data(); }
   constexpr std::size_t Size() const { return d_.size(); }
 
   // Returns the (x, y) point, dropping z.
-  Point2<T> To2D() const { return Point2<T>(d_[0], d_[1]); }
+  constexpr Point2<T> To2D() const { return Point2<T>(d_[0], d_[1]); }
 
-  std::tuple<T, T, T> ToTuple() const {
+  constexpr std::tuple<T, T, T> ToTuple() const {
     return std::make_tuple(d_[0], d_[1], d_[2]);
   }
 
   // Mutators.
-  void Set(T x, T y, T z) {
+  constexpr void Set(T x, T y, T z) {
     d_[0] = x;
     d_[1] = y;
     d_[2] = z;
   }
-  void SetX(T x) { d_[0] = x; }
-  void SetY(T y) { d_[1] = y; }
-  void SetZ(T z) { d_[2] = z; }
-  void SetDim(std::size_t i, T v) {
+  constexpr void SetX(T x) { d_[0] = x; }
+  constexpr void SetY(T y) { d_[1] = y; }
+  constexpr void SetZ(T z) { d_[2] = z; }
+  constexpr void SetDim(std::size_t i, T v) {
     DCHECK_LT(i, d_.size());
     d_[i] = v;
   }
 
   // Operations.
-  void Shift(T dx, T dy, T dz) {
+  constexpr void Shift(T dx, T dy, T dz) {
     d_[0] += dx;
     d_[1] += dy;
     d_[2] += dz;
   }
-  void ShiftX(T dx) { d_[0] += dx; }
-  void ShiftY(T dy) { d_[1] += dy; }
-  void ShiftZ(T dz) { d_[2] += dz; }
+  constexpr void ShiftX(T dx) { d_[0] += dx; }
+  constexpr void ShiftY(T dy) { d_[1] += dy; }
+  constexpr void ShiftZ(T dz) { d_[2] += dz; }
 
   // The rotations turn the point around the origin in the plane of axes
   // 'axis1' and 'axis2' (0 = x, 1 = y, 2 = z), counterclockwise meaning from
@@ -98,126 +97,125 @@ class Point3 {
   // below 3, which debug builds check.
 
   // Rotates the point counterclockwise by 90 degrees.
-  void Rotate90(size_t axis1, size_t axis2) {
+  constexpr void Rotate90(size_t axis1, size_t axis2) {
     CheckRotationAxes(axis1, axis2);
     T x = d_[axis1];
     d_[axis1] = -d_[axis2];
     d_[axis2] = x;
   }
   // Rotates the point by 180 degrees.
-  void Rotate180(size_t axis1, size_t axis2) {
+  constexpr void Rotate180(size_t axis1, size_t axis2) {
     CheckRotationAxes(axis1, axis2);
     d_[axis1] = -d_[axis1];
     d_[axis2] = -d_[axis2];
   }
   // Rotates the point counterclockwise by 270 degrees.
-  void Rotate270(size_t axis1, size_t axis2) {
+  constexpr void Rotate270(size_t axis1, size_t axis2) {
     Rotate90(axis1, axis2);
     Rotate180(axis1, axis2);
   }
 
   // Operators.
   // Operators - Subscript
-  T& operator[](std::size_t i) {
+  constexpr T& operator[](std::size_t i) {
     DCHECK_LT(i, d_.size());
     return d_[i];
   }
-  const T& operator[](std::size_t i) const {
+  constexpr const T& operator[](std::size_t i) const {
     DCHECK_LT(i, d_.size());
     return d_[i];
   }
   // Operators - Equality
-  bool operator==(const Point3& p) const {
+  constexpr bool operator==(const Point3& p) const {
     return d_[0] == p.d_[0] && d_[1] == p.d_[1] && d_[2] == p.d_[2];
   }
-  bool operator!=(const Point3& p) const { return !(*this == p); }
+  constexpr bool operator!=(const Point3& p) const { return !(*this == p); }
   // Operators - Inequality
   // Lexicographic order, for sorting and ordered containers; not a geometric
   // comparison. Compares x, then y, then z.
-  bool operator<(const Point3& p) const {
+  constexpr bool operator<(const Point3& p) const {
     return d_[0] != p.d_[0]   ? d_[0] < p.d_[0]
            : d_[1] != p.d_[1] ? d_[1] < p.d_[1]
                               : d_[2] < p.d_[2];
   }
-  bool operator>(const Point3& p) const { return p < *this; }
-  bool operator<=(const Point3& p) const { return !(*this > p); }
-  bool operator>=(const Point3& p) const { return !(*this < p); }
+  constexpr bool operator>(const Point3& p) const { return p < *this; }
+  constexpr bool operator<=(const Point3& p) const { return !(*this > p); }
+  constexpr bool operator>=(const Point3& p) const { return !(*this < p); }
 
   // Operators - Arithmetic
-  Point3& operator+=(const Point3& p) {
+  constexpr Point3& operator+=(const Point3& p) {
     d_[0] += p.d_[0];
     d_[1] += p.d_[1];
     d_[2] += p.d_[2];
     return *this;
   }
-  Point3& operator-=(const Point3& p) {
+  constexpr Point3& operator-=(const Point3& p) {
     d_[0] -= p.d_[0];
     d_[1] -= p.d_[1];
     d_[2] -= p.d_[2];
     return *this;
   }
-  Point3 operator+(const Point3& p) const {
+  constexpr Point3 operator+(const Point3& p) const {
     return Point3(d_[0] + p.d_[0], d_[1] + p.d_[1], d_[2] + p.d_[2]);
   }
-  Point3 operator-(const Point3& p) const {
+  constexpr Point3 operator-(const Point3& p) const {
     return Point3(d_[0] - p.d_[0], d_[1] - p.d_[1], d_[2] - p.d_[2]);
   }
-  Point3 operator+() const { return Point3(d_[0], d_[1], d_[2]); }
-  Point3 operator-() const { return Point3(-d_[0], -d_[1], -d_[2]); }
+  constexpr Point3 operator+() const { return Point3(d_[0], d_[1], d_[2]); }
+  constexpr Point3 operator-() const { return Point3(-d_[0], -d_[1], -d_[2]); }
 
   // The scalar operators apply the scalar to every coordinate: p + 1 adds 1 to
   // x, y and z.
-  Point3& operator+=(T v) {
+  constexpr Point3& operator+=(T v) {
     d_[0] += v;
     d_[1] += v;
     d_[2] += v;
     return *this;
   }
-  Point3& operator-=(T v) {
+  constexpr Point3& operator-=(T v) {
     d_[0] -= v;
     d_[1] -= v;
     d_[2] -= v;
     return *this;
   }
-  Point3& operator*=(T v) {
+  constexpr Point3& operator*=(T v) {
     d_[0] *= v;
     d_[1] *= v;
     d_[2] *= v;
     return *this;
   }
-  Point3& operator/=(T v) {
+  constexpr Point3& operator/=(T v) {
     d_[0] /= v;
     d_[1] /= v;
     d_[2] /= v;
     return *this;
   }
-  Point3 operator+(T v) const {
+  constexpr Point3 operator+(T v) const {
     return Point3(d_[0] + v, d_[1] + v, d_[2] + v);
   }
-  Point3 operator-(T v) const {
+  constexpr Point3 operator-(T v) const {
     return Point3(d_[0] - v, d_[1] - v, d_[2] - v);
   }
-  Point3 operator*(T v) const {
+  constexpr Point3 operator*(T v) const {
     return Point3(d_[0] * v, d_[1] * v, d_[2] * v);
   }
-  Point3 operator/(T v) const {
+  constexpr Point3 operator/(T v) const {
     return Point3(d_[0] / v, d_[1] / v, d_[2] / v);
   }
 
   // Distance.
   // Returns the Manhattan (L1) distance to 'p': |dx| + |dy| + |dz|.
-  T ManhattanDistance(const Point3& p) const {
-    return std::abs(d_[0] - p.d_[0]) + std::abs(d_[1] - p.d_[1]) +
-           std::abs(d_[2] - p.d_[2]);
+  constexpr T ManhattanDistance(const Point3& p) const {
+    return Abs(d_[0] - p.d_[0]) + Abs(d_[1] - p.d_[1]) + Abs(d_[2] - p.d_[2]);
   }
   // Same as ManhattanDistance. Prefer ManhattanDistance, which names the
   // metric.
-  T Distance(const Point3& p) const { return ManhattanDistance(p); }
+  constexpr T Distance(const Point3& p) const { return ManhattanDistance(p); }
   // Returns the squared Euclidean distance to 'p', dx^2 + dy^2 + dz^2,
   // computed in area_type. For integer coordinates it is exact while the
   // result fits in int64_t, which holds whenever each difference is below
   // about 1.7e9.
-  area_type SquaredEuclideanDistance(const Point3& p) const {
+  constexpr area_type SquaredEuclideanDistance(const Point3& p) const {
     const area_type dx =
         static_cast<area_type>(d_[0]) - static_cast<area_type>(p.d_[0]);
     const area_type dy =
@@ -260,11 +258,14 @@ class Point3 {
   static absl::StatusOr<Point3> FromProto(const Point3Proto& proto);
 
  private:
-  static void CheckRotationAxes(size_t axis1, size_t axis2) {
+  static constexpr void CheckRotationAxes(size_t axis1, size_t axis2) {
     DCHECK_LT(axis1, 3u);
     DCHECK_LT(axis2, 3u);
     DCHECK_NE(axis1, axis2) << "Rotation needs two different axes.";
   }
+
+  // std::abs is not constexpr before C++23.
+  static constexpr T Abs(T v) { return v < 0 ? -v : v; }
 
   std::array<T, 3> d_;  // (x, y, z)
 };

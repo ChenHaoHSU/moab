@@ -36,9 +36,11 @@ class Segment3 {
   using point_type = Point3<T>;
 
   // Constructors.
-  Segment3() : d_({Point3<T>(0, 0, 0), Point3<T>(0, 0, 0)}) {}
-  explicit Segment3(const Point3<T>& p0, const Point3<T>& p1) { Set(p0, p1); }
-  explicit Segment3(T x0, T y0, T z0, T x1, T y1, T z1) {
+  constexpr Segment3() : d_({Point3<T>(0, 0, 0), Point3<T>(0, 0, 0)}) {}
+  explicit constexpr Segment3(const Point3<T>& p0, const Point3<T>& p1) {
+    Set(p0, p1);
+  }
+  explicit constexpr Segment3(T x0, T y0, T z0, T x1, T y1, T z1) {
     Set(x0, y0, z0, x1, y1, z1);
   }
   // Aborts if 'proto' is invalid (see FromProto). Prefer FromProto.
@@ -54,103 +56,121 @@ class Segment3 {
   Segment3& operator=(Segment3&&) = default;
 
   // Accessors.
-  Point3<T>& p0() { return d_[0]; }
-  const Point3<T>& p0() const { return d_[0]; }
-  Point3<T>& p1() { return d_[1]; }
-  const Point3<T>& p1() const { return d_[1]; }
-  const Point3<T>* data() const { return d_.data(); }
+  constexpr Point3<T>& p0() { return d_[0]; }
+  constexpr const Point3<T>& p0() const { return d_[0]; }
+  constexpr Point3<T>& p1() { return d_[1]; }
+  constexpr const Point3<T>& p1() const { return d_[1]; }
+  constexpr const Point3<T>* data() const { return d_.data(); }
 
   constexpr std::size_t Size() const { return d_.size(); }
 
-  std::pair<Point3<T>, Point3<T>> ToPair() const { return {d_[0], d_[1]}; }
+  constexpr std::pair<Point3<T>, Point3<T>> ToPair() const {
+    return {d_[0], d_[1]};
+  }
 
   // Returns the Manhattan (L1) length, i.e. p0().ManhattanDistance(p1()). Not
   // the Euclidean length.
-  T ManhattanLength() const { return d_[0].ManhattanDistance(d_[1]); }
+  constexpr T ManhattanLength() const { return d_[0].ManhattanDistance(d_[1]); }
 
   // The minimum and maximum coordinates over the two endpoints. The endpoints
   // are not sorted, so xl() is not necessarily p0().x().
-  T xl() const { return d_[0].x() < d_[1].x() ? d_[0].x() : d_[1].x(); }
-  T yl() const { return d_[0].y() < d_[1].y() ? d_[0].y() : d_[1].y(); }
-  T zl() const { return d_[0].z() < d_[1].z() ? d_[0].z() : d_[1].z(); }
-  T xh() const { return d_[0].x() > d_[1].x() ? d_[0].x() : d_[1].x(); }
-  T yh() const { return d_[0].y() > d_[1].y() ? d_[0].y() : d_[1].y(); }
-  T zh() const { return d_[0].z() > d_[1].z() ? d_[0].z() : d_[1].z(); }
+  constexpr T xl() const {
+    return d_[0].x() < d_[1].x() ? d_[0].x() : d_[1].x();
+  }
+  constexpr T yl() const {
+    return d_[0].y() < d_[1].y() ? d_[0].y() : d_[1].y();
+  }
+  constexpr T zl() const {
+    return d_[0].z() < d_[1].z() ? d_[0].z() : d_[1].z();
+  }
+  constexpr T xh() const {
+    return d_[0].x() > d_[1].x() ? d_[0].x() : d_[1].x();
+  }
+  constexpr T yh() const {
+    return d_[0].y() > d_[1].y() ? d_[0].y() : d_[1].y();
+  }
+  constexpr T zh() const {
+    return d_[0].z() > d_[1].z() ? d_[0].z() : d_[1].z();
+  }
 
-  T MinX() const { return xl(); }
-  T MinY() const { return yl(); }
-  T MinZ() const { return zl(); }
-  T MaxX() const { return xh(); }
-  T MaxY() const { return yh(); }
-  T MaxZ() const { return zh(); }
+  constexpr T MinX() const { return xl(); }
+  constexpr T MinY() const { return yl(); }
+  constexpr T MinZ() const { return zl(); }
+  constexpr T MaxX() const { return xh(); }
+  constexpr T MaxY() const { return yh(); }
+  constexpr T MaxZ() const { return zh(); }
 
   // Returns the lexicographically smaller (MinPoint) or larger (MaxPoint)
   // endpoint, comparing x, then y, then z. When the endpoints are equal, both
   // return p1().
-  Point3<T>& MinPoint() { return d_[0] < d_[1] ? d_[0] : d_[1]; }
-  const Point3<T>& MinPoint() const { return d_[0] < d_[1] ? d_[0] : d_[1]; }
-  Point3<T>& MaxPoint() { return d_[0] > d_[1] ? d_[0] : d_[1]; }
-  const Point3<T>& MaxPoint() const { return d_[0] > d_[1] ? d_[0] : d_[1]; }
+  constexpr Point3<T>& MinPoint() { return d_[0] < d_[1] ? d_[0] : d_[1]; }
+  constexpr const Point3<T>& MinPoint() const {
+    return d_[0] < d_[1] ? d_[0] : d_[1];
+  }
+  constexpr Point3<T>& MaxPoint() { return d_[0] > d_[1] ? d_[0] : d_[1]; }
+  constexpr const Point3<T>& MaxPoint() const {
+    return d_[0] > d_[1] ? d_[0] : d_[1];
+  }
 
   // Mutators.
-  void Set(T x0, T y0, T z0, T x1, T y1, T z1) {
+  constexpr void Set(T x0, T y0, T z0, T x1, T y1, T z1) {
     d_[0].Set(x0, y0, z0);
     d_[1].Set(x1, y1, z1);
   }
-  void Set(const Point3<T>& p0, const Point3<T>& p1) {
+  constexpr void Set(const Point3<T>& p0, const Point3<T>& p1) {
     d_[0] = p0;
     d_[1] = p1;
   }
-  void SetP0(const Point3<T>& p) { d_[0] = p; }
-  void SetP1(const Point3<T>& p) { d_[1] = p; }
-  void SetP(std::size_t i, const Point3<T>& p) {
+  constexpr void SetP0(const Point3<T>& p) { d_[0] = p; }
+  constexpr void SetP1(const Point3<T>& p) { d_[1] = p; }
+  constexpr void SetP(std::size_t i, const Point3<T>& p) {
     DCHECK(i < 2) << "Invalid index. i: " << i;
     d_[i] = p;
   }
 
   // Operations.
   // It's safe. No need to check for validity.
-  void Shift(T dx, T dy, T dz) {
+  constexpr void Shift(T dx, T dy, T dz) {
     d_[0].Shift(dx, dy, dz);
     d_[1].Shift(dx, dy, dz);
   }
-  void ShiftX(T dx) {
+  constexpr void ShiftX(T dx) {
     d_[0].ShiftX(dx);
     d_[1].ShiftX(dx);
   }
-  void ShiftY(T dy) {
+  constexpr void ShiftY(T dy) {
     d_[0].ShiftY(dy);
     d_[1].ShiftY(dy);
   }
-  void ShiftZ(T dz) {
+  constexpr void ShiftZ(T dz) {
     d_[0].ShiftZ(dz);
     d_[1].ShiftZ(dz);
   }
 
   // Operators.
   // Operators - Subscript
-  Point3<T>& operator[](std::size_t i) {
+  constexpr Point3<T>& operator[](std::size_t i) {
     DCHECK_LT(i, d_.size());
     return d_[i];
   }
-  const Point3<T>& operator[](std::size_t i) const {
+  constexpr const Point3<T>& operator[](std::size_t i) const {
     DCHECK_LT(i, d_.size());
     return d_[i];
   }
   // Operators - Equality
-  bool operator==(const Segment3& p) const {
+  constexpr bool operator==(const Segment3& p) const {
     return d_[0] == p.d_[0] && d_[1] == p.d_[1];
   }
-  bool operator!=(const Segment3& p) const { return !(*this == p); }
+  constexpr bool operator!=(const Segment3& p) const { return !(*this == p); }
   // Operators - Inequality
   // Lexicographic order, for sorting and ordered containers; not a geometric
   // comparison. Compares p0, then p1.
-  bool operator<(const Segment3& p) const {
+  constexpr bool operator<(const Segment3& p) const {
     return d_[0] != p.d_[0] ? d_[0] < p.d_[0] : d_[1] < p.d_[1];
   }
-  bool operator>(const Segment3& p) const { return p < *this; }
-  bool operator<=(const Segment3& p) const { return !(*this > p); }
-  bool operator>=(const Segment3& p) const { return !(*this < p); }
+  constexpr bool operator>(const Segment3& p) const { return p < *this; }
+  constexpr bool operator<=(const Segment3& p) const { return !(*this > p); }
+  constexpr bool operator>=(const Segment3& p) const { return !(*this < p); }
 
   // String conversion.
   template <typename Sink>

@@ -860,5 +860,22 @@ TYPED_TEST(Segment3BoostGeometry, IndexedSet) {
   EXPECT_EQ(s, Segment3<TypeParam>(1, 2, 3, 4, 5, 6));
 }
 
+// The value-type operations are constexpr, so tech constants can be built at
+// compile time.
+constexpr Segment3<int> ShiftedSegment() {
+  Segment3<int> s(0, 0, 0, 1, 2, 3);
+  s.Shift(1, 1, 1);
+  s.SetP(0, Point3<int>(0, 0, 0));
+  return s;
+}
+
+TEST(Segment3Constexpr, OperationsRunAtCompileTime) {
+  static_assert(ShiftedSegment() == Segment3<int>(0, 0, 0, 2, 3, 4));
+  static_assert(Segment3<int>(0, 0, 0, 3, 4, 0).ManhattanLength() == 7);
+  static_assert(Segment3<int>(3, 4, 5, 1, 2, 3).zl() == 3);
+  static_assert(Segment3<int>(3, 4, 5, 1, 2, 3).MaxPoint() ==
+                Point3<int>(3, 4, 5));
+}
+
 }  // namespace
 }  // namespace moab

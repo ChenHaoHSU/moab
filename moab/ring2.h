@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <iterator>
 #include <ostream>
 #include <string>
 #include <type_traits>
@@ -134,6 +135,7 @@ class Ring2 {
   void Clear() { d_.clear(); }
   void Append(const Point2<T>& p) { d_.push_back(p); }
   void Resize(std::size_t n) { d_.resize(n); }
+  void Reserve(std::size_t n) { d_.reserve(n); }
 
   template <typename InputIt>
   void Assign(InputIt first, InputIt last) {
@@ -532,6 +534,14 @@ struct polygon_mutable_traits<moab::Ring2<T>> {
   static inline moab::Ring2<T>& set_points(moab::Ring2<T>& r, iT input_begin,
                                            iT input_end) {
     r.Clear();
+    // Counting the points walks the range once more, which only forward
+    // iterators allow.
+    if constexpr (std::is_base_of_v<
+                      std::forward_iterator_tag,
+                      typename std::iterator_traits<iT>::iterator_category>) {
+      r.Reserve(
+          static_cast<std::size_t>(std::distance(input_begin, input_end)));
+    }
     while (input_begin != input_end) {
       r.Append(moab::Point2<T>(input_begin->x(), input_begin->y()));
       ++input_begin;

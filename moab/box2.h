@@ -58,9 +58,11 @@ class Box2 {
   using area_type = std::conditional_t<std::is_integral_v<T>, int64_t, T>;
 
   // Constructors.
-  Box2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
-  explicit Box2(const Point2<T>& p1, const Point2<T>& p2) { Set(p1, p2); }
-  explicit Box2(T xl, T yl, T xh, T yh) { Set(xl, yl, xh, yh); }
+  constexpr Box2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
+  explicit constexpr Box2(const Point2<T>& p1, const Point2<T>& p2) {
+    Set(p1, p2);
+  }
+  explicit constexpr Box2(T xl, T yl, T xh, T yh) { Set(xl, yl, xh, yh); }
   // Aborts if 'proto' is invalid (see FromProto). Prefer FromProto.
   explicit Box2(const Box2Proto& proto) { CHECK_OK(SetFromProto(proto)); }
   Box2(const Box2&) = default;
@@ -72,32 +74,32 @@ class Box2 {
   Box2& operator=(Box2&&) = default;
 
   // Accessors.
-  const Point2<T>& ll() const { return d_[0]; }
-  const Point2<T>& ur() const { return d_[1]; }
+  constexpr const Point2<T>& ll() const { return d_[0]; }
+  constexpr const Point2<T>& ur() const { return d_[1]; }
 
-  const Point2<T>& MinCorner() const { return d_[0]; }
-  const Point2<T>& MaxCorner() const { return d_[1]; }
+  constexpr const Point2<T>& MinCorner() const { return d_[0]; }
+  constexpr const Point2<T>& MaxCorner() const { return d_[1]; }
 
-  T xl() const { return d_[0].x(); }
-  T yl() const { return d_[0].y(); }
-  T xh() const { return d_[1].x(); }
-  T yh() const { return d_[1].y(); }
+  constexpr T xl() const { return d_[0].x(); }
+  constexpr T yl() const { return d_[0].y(); }
+  constexpr T xh() const { return d_[1].x(); }
+  constexpr T yh() const { return d_[1].y(); }
 
-  T MinX() const { return d_[0].x(); }
-  T MinY() const { return d_[0].y(); }
-  T MaxX() const { return d_[1].x(); }
-  T MaxY() const { return d_[1].y(); }
+  constexpr T MinX() const { return d_[0].x(); }
+  constexpr T MinY() const { return d_[0].y(); }
+  constexpr T MaxX() const { return d_[1].x(); }
+  constexpr T MaxY() const { return d_[1].y(); }
 
-  T Width() const {
+  constexpr T Width() const {
     DCHECK_LE(d_[0].x(), d_[1].x()) << "Box is inverted in x.";
     return d_[1].x() - d_[0].x();
   }
-  T Height() const {
+  constexpr T Height() const {
     DCHECK_LE(d_[0].y(), d_[1].y()) << "Box is inverted in y.";
     return d_[1].y() - d_[0].y();
   }
 
-  std::tuple<T, T, T, T> ToTuple() const {
+  constexpr std::tuple<T, T, T, T> ToTuple() const {
     return std::make_tuple(d_[0].x(), d_[0].y(), d_[1].x(), d_[1].y());
   }
 
@@ -105,15 +107,15 @@ class Box2 {
   // Returns the center of the box. For integer coordinates, each coordinate is
   // (lo + hi) / 2 rounded toward zero, so (-3 -3)-(0 0) has center (-1 -1).
   // The sum is computed in a wider type, so it does not overflow.
-  T CenterX() const { return Midpoint(d_[0].x(), d_[1].x()); }
-  T CenterY() const { return Midpoint(d_[0].y(), d_[1].y()); }
-  Point2<T> Center() const { return Point2<T>(CenterX(), CenterY()); }
+  constexpr T CenterX() const { return Midpoint(d_[0].x(), d_[1].x()); }
+  constexpr T CenterY() const { return Midpoint(d_[0].y(), d_[1].y()); }
+  constexpr Point2<T> Center() const { return Point2<T>(CenterX(), CenterY()); }
 
-  area_type Area() const {
+  constexpr area_type Area() const {
     return static_cast<area_type>(Width()) * static_cast<area_type>(Height());
   }
-  T HalfPerimeter() const { return (Width() + Height()); }
-  T Perimeter() const { return 2 * (Width() + Height()); }
+  constexpr T HalfPerimeter() const { return (Width() + Height()); }
+  constexpr T Perimeter() const { return 2 * (Width() + Height()); }
 
   // Distance.
   // Returns the squared Euclidean distance between the closest points of this
@@ -124,7 +126,7 @@ class Box2 {
   // whenever each gap is below 2^31 (about 2.1e9). Compare it against a
   // squared spacing to avoid a square root: SquaredEuclideanDistance(b) < s *
   // s.
-  area_type SquaredEuclideanDistance(const Box2& b) const {
+  constexpr area_type SquaredEuclideanDistance(const Box2& b) const {
     const area_type dx = std::max<area_type>(
         0, std::max(
                static_cast<area_type>(b.xl()) - static_cast<area_type>(xh()),
@@ -143,39 +145,43 @@ class Box2 {
 
   // Mutators.
   // Sets the corners, swapping the ends of an axis if they are out of order.
-  void Set(T xl, T yl, T xh, T yh) {
+  constexpr void Set(T xl, T yl, T xh, T yh) {
     d_[0].Set((xl < xh ? xl : xh), (yl < yh ? yl : yh));
     d_[1].Set((xl < xh ? xh : xl), (yl < yh ? yh : yl));
   }
-  void Set(const Point2<T>& ll, const Point2<T>& ur) {
+  constexpr void Set(const Point2<T>& ll, const Point2<T>& ur) {
     Set(ll.x(), ll.y(), ur.x(), ur.y());
   }
 
   // Sets one side or corner and keeps the box ordered by swapping: if the new
   // value passes the opposite side, the sides swap, so set_xl(15) on
   // (0 0)-(10 10) gives (10 0)-(15 10).
-  void set_xl(T xl) { Set(xl, yl(), xh(), yh()); }
-  void set_yl(T yl) { Set(xl(), yl, xh(), yh()); }
-  void set_xh(T xh) { Set(xl(), yl(), xh, yh()); }
-  void set_yh(T yh) { Set(xl(), yl(), xh(), yh); }
-  void set_ll(const Point2<T>& p) { Set(p.x(), p.y(), xh(), yh()); }
-  void set_ur(const Point2<T>& p) { Set(xl(), yl(), p.x(), p.y()); }
+  constexpr void set_xl(T xl) { Set(xl, yl(), xh(), yh()); }
+  constexpr void set_yl(T yl) { Set(xl(), yl, xh(), yh()); }
+  constexpr void set_xh(T xh) { Set(xl(), yl(), xh, yh()); }
+  constexpr void set_yh(T yh) { Set(xl(), yl(), xh(), yh); }
+  constexpr void set_ll(const Point2<T>& p) { Set(p.x(), p.y(), xh(), yh()); }
+  constexpr void set_ur(const Point2<T>& p) { Set(xl(), yl(), p.x(), p.y()); }
 
   // Same as set_ll and set_ur.
-  void SetMinCorner(const Point2<T>& p) { Set(p.x(), p.y(), xh(), yh()); }
-  void SetMaxCorner(const Point2<T>& p) { Set(xl(), yl(), p.x(), p.y()); }
+  constexpr void SetMinCorner(const Point2<T>& p) {
+    Set(p.x(), p.y(), xh(), yh());
+  }
+  constexpr void SetMaxCorner(const Point2<T>& p) {
+    Set(xl(), yl(), p.x(), p.y());
+  }
 
   // Operations.
   // Operations - Shift (It's safe. No need to check for validity.)
-  void Shift(T dx, T dy) {
+  constexpr void Shift(T dx, T dy) {
     d_[0].Shift(dx, dy);
     d_[1].Shift(dx, dy);
   }
-  void ShiftX(T dx) {
+  constexpr void ShiftX(T dx) {
     d_[0].ShiftX(dx);
     d_[1].ShiftX(dx);
   }
-  void ShiftY(T dy) {
+  constexpr void ShiftY(T dy) {
     d_[0].ShiftY(dy);
     d_[1].ShiftY(dy);
   }
@@ -184,27 +190,27 @@ class Box2 {
   // is negative. An axis shrunk past zero width collapses to zero width at its
   // center, lo + (hi - lo) / 2 (rounded toward lo for integers), instead of
   // inverting.
-  Box2& Bloat(T d) { return Bloat(d, d); }
-  Box2& Bloat(T dx, T dy) {
+  constexpr Box2& Bloat(T d) { return Bloat(d, d); }
+  constexpr Box2& Bloat(T dx, T dy) {
     BloatX(dx);
     BloatY(dy);
     return *this;
   }
-  Box2& BloatX(T dx) {
+  constexpr Box2& BloatX(T dx) {
     BloatAxis(0, dx);
     return *this;
   }
-  Box2& BloatY(T dy) {
+  constexpr Box2& BloatY(T dy) {
     BloatAxis(1, dy);
     return *this;
   }
   // Operations - Shrink
   // Moves both sides of an axis inward by the given amount. Shrink(d) is
   // Bloat(-d), so an axis shrunk past zero width collapses to its center.
-  Box2& Shrink(T d) { return Bloat(-d); }
-  Box2& Shrink(T dx, T dy) { return Bloat(-dx, -dy); }
-  Box2& ShrinkX(T dx) { return BloatX(-dx); }
-  Box2& ShrinkY(T dy) { return BloatY(-dy); }
+  constexpr Box2& Shrink(T d) { return Bloat(-d); }
+  constexpr Box2& Shrink(T dx, T dy) { return Bloat(-dx, -dy); }
+  constexpr Box2& ShrinkX(T dx) { return BloatX(-dx); }
+  constexpr Box2& ShrinkY(T dy) { return BloatY(-dy); }
   // Operations - Encompass
   // Grows the box to contain 'p' (or 'b'). Returns true if the box grew, and
   // false if it already contained it.
@@ -213,24 +219,24 @@ class Box2 {
 
   // Operators.
   // Operators - Subscript
-  const Point2<T>& operator[](std::size_t i) const {
+  constexpr const Point2<T>& operator[](std::size_t i) const {
     DCHECK_LT(i, d_.size());
     return d_[i];
   }
   // Operators - Equality
-  bool operator==(const Box2& b) const {
+  constexpr bool operator==(const Box2& b) const {
     return d_[0] == b.d_[0] && d_[1] == b.d_[1];
   }
-  bool operator!=(const Box2& b) const { return !(*this == b); }
+  constexpr bool operator!=(const Box2& b) const { return !(*this == b); }
   // Operators - Inequality
   // Lexicographic order, for sorting and ordered containers; not a geometric
   // comparison. Compares the min corner, then the max corner.
-  bool operator<(const Box2& b) const {
+  constexpr bool operator<(const Box2& b) const {
     return d_[0] != b.d_[0] ? d_[0] < b.d_[0] : d_[1] < b.d_[1];
   }
-  bool operator>(const Box2& b) const { return b < *this; }
-  bool operator<=(const Box2& b) const { return !(*this > b); }
-  bool operator>=(const Box2& b) const { return !(*this < b); }
+  constexpr bool operator>(const Box2& b) const { return b < *this; }
+  constexpr bool operator<=(const Box2& b) const { return !(*this > b); }
+  constexpr bool operator>=(const Box2& b) const { return !(*this < b); }
 
   // Utilities.
   // Returns the smallest box that contains all 'points', or std::nullopt if
@@ -279,7 +285,7 @@ class Box2 {
 
   // Returns (lo + hi) / 2, rounded toward zero for integers, without
   // overflowing T.
-  static T Midpoint(T lo, T hi) {
+  static constexpr T Midpoint(T lo, T hi) {
     if constexpr (std::is_integral_v<T>) {
       using Wide = std::conditional_t<(sizeof(T) < sizeof(int64_t)), int64_t,
                                       absl::int128>;
@@ -291,7 +297,7 @@ class Box2 {
 
   // Moves both sides of axis 'dim' outward by 'd' (inward if negative), and
   // collapses the axis to its center rather than inverting it.
-  void BloatAxis(std::size_t dim, T d) {
+  constexpr void BloatAxis(std::size_t dim, T d) {
     const T lo = d_[0][dim] - d;
     const T hi = d_[1][dim] + d;
     if (lo <= hi) {

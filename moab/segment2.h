@@ -37,9 +37,11 @@ class Segment2 {
   using point_type = Point2<T>;
 
   // Constructors.
-  Segment2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
-  explicit Segment2(const Point2<T>& p0, const Point2<T>& p1) { Set(p0, p1); }
-  explicit Segment2(T x0, T y0, T x1, T y1) { Set(x0, y0, x1, y1); }
+  constexpr Segment2() : d_({Point2<T>(0, 0), Point2<T>(0, 0)}) {}
+  explicit constexpr Segment2(const Point2<T>& p0, const Point2<T>& p1) {
+    Set(p0, p1);
+  }
+  explicit constexpr Segment2(T x0, T y0, T x1, T y1) { Set(x0, y0, x1, y1); }
   // Aborts if 'proto' is invalid (see FromProto). Prefer FromProto.
   explicit Segment2(const Segment2Proto& proto) {
     CHECK_OK(SetFromProto(proto));
@@ -53,94 +55,108 @@ class Segment2 {
   Segment2& operator=(Segment2&&) = default;
 
   // Accessors.
-  Point2<T>& p0() { return d_[0]; }
-  const Point2<T>& p0() const { return d_[0]; }
-  Point2<T>& p1() { return d_[1]; }
-  const Point2<T>& p1() const { return d_[1]; }
-  const Point2<T>* data() const { return d_.data(); }
+  constexpr Point2<T>& p0() { return d_[0]; }
+  constexpr const Point2<T>& p0() const { return d_[0]; }
+  constexpr Point2<T>& p1() { return d_[1]; }
+  constexpr const Point2<T>& p1() const { return d_[1]; }
+  constexpr const Point2<T>* data() const { return d_.data(); }
 
   constexpr std::size_t Size() const { return d_.size(); }
 
-  std::pair<Point2<T>, Point2<T>> ToPair() const { return {d_[0], d_[1]}; }
+  constexpr std::pair<Point2<T>, Point2<T>> ToPair() const {
+    return {d_[0], d_[1]};
+  }
 
   // Returns the Manhattan (L1) length, i.e. p0().ManhattanDistance(p1()). Not
   // the Euclidean length.
-  T ManhattanLength() const { return d_[0].ManhattanDistance(d_[1]); }
+  constexpr T ManhattanLength() const { return d_[0].ManhattanDistance(d_[1]); }
 
   // The minimum and maximum coordinates over the two endpoints. The endpoints
   // are not sorted, so xl() is not necessarily p0().x().
-  T xl() const { return d_[0].x() < d_[1].x() ? d_[0].x() : d_[1].x(); }
-  T yl() const { return d_[0].y() < d_[1].y() ? d_[0].y() : d_[1].y(); }
-  T xh() const { return d_[0].x() > d_[1].x() ? d_[0].x() : d_[1].x(); }
-  T yh() const { return d_[0].y() > d_[1].y() ? d_[0].y() : d_[1].y(); }
+  constexpr T xl() const {
+    return d_[0].x() < d_[1].x() ? d_[0].x() : d_[1].x();
+  }
+  constexpr T yl() const {
+    return d_[0].y() < d_[1].y() ? d_[0].y() : d_[1].y();
+  }
+  constexpr T xh() const {
+    return d_[0].x() > d_[1].x() ? d_[0].x() : d_[1].x();
+  }
+  constexpr T yh() const {
+    return d_[0].y() > d_[1].y() ? d_[0].y() : d_[1].y();
+  }
 
-  T MinX() const { return xl(); }
-  T MinY() const { return yl(); }
-  T MaxX() const { return xh(); }
-  T MaxY() const { return yh(); }
+  constexpr T MinX() const { return xl(); }
+  constexpr T MinY() const { return yl(); }
+  constexpr T MaxX() const { return xh(); }
+  constexpr T MaxY() const { return yh(); }
 
   // Returns the lexicographically smaller (MinPoint) or larger (MaxPoint)
   // endpoint, comparing x then y. When the endpoints are equal, both return
   // p1().
-  Point2<T>& MinPoint() { return d_[0] < d_[1] ? d_[0] : d_[1]; }
-  const Point2<T>& MinPoint() const { return d_[0] < d_[1] ? d_[0] : d_[1]; }
-  Point2<T>& MaxPoint() { return d_[0] > d_[1] ? d_[0] : d_[1]; }
-  const Point2<T>& MaxPoint() const { return d_[0] > d_[1] ? d_[0] : d_[1]; }
+  constexpr Point2<T>& MinPoint() { return d_[0] < d_[1] ? d_[0] : d_[1]; }
+  constexpr const Point2<T>& MinPoint() const {
+    return d_[0] < d_[1] ? d_[0] : d_[1];
+  }
+  constexpr Point2<T>& MaxPoint() { return d_[0] > d_[1] ? d_[0] : d_[1]; }
+  constexpr const Point2<T>& MaxPoint() const {
+    return d_[0] > d_[1] ? d_[0] : d_[1];
+  }
 
   // Mutators.
-  void Set(T x0, T y0, T x1, T y1) {
+  constexpr void Set(T x0, T y0, T x1, T y1) {
     d_[0].Set(x0, y0);
     d_[1].Set(x1, y1);
   }
-  void Set(const Point2<T>& p0, const Point2<T>& p1) {
+  constexpr void Set(const Point2<T>& p0, const Point2<T>& p1) {
     d_[0] = p0;
     d_[1] = p1;
   }
-  void SetP0(const Point2<T>& p) { d_[0] = p; }
-  void SetP1(const Point2<T>& p) { d_[1] = p; }
-  void SetP(std::size_t i, const Point2<T>& p) {
+  constexpr void SetP0(const Point2<T>& p) { d_[0] = p; }
+  constexpr void SetP1(const Point2<T>& p) { d_[1] = p; }
+  constexpr void SetP(std::size_t i, const Point2<T>& p) {
     DCHECK(i < 2) << "Invalid index. i: " << i;
     d_[i] = p;
   }
 
   // Operations.
-  void Shift(T dx, T dy) {
+  constexpr void Shift(T dx, T dy) {
     d_[0].Shift(dx, dy);
     d_[1].Shift(dx, dy);
   }
-  void ShiftX(T dx) {
+  constexpr void ShiftX(T dx) {
     d_[0].ShiftX(dx);
     d_[1].ShiftX(dx);
   }
-  void ShiftY(T dy) {
+  constexpr void ShiftY(T dy) {
     d_[0].ShiftY(dy);
     d_[1].ShiftY(dy);
   }
 
   // Operators.
   // Operators - Subscript
-  Point2<T>& operator[](std::size_t i) {
+  constexpr Point2<T>& operator[](std::size_t i) {
     DCHECK_LT(i, d_.size());
     return d_[i];
   }
-  const Point2<T>& operator[](std::size_t i) const {
+  constexpr const Point2<T>& operator[](std::size_t i) const {
     DCHECK_LT(i, d_.size());
     return d_[i];
   }
   // Operators - Equality
-  bool operator==(const Segment2& p) const {
+  constexpr bool operator==(const Segment2& p) const {
     return d_[0] == p.d_[0] && d_[1] == p.d_[1];
   }
-  bool operator!=(const Segment2& p) const { return !(*this == p); }
+  constexpr bool operator!=(const Segment2& p) const { return !(*this == p); }
   // Operators - Inequality
   // Lexicographic order, for sorting and ordered containers; not a geometric
   // comparison. Compares p0, then p1.
-  bool operator<(const Segment2& p) const {
+  constexpr bool operator<(const Segment2& p) const {
     return d_[0] != p.d_[0] ? d_[0] < p.d_[0] : d_[1] < p.d_[1];
   }
-  bool operator>(const Segment2& p) const { return p < *this; }
-  bool operator<=(const Segment2& p) const { return !(*this > p); }
-  bool operator>=(const Segment2& p) const { return !(*this < p); }
+  constexpr bool operator>(const Segment2& p) const { return p < *this; }
+  constexpr bool operator<=(const Segment2& p) const { return !(*this > p); }
+  constexpr bool operator>=(const Segment2& p) const { return !(*this < p); }
 
   // String conversion.
   template <typename Sink>

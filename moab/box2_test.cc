@@ -1403,5 +1403,29 @@ TYPED_TEST(Box2BoostPolygon, Convolve) {
   EXPECT_EQ(b, B(100, 0, 110, 10));
 }
 
+// The value-type operations are constexpr, so tech constants can be built at
+// compile time.
+constexpr Box2<int> BloatedAndShifted() {
+  Box2<int> b(10, 10, 0, 0);
+  b.Bloat(2, 1);
+  b.Shift(1, 1);
+  b.set_xh(20);
+  return b;
+}
+
+TEST(Box2Constexpr, OperationsRunAtCompileTime) {
+  static_assert(Box2<int>(10, 10, 0, 0).ll() == Point2<int>(0, 0));
+  static_assert(BloatedAndShifted() == Box2<int>(-1, 0, 20, 12));
+  static_assert(Box2<int>(0, 0, 4, 3).Area() == 12);
+  static_assert(Box2<int>(0, 0, 4, 3).Perimeter() == 14);
+  static_assert(Box2<int>(-3, -3, 0, 0).Center() == Point2<int>(-1, -1));
+  static_assert(Box2<int64_t>(0, 0, 4, 2).Center() == Point2<int64_t>(2, 1));
+  static_assert(Box2<int>(0, 0, 2, 2).Shrink(5) == Box2<int>(1, 1, 1, 1));
+  static_assert(
+      Box2<int>(0, 0, 1, 1).SquaredEuclideanDistance(Box2<int>(4, 5, 6, 6)) ==
+      25);
+  static_assert(std::get<3>(Box2<int>(0, 0, 4, 3).ToTuple()) == 3);
+}
+
 }  // namespace
 }  // namespace moab

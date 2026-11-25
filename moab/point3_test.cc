@@ -931,5 +931,28 @@ TYPED_TEST(Point3BoostGeometry, Set) {
   ExpectXyz(p, 4, 5, 6);
 }
 
+// The value-type operations are constexpr, so tech constants can be built at
+// compile time.
+constexpr Point3<int> ShiftedAndRotated() {
+  Point3<int> p(1, 2, 3);
+  p.Shift(1, 1, 1);
+  p.SetDim(2, 5);
+  p.Rotate270(0, 1);
+  return p;
+}
+
+TEST(Point3Constexpr, OperationsRunAtCompileTime) {
+  static_assert(Point3<int>().z() == 0);
+  static_assert(ShiftedAndRotated() == Point3<int>(3, -2, 5));
+  static_assert(Point3<int>(1, 2, 3) - Point3<int>(1, 1, 1) ==
+                Point3<int>(0, 1, 2));
+  static_assert(Point3<int>(1, 2, 3).To2D() == Point2<int>(1, 2));
+  static_assert(Point3<int>(0, 0, 0).ManhattanDistance(Point3<int>(1, -2, 3)) ==
+                6);
+  static_assert(
+      Point3<int>(0, 0, 0).SquaredEuclideanDistance(Point3<int>(1, 2, 2)) == 9);
+  static_assert(std::get<2>(Point3<int>(1, 2, 3).ToTuple()) == 3);
+}
+
 }  // namespace
 }  // namespace moab

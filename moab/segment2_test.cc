@@ -944,5 +944,22 @@ TYPED_TEST(Segment2BoostPolygon, ScaleUp) {
   EXPECT_EQ(s, S2(10, 20, 30, 40));
 }
 
+// The value-type operations are constexpr, so tech constants can be built at
+// compile time.
+constexpr Segment2<int> ShiftedSegment() {
+  Segment2<int> s(0, 0, 3, 4);
+  s.Shift(1, 1);
+  s.SetP(0, Point2<int>(0, 0));
+  return s;
+}
+
+TEST(Segment2Constexpr, OperationsRunAtCompileTime) {
+  static_assert(ShiftedSegment() == Segment2<int>(0, 0, 4, 5));
+  static_assert(Segment2<int>(0, 0, 3, -4).ManhattanLength() == 7);
+  static_assert(Segment2<int>(3, 4, 1, 2).xl() == 1);
+  static_assert(Segment2<int>(3, 4, 1, 2).MinPoint() == Point2<int>(1, 2));
+  static_assert(Segment2<int>(0, 0, 1, 1) < Segment2<int>(0, 0, 1, 2));
+}
+
 }  // namespace
 }  // namespace moab

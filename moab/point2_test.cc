@@ -1291,5 +1291,30 @@ TYPED_TEST(Point2BoostPolygon, Construct) {
   EXPECT_EQ(gtl::construct<P>(1, -2), P(1, -2));
 }
 
+// The value-type operations are constexpr, so tech constants can be built at
+// compile time.
+constexpr Point2<int> ShiftedAndRotated() {
+  Point2<int> p(1, 2);
+  p.Shift(1, 1);
+  p.SetDim(0, 3);
+  p[1] += 1;
+  p.Rotate90();
+  return p;
+}
+
+TEST(Point2Constexpr, OperationsRunAtCompileTime) {
+  static_assert(Point2<int>().x() == 0);
+  static_assert(ShiftedAndRotated() == Point2<int>(-4, 3));
+  static_assert(Point2<int>(1, 2) + Point2<int>(3, 4) == Point2<int>(4, 6));
+  static_assert(-Point2<int>(1, -2) * 2 == Point2<int>(-2, 4));
+  static_assert(Point2<int>(1, 2) < Point2<int>(1, 3));
+  static_assert(Point2<int>(1, 2).ManhattanDistance(Point2<int>(4, -2)) == 7);
+  static_assert(Point2<int>(0, 0).SquaredEuclideanDistance(Point2<int>(3, 4)) ==
+                25);
+  static_assert(
+      Point2<double>(0.5, 0).ManhattanDistance(Point2<double>(-1, 1)) == 2.5);
+  static_assert(Point2<int>(5, 6).ToPair().second == 6);
+}
+
 }  // namespace
 }  // namespace moab

@@ -599,5 +599,23 @@ TYPED_TEST(InvariantDeathTest, InvertedIntervalSize) {
 }
 #endif
 
+// The value-type operations are constexpr, so tech constants can be built at
+// compile time.
+constexpr Interval<int> ShiftedAndExtended() {
+  Interval<int> i(10, 0);
+  i.Shift(5);
+  i.set_hi(20);
+  return i;
+}
+
+TEST(IntervalConstexpr, OperationsRunAtCompileTime) {
+  static_assert(Interval<int>(10, 0).lo() == 0);
+  static_assert(ShiftedAndExtended() == Interval<int>(5, 20));
+  static_assert(Interval<int>(0, 10).Length() == 10);
+  static_assert(Interval<int>(0, 10).Contains(Interval<int>(2, 3)));
+  static_assert((Interval<int>(0, 10) + 2)[1] == 12);
+  static_assert(Interval<int>(0, 10) < Interval<int>(1, 2));
+}
+
 }  // namespace
 }  // namespace moab

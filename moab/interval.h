@@ -29,8 +29,8 @@ class Interval {
   using coordinate_type = T;
 
   // Constructors.
-  Interval() : d_({0, 0}) {}
-  explicit Interval(T lo, T hi) : d_() { Set(lo, hi); }
+  constexpr Interval() : d_({0, 0}) {}
+  explicit constexpr Interval(T lo, T hi) : d_() { Set(lo, hi); }
   Interval(const Interval& i) = default;
   Interval(Interval&& i) = default;
   ~Interval() = default;
@@ -39,87 +39,87 @@ class Interval {
   Interval& operator=(const Interval&) = default;
   Interval& operator=(Interval&&) = default;
   // Accessors.
-  T lo() const { return d_[0]; }
-  T hi() const { return d_[1]; }
-  const T* data() const { return d_.data(); }
+  constexpr T lo() const { return d_[0]; }
+  constexpr T hi() const { return d_[1]; }
+  constexpr const T* data() const { return d_.data(); }
 
-  T Min() const { return d_[0]; }
-  T Max() const { return d_[1]; }
+  constexpr T Min() const { return d_[0]; }
+  constexpr T Max() const { return d_[1]; }
 
-  T Length() const {
+  constexpr T Length() const {
     DCHECK_LE(d_[0], d_[1]) << "Interval is inverted.";
     return d_[1] - d_[0];
   }
-  T Size() const { return Length(); }
+  constexpr T Size() const { return Length(); }
 
   // Mutators.
   // Sets the ends to 'lo' and 'hi', swapping them if lo > hi.
-  void Set(T lo, T hi) {
+  constexpr void Set(T lo, T hi) {
     d_[0] = lo < hi ? lo : hi;
     d_[1] = lo < hi ? hi : lo;
   }
 
   // Sets one end and keeps lo <= hi by swapping: if 'v' passes the other end,
   // the ends swap, so set_lo(20) on [0 10] gives [10 20].
-  void set_lo(T v) { Set(v, hi()); }
-  void set_hi(T v) { Set(lo(), v); }
+  constexpr void set_lo(T v) { Set(v, hi()); }
+  constexpr void set_hi(T v) { Set(lo(), v); }
 
   // Same as set_lo and set_hi.
-  void SetMin(T v) { Set(v, hi()); }
-  void SetMax(T v) { Set(lo(), v); }
+  constexpr void SetMin(T v) { Set(v, hi()); }
+  constexpr void SetMax(T v) { Set(lo(), v); }
 
   // Queries.
-  bool Contains(T v) const {
+  constexpr bool Contains(T v) const {
     DCHECK_LE(d_[0], d_[1]) << "Interval is inverted.";
     return lo() <= v && v <= hi();
   }
-  bool Contains(const Interval& i) const {
+  constexpr bool Contains(const Interval& i) const {
     DCHECK_LE(d_[0], d_[1]) << "Interval is inverted.";
     DCHECK_LE(i.d_[0], i.d_[1]) << "Interval is inverted.";
     return lo() <= i.lo() && i.hi() <= hi();
   }
 
   // Operations.
-  void Shift(T d) {
+  constexpr void Shift(T d) {
     d_[0] += d;
     d_[1] += d;
   }
 
   // Operators.
   // Operators - Subscript.
-  const T& operator[](std::size_t i) const {
+  constexpr const T& operator[](std::size_t i) const {
     DCHECK_LT(i, d_.size());
     return d_[i];
   }
   // Operators - Equality.
-  bool operator==(const Interval& i) const {
+  constexpr bool operator==(const Interval& i) const {
     return d_[0] == i.d_[0] && d_[1] == i.d_[1];
   }
-  bool operator!=(const Interval& i) const { return !(*this == i); }
+  constexpr bool operator!=(const Interval& i) const { return !(*this == i); }
   // Operators - Inequality.
   // Lexicographic order, for sorting and ordered containers; not a geometric
   // comparison. Compares lo, then hi.
-  bool operator<(const Interval& i) const {
+  constexpr bool operator<(const Interval& i) const {
     return d_[0] != i.d_[0] ? d_[0] < i.d_[0] : d_[1] < i.d_[1];
   }
-  bool operator>(const Interval& i) const { return i < *this; }
-  bool operator<=(const Interval& i) const { return !(*this > i); }
-  bool operator>=(const Interval& i) const { return !(*this < i); }
+  constexpr bool operator>(const Interval& i) const { return i < *this; }
+  constexpr bool operator<=(const Interval& i) const { return !(*this > i); }
+  constexpr bool operator>=(const Interval& i) const { return !(*this < i); }
   // Operators - Arithmetic.
-  Interval& operator+=(T d) {
+  constexpr Interval& operator+=(T d) {
     Shift(d);
     return *this;
   }
-  Interval& operator-=(T d) {
+  constexpr Interval& operator-=(T d) {
     Shift(-d);
     return *this;
   }
-  Interval operator+(T d) const {
+  constexpr Interval operator+(T d) const {
     Interval i(*this);
     i += d;
     return i;
   }
-  Interval operator-(T d) const {
+  constexpr Interval operator-(T d) const {
     Interval i(*this);
     i -= d;
     return i;
