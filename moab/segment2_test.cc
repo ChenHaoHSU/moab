@@ -293,7 +293,7 @@ TYPED_TEST(Segment2Accessors, ToPairIsP0ThenP1) {
   EXPECT_THAT(p, Pair(P2(1, 2), P2(3, 4)));
 }
 
-TYPED_TEST(Segment2Accessors, LengthIsManhattan) {
+TYPED_TEST(Segment2Accessors, ManhattanLength) {
   using S2 = Segment2<TypeParam>;
   struct Case {
     std::string name;
@@ -311,7 +311,7 @@ TYPED_TEST(Segment2Accessors, LengthIsManhattan) {
   };
   for (const Case& c : cases) {
     SCOPED_TRACE(c.name);
-    EXPECT_EQ(c.s.Length(), c.expected);
+    EXPECT_EQ(c.s.ManhattanLength(), c.expected);
   }
 }
 

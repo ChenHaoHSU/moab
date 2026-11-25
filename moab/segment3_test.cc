@@ -299,8 +299,9 @@ TYPED_TEST(Segment3Accessors, ToPair) {
   EXPECT_THAT(p, Pair(P(1, 2, 3), P(4, 5, 6)));
 }
 
-// Length() is |dx| + |dy| + |dz|, whatever the direction of the segment.
-TYPED_TEST(Segment3Accessors, LengthIsManhattan) {
+// ManhattanLength() is |dx| + |dy| + |dz|, whatever the direction of the
+// segment.
+TYPED_TEST(Segment3Accessors, ManhattanLength) {
   using S = Segment3<TypeParam>;
   struct Case {
     std::string name;
@@ -316,7 +317,7 @@ TYPED_TEST(Segment3Accessors, LengthIsManhattan) {
   };
   for (const Case& c : cases) {
     SCOPED_TRACE(c.name);
-    EXPECT_EQ(c.s.Length(), c.expected);
+    EXPECT_EQ(c.s.ManhattanLength(), c.expected);
   }
 }
 

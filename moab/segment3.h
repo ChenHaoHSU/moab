@@ -66,7 +66,7 @@ class Segment3 {
 
   // Returns the Manhattan (L1) length, i.e. p0().ManhattanDistance(p1()). Not
   // the Euclidean length.
-  T Length() const { return d_[0].ManhattanDistance(d_[1]); }
+  T ManhattanLength() const { return d_[0].ManhattanDistance(d_[1]); }
 
   // The minimum and maximum coordinates over the two endpoints. The endpoints
   // are not sorted, so xl() is not necessarily p0().x().
