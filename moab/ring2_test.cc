@@ -38,6 +38,7 @@ using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::StrEq;
 using ::testing::UnorderedElementsAre;
+using ::testing::UnorderedElementsAreArray;
 
 using CoordinateTypes = ::testing::Types<int32_t, int64_t, float, double>;
 
@@ -432,9 +433,174 @@ TYPED_TEST(Ring2Accessor, MaxBoxes) {
   EXPECT_THAT(Ring2<TypeParam>().MaxBoxes(), IsEmpty());
 }
 
+// Boost.Polygon reads a diagonal edge as axis-parallel, so MaxBoxes gives no
+// boxes for a ring with one rather than wrong boxes.
+TYPED_TEST(Ring2Accessor, MaxBoxesOfDiagonalRingIsEmpty) {
+  EXPECT_THAT(MakeRing<TypeParam>({{0, 0}, {4, 0}, {4, 4}, {0, 0}}).MaxBoxes(),
+              IsEmpty());
+  EXPECT_THAT(MakeRing<TypeParam>({{2, 0},
+                                   {6, 0},
+                                   {8, 2},
+                                   {8, 6},
+                                   {6, 8},
+                                   {2, 8},
+                                   {0, 6},
+                                   {0, 2},
+                                   {2, 0}})
+                  .MaxBoxes(),
+              IsEmpty());
+  EXPECT_THAT(
+      MakeRing<TypeParam>({{0, 0}, {4, 0}, {4, 3}, {3, 4}, {0, 4}, {0, 0}})
+          .MaxBoxes(),
+      IsEmpty());
+}
+
+// MaxBoxes(step) turns a ring of any shape into a staircase of boxes inside
+// it. These shapes cross every strip boundary at whole numbers, so all four
+// coordinate types give the same boxes.
+TYPED_TEST(Ring2Accessor, MaxBoxesWithStep) {
+  using B = Box2<TypeParam>;
+  struct Case {
+    std::string name;
+    Ring2<TypeParam> ring;
+    TypeParam step;
+    std::vector<B> expected;
+  };
+  const std::vector<Case> cases = {
+      {"a Manhattan ring gives MaxBoxes() for any step", BigLShape<TypeParam>(),
+       7, BigLShape<TypeParam>().MaxBoxes()},
+      {"empty", Ring2<TypeParam>(), 1, {}},
+      // Inside at height y: x from y to 4. The top strip only touches the
+      // corner, so it gives no box.
+      {"triangle, step 1",
+       MakeRing<TypeParam>({{0, 0}, {4, 0}, {4, 4}, {0, 0}}),
+       1,
+       {B(1, 0, 4, 1), B(2, 0, 4, 2), B(3, 0, 4, 3)}},
+      {"triangle, step 2",
+       MakeRing<TypeParam>({{0, 0}, {4, 0}, {4, 4}, {0, 0}}),
+       2,
+       {B(2, 0, 4, 2)}},
+      {"triangle, the top strip is lower than the step",
+       MakeRing<TypeParam>({{0, 0}, {4, 0}, {4, 4}, {0, 0}}),
+       3,
+       {B(3, 0, 4, 3)}},
+      {"open and clockwise triangle",
+       MakeRing<TypeParam>({{0, 0}, {4, 4}, {4, 0}}),
+       2,
+       {B(2, 0, 4, 2)}},
+      // The 45-degree corners are cut as a staircase.
+      {"octagon, step 1",
+       MakeRing<TypeParam>({{2, 0},
+                            {6, 0},
+                            {8, 2},
+                            {8, 6},
+                            {6, 8},
+                            {2, 8},
+                            {0, 6},
+                            {0, 2},
+                            {2, 0}}),
+       1,
+       {B(0, 2, 8, 6), B(1, 1, 7, 7), B(2, 0, 6, 8)}},
+      // A vertex at y = 2 lies inside the strip [0 4]: the strip keeps only
+      // the x range inside the ring both below and above it.
+      {"octagon, step 4, vertices inside a strip",
+       MakeRing<TypeParam>({{2, 0},
+                            {6, 0},
+                            {8, 2},
+                            {8, 6},
+                            {6, 8},
+                            {2, 8},
+                            {0, 6},
+                            {0, 2},
+                            {2, 0}}),
+       4,
+       {B(2, 0, 6, 8)}},
+      // Both sides start at the apex (2 0); they are told apart by the top
+      // of the strip.
+      {"apex at the bottom",
+       MakeRing<TypeParam>({{2, 0}, {4, 4}, {0, 4}, {2, 0}}),
+       2,
+       {B(1, 2, 3, 4)}},
+      // A slanted band: the x range shifts with y, so a tall strip has no box
+      // inside it, and one-unit strips give one-unit squares.
+      {"slanted band, step 10",
+       MakeRing<TypeParam>({{0, 0}, {2, 0}, {12, 10}, {10, 10}, {0, 0}}),
+       10,
+       {}},
+      {"a zero-width diagonal ring",
+       MakeRing<TypeParam>({{0, 0}, {4, 4}}),
+       1,
+       {}},
+  };
+  for (const Case& c : cases) {
+    SCOPED_TRACE(c.name);
+    EXPECT_THAT(c.ring.MaxBoxes(c.step), UnorderedElementsAreArray(c.expected));
+  }
+}
+
+TYPED_TEST(Ring2Accessor, MaxBoxesWithStepStaysInsideTheRing) {
+  const Ring2<TypeParam> band =
+      MakeRing<TypeParam>({{0, 0}, {2, 0}, {12, 10}, {10, 10}, {0, 0}});
+  const std::vector<Box2<TypeParam>> boxes = band.MaxBoxes(1);
+
+  ASSERT_EQ(boxes.size(), 10u);
+  for (const Box2<TypeParam>& b : boxes) {
+    SCOPED_TRACE(b.ToString());
+    EXPECT_TRUE(IsCoveredBy(b, band));
+    EXPECT_EQ(b.Width(), 1);
+    EXPECT_EQ(b.Height(), 1);
+  }
+}
+
 // =============================================================
 // Accessors: type-specific behavior
 // =============================================================
+
+// For integer coordinates the box sides are rounded inward, so the boxes
+// stay inside the ring; floating-point coordinates keep the exact crossings.
+TEST(Ring2MaxBoxesWithStep, IntegerSidesRoundInward) {
+  // The right side x = 3 - 1.5 y runs up and to the left.
+  EXPECT_THAT(
+      Ring2_i({Point2_i(0, 0), Point2_i(3, 0), Point2_i(0, 2), Point2_i(0, 0)})
+          .MaxBoxes(1),
+      ElementsAre(Box2_i(0, 0, 1, 1)));
+  EXPECT_THAT(Ring2<double>({Point2<double>(0, 0), Point2<double>(3, 0),
+                             Point2<double>(0, 2), Point2<double>(0, 0)})
+                  .MaxBoxes(1),
+              ElementsAre(Box2<double>(0, 0, 1.5, 1)));
+  // The left side x = 1.5 y runs up and to the right.
+  EXPECT_THAT(Ring2_i64({Point2_i64(0, 0), Point2_i64(3, 0), Point2_i64(3, 2),
+                         Point2_i64(0, 0)})
+                  .MaxBoxes(1),
+              ElementsAre(Box2_i64(2, 0, 3, 1)));
+  EXPECT_THAT(Ring2<float>({Point2<float>(0, 0), Point2<float>(3, 0),
+                            Point2<float>(3, 2), Point2<float>(0, 0)})
+                  .MaxBoxes(1),
+              ElementsAre(Box2<float>(1.5f, 0, 3, 1)));
+}
+
+TEST(Ring2MaxBoxesWithStep, LargeIntegerCoordinates) {
+  // A right triangle near the int32 limits; the crossings need 128 bits.
+  constexpr int32_t kMax = std::numeric_limits<int32_t>::max();
+  constexpr int32_t kMin = std::numeric_limits<int32_t>::min();
+  const Ring2_i32 r = {Point2_i32(kMin, kMin), Point2_i32(kMax, kMin),
+                       Point2_i32(kMax, kMax), Point2_i32(kMin, kMin)};
+  // Strips [kMin -1], [-1 kMax-1] and [kMax-1 kMax]. Inside the first, x
+  // runs from the diagonal at its top (x = -1) to kMax; inside the second,
+  // from kMax-1; the third has no width. The two pieces share the right edge.
+  EXPECT_THAT(r.MaxBoxes(kMax),
+              UnorderedElementsAre(Box2_i32(-1, kMin, kMax, -1),
+                                   Box2_i32(kMax - 1, kMin, kMax, kMax - 1)));
+}
+
+#ifndef NDEBUG
+TEST(Ring2MaxBoxesWithStepDeathTest, StepMustBePositive) {
+  const Ring2_i r = {Point2_i(0, 0), Point2_i(4, 0), Point2_i(4, 4),
+                     Point2_i(0, 0)};
+
+  EXPECT_DEATH((void)r.MaxBoxes(0), "MaxBoxes step must be positive");
+}
+#endif
 
 TEST(Ring2AreaInteger, FractionalAreaRoundsDown) {
   // Twice the area is 3 for each triangle, in either orientation.
@@ -617,6 +783,11 @@ TYPED_TEST(Ring2Operation, BloatedRingsCases) {
       {"x and y differ", R(B(0, 0, 2, 2)), 1, 3, {R(B(-1, -3, 3, 5))}},
       {"x only", R(B(0, 0, 2, 2)), 1, 0, {R(B(-1, 0, 3, 2))}},
       {"empty ring", R(), 1, 1, {}},
+      {"diagonal ring",
+       MakeRing<TypeParam>({{0, 0}, {4, 0}, {4, 4}, {0, 0}}),
+       1,
+       1,
+       {}},
   };
   for (const Case& c : cases) {
     SCOPED_TRACE(c.name);

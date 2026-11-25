@@ -1,6 +1,7 @@
 #ifndef MOAB_RING2_H_
 #define MOAB_RING2_H_
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
@@ -100,17 +101,32 @@ class Ring2 {
   // the first, is horizontal or vertical (or has zero length). An empty ring
   // is Manhattan.
   bool IsManhattan() const;
-  // Returns the maximum boxes that cover the ring. The ring must be Manhattan
-  // (see IsManhattan). Boost.Polygon reads a diagonal edge as if it were
-  // axis-parallel, so for other rings the boxes are wrong and may miss part
-  // of the ring or reach outside it; check IsManhattan first when the input
-  // can have diagonal edges, such as shapes read from GDS.
+  // Returns the maximum boxes that cover a Manhattan ring (see IsManhattan).
+  // A ring with a diagonal edge gives no boxes, since Boost.Polygon would read
+  // that edge as if it were axis-parallel and give boxes that miss part of the
+  // ring or reach outside it. For rings that can have diagonal edges, such as
+  // shapes read from GDS, use MaxBoxes(step).
   std::vector<Box2<T>> MaxBoxes() const noexcept {
     std::vector<Box2<T>> boxes;
+    if (!IsManhattan()) {
+      return boxes;
+    }
     gtl::get_max_rectangles(boxes,
                             gtl::view_as<gtl::polygon_90_set_concept>(*this));
     return boxes;
   }
+  // Returns the maximum boxes of a staircase that follows the ring, for rings
+  // of any shape. A Manhattan ring gives exactly MaxBoxes(), whatever 'step'.
+  // Otherwise the ring is cut into horizontal strips of height 'step' from
+  // its lowest point up (the top strip may be lower), each strip keeps the
+  // x ranges whose full strip height lies inside the ring, and the result is
+  // the maximum boxes of those pieces. The boxes never reach outside the ring;
+  // a smaller step follows diagonal edges more closely but gives more boxes
+  // and takes longer. For integer coordinates the box sides are rounded
+  // inward to whole units, exactly for coordinates below 2^31 in magnitude.
+  // The ring uses the even-odd rule. 'step' must be positive, which debug
+  // builds check.
+  std::vector<Box2<T>> MaxBoxes(T step) const;
 
   // Mutators.
   // Avoid using these methods if possible. They are designed for Boost
@@ -128,7 +144,8 @@ class Ring2 {
   // Operations.
   // Operations - Bloat
   // Returns the ring's max boxes (see MaxBoxes) bloated by 'x' and 'y', as
-  // rings. 'x' and 'y' must be non-negative, and the ring must be Manhattan.
+  // rings. 'x' and 'y' must be non-negative. A ring with a diagonal edge gives
+  // no rings.
   std::vector<Ring2<T>> BloatedRings(T x, T y) const;
   // Operations - Simplify
   // Removes the redundant points of the ring and returns *this: consecutive
@@ -199,6 +216,29 @@ class Ring2 {
   static bool IsRedundant(const Point2<T>& a, const Point2<T>& b,
                           const Point2<T>& c);
 
+  // A non-horizontal edge, from its lower end 'lo' to its upper end 'hi'.
+  struct Edge {
+    Point2<T> lo;
+    Point2<T> hi;
+  };
+  // An x range [first, second] inside the ring.
+  using XRange = std::pair<T, T>;
+  // Returns true if edge 'a' is left of edge 'b' at height 'y', comparing the
+  // exact crossings.
+  static bool CrossesLeftOf(const Edge& a, const Edge& b, T y);
+  // Returns the x where 'e' crosses height 'y', rounded up ('up') or down for
+  // integer coordinates.
+  static T CrossingX(const Edge& e, T y, bool up);
+  // Returns the x ranges whose segment from 'y0' to 'y1' lies inside the
+  // ring, for a band with no vertex strictly between y0 and y1. Every edge in
+  // 'edges' spans the band.
+  static std::vector<XRange> BandRanges(std::vector<Edge> edges, T y0,
+                                        T y1) noexcept;
+  // Returns the x ranges in both 'a' and 'b' with positive width. Both are
+  // sorted and disjoint.
+  static std::vector<XRange> IntersectRanges(
+      const std::vector<XRange>& a, const std::vector<XRange>& b) noexcept;
+
   std::vector<Point2<T>> d_;
 };
 
@@ -234,6 +274,135 @@ bool Ring2<T>::IsManhattan() const {
     }
   }
   return true;
+}
+
+template <typename T>
+bool Ring2<T>::CrossesLeftOf(const Edge& a, const Edge& b, T y) {
+  if constexpr (std::is_integral_v<T>) {
+    // x = lo.x + (y - lo.y) * dx / dy with dy > 0. Compare the numerators
+    // over the common denominator; for coordinates below 2^31 each product
+    // stays below 2^98.
+    const absl::int128 dya = absl::int128(a.hi.y()) - a.lo.y();
+    const absl::int128 dyb = absl::int128(b.hi.y()) - b.lo.y();
+    const absl::int128 na =
+        absl::int128(a.lo.x()) * dya +
+        (absl::int128(y) - a.lo.y()) * (absl::int128(a.hi.x()) - a.lo.x());
+    const absl::int128 nb =
+        absl::int128(b.lo.x()) * dyb +
+        (absl::int128(y) - b.lo.y()) * (absl::int128(b.hi.x()) - b.lo.x());
+    return na * dyb < nb * dya;
+  } else {
+    return CrossingX(a, y, false) < CrossingX(b, y, false);
+  }
+}
+
+template <typename T>
+T Ring2<T>::CrossingX(const Edge& e, T y, bool up) {
+  if constexpr (std::is_integral_v<T>) {
+    const absl::int128 num =
+        (absl::int128(y) - e.lo.y()) * (absl::int128(e.hi.x()) - e.lo.x());
+    const absl::int128 den = absl::int128(e.hi.y()) - e.lo.y();
+    absl::int128 q = num / den;  // Rounds toward zero.
+    const bool exact = q * den == num;
+    if (!exact && up && num > 0) ++q;
+    if (!exact && !up && num < 0) --q;
+    return static_cast<T>(e.lo.x() + q);
+  } else {
+    return e.lo.x() +
+           (y - e.lo.y()) * (e.hi.x() - e.lo.x()) / (e.hi.y() - e.lo.y());
+  }
+}
+
+template <typename T>
+std::vector<typename Ring2<T>::XRange> Ring2<T>::BandRanges(
+    std::vector<Edge> edges, T y0, T y1) noexcept {
+  // No two edges cross inside the band, so sort them by where they cross the
+  // bottom, and by the top where they meet at the bottom.
+  std::sort(edges.begin(), edges.end(), [&](const Edge& a, const Edge& b) {
+    if (CrossesLeftOf(a, b, y0)) return true;
+    if (CrossesLeftOf(b, a, y0)) return false;
+    return CrossesLeftOf(a, b, y1);
+  });
+  // Even-odd: the ring is inside between edges 0 and 1, 2 and 3, and so on.
+  // A segment from y0 to y1 at x is inside if x is right of the left edge and
+  // left of the right edge at both ends.
+  std::vector<XRange> ranges;
+  for (std::size_t i = 0; i + 1 < edges.size(); i += 2) {
+    const T l =
+        std::max(CrossingX(edges[i], y0, true), CrossingX(edges[i], y1, true));
+    const T r = std::min(CrossingX(edges[i + 1], y0, false),
+                         CrossingX(edges[i + 1], y1, false));
+    if (l < r) ranges.emplace_back(l, r);
+  }
+  return ranges;
+}
+
+template <typename T>
+std::vector<typename Ring2<T>::XRange> Ring2<T>::IntersectRanges(
+    const std::vector<XRange>& a, const std::vector<XRange>& b) noexcept {
+  std::vector<XRange> out;
+  std::size_t i = 0;
+  std::size_t j = 0;
+  while (i < a.size() && j < b.size()) {
+    const T l = std::max(a[i].first, b[j].first);
+    const T r = std::min(a[i].second, b[j].second);
+    if (l < r) out.emplace_back(l, r);
+    if (a[i].second < b[j].second) {
+      ++i;
+    } else {
+      ++j;
+    }
+  }
+  return out;
+}
+
+template <typename T>
+std::vector<Box2<T>> Ring2<T>::MaxBoxes(T step) const {
+  DCHECK(step > 0) << "MaxBoxes step must be positive.";
+  if (IsManhattan()) {
+    return MaxBoxes();
+  }
+  // The non-horizontal edges, including the one closing the ring.
+  std::vector<Edge> edges;
+  for (std::size_t i = 0; i < d_.size(); ++i) {
+    const Point2<T>& a = d_[i];
+    const Point2<T>& b = d_[i + 1 < d_.size() ? i + 1 : 0];
+    if (a.y() < b.y()) edges.push_back({a, b});
+    if (b.y() < a.y()) edges.push_back({b, a});
+  }
+  const Box2<T> bbox = BoundingBox();
+  gtl::polygon_90_set_data<T> pieces;
+  T y0 = bbox.yl();
+  while (y0 < bbox.yh()) {
+    const T y1 =
+        static_cast<area_type>(bbox.yh()) - y0 > step ? y0 + step : bbox.yh();
+    // Cut the strip into bands at the vertices strictly inside it; between
+    // cuts every edge either spans the band or misses it.
+    std::vector<T> cuts = {y0, y1};
+    for (const Point2<T>& p : d_) {
+      if (y0 < p.y() && p.y() < y1) cuts.push_back(p.y());
+    }
+    std::sort(cuts.begin(), cuts.end());
+    cuts.erase(std::unique(cuts.begin(), cuts.end()), cuts.end());
+    std::vector<XRange> ranges;
+    for (std::size_t k = 0; k + 1 < cuts.size(); ++k) {
+      std::vector<Edge> band;
+      for (const Edge& e : edges) {
+        if (e.lo.y() <= cuts[k] && cuts[k + 1] <= e.hi.y()) band.push_back(e);
+      }
+      std::vector<XRange> band_ranges =
+          BandRanges(std::move(band), cuts[k], cuts[k + 1]);
+      ranges = k == 0 ? std::move(band_ranges)
+                      : IntersectRanges(ranges, band_ranges);
+    }
+    for (const auto& [l, r] : ranges) {
+      pieces.insert(Box2<T>(l, y0, r, y1));
+    }
+    y0 = y1;
+  }
+  std::vector<Box2<T>> boxes;
+  gtl::get_max_rectangles(boxes, pieces);
+  return boxes;
 }
 
 template <typename T>
