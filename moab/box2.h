@@ -214,8 +214,12 @@ class Box2 {
   // Operations - Encompass
   // Grows the box to contain 'p' (or 'b'). Returns true if the box grew, and
   // false if it already contained it.
-  bool Encompass(const Point2<T>& p) { return gtl::encompass(*this, p); }
-  bool Encompass(const Box2& b) { return gtl::encompass(*this, b); }
+  constexpr bool Encompass(const Point2<T>& p) {
+    return EncompassCorners(p.x(), p.y(), p.x(), p.y());
+  }
+  constexpr bool Encompass(const Box2& b) {
+    return EncompassCorners(b.xl(), b.yl(), b.xh(), b.yh());
+  }
 
   // Queries.
   // Returns true if 'p' (or all of 'b') lies in the box. Points on the sides
@@ -291,8 +295,8 @@ class Box2 {
   // Returns the smallest box that contains all 'points', or std::nullopt if
   // 'points' is empty.
   template <typename Container>
-  static std::optional<Box2> BoundingBox(const Container& points);
-  static std::optional<Box2> BoundingBox(
+  static constexpr std::optional<Box2> BoundingBox(const Container& points);
+  static constexpr std::optional<Box2> BoundingBox(
       std::initializer_list<Point2<T>> points) {
     return BoundingBox<std::initializer_list<Point2<T>>>(points);
   }
@@ -331,6 +335,18 @@ class Box2 {
   friend struct boost::geometry::traits::indexed_access;
   template <typename Rectangle>
   friend struct boost::polygon::rectangle_mutable_traits;
+
+  // Grows the box to contain (lx ly)-(hx hy), an ordered box, and returns
+  // true if it grew on either axis.
+  constexpr bool EncompassCorners(T lx, T ly, T hx, T hy) {
+    const bool grew =
+        (lx < d_[0][0]) | (ly < d_[0][1]) | (hx > d_[1][0]) | (hy > d_[1][1]);
+    d_[0][0] = lx < d_[0][0] ? lx : d_[0][0];
+    d_[0][1] = ly < d_[0][1] ? ly : d_[0][1];
+    d_[1][0] = hx > d_[1][0] ? hx : d_[1][0];
+    d_[1][1] = hy > d_[1][1] ? hy : d_[1][1];
+    return grew;
+  }
 
   // Returns the range [lo1 hi1] shares with [lo2 hi2], or std::nullopt if
   // they are apart.
@@ -445,16 +461,31 @@ absl::StatusOr<Box2<T>> Box2<T>::FromProto(const Box2Proto& proto) {
 
 template <typename T>
 template <typename Container>
-std::optional<Box2<T>> Box2<T>::BoundingBox(const Container& points) {
+constexpr std::optional<Box2<T>> Box2<T>::BoundingBox(const Container& points) {
   static_assert(std::is_same_v<typename Container::value_type, Point2<T>>,
                 "Container must hold Point2<T> elements.");
-  if (points.begin() == points.end()) {
+  auto it = points.begin();
+  const auto end = points.end();
+  if (it == end) {
     return std::nullopt;
   }
-  Box2<T> box(*points.begin(), *points.begin());
-  for (const Point2<T>& p : points) {
-    box.Encompass(p);
+  // Starts from the first point and tracks the extremes in locals, so each
+  // point costs four comparisons and the box is written once.
+  T xl = it->x();
+  T yl = it->y();
+  T xh = xl;
+  T yh = yl;
+  for (++it; it != end; ++it) {
+    const T x = it->x();
+    const T y = it->y();
+    xl = x < xl ? x : xl;
+    yl = y < yl ? y : yl;
+    xh = x > xh ? x : xh;
+    yh = y > yh ? y : yh;
   }
+  Box2<T> box;
+  box.d_[0] = Point2<T>(xl, yl);
+  box.d_[1] = Point2<T>(xh, yh);
   return box;
 }
 

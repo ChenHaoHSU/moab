@@ -750,6 +750,11 @@ TYPED_TEST(Box2Operations, EncompassPoint) {
       {"the min corner", P(1, 2), false, P(1, 2), P(3, 4)},
       {"inside", P(2, 3), false, P(1, 2), P(3, 4)},
       {"right and below", P(100, -100), true, P(1, -100), P(100, 4)},
+      {"left only", P(0, 3), true, P(0, 2), P(3, 4)},
+      {"below only", P(2, 1), true, P(1, 1), P(3, 4)},
+      {"right only", P(4, 3), true, P(1, 2), P(4, 4)},
+      {"above only", P(2, 5), true, P(1, 2), P(3, 5)},
+      {"the max corner", P(3, 4), false, P(1, 2), P(3, 4)},
   };
   for (const Case& c : cases) {
     SCOPED_TRACE(c.name);
@@ -784,6 +789,39 @@ TYPED_TEST(Box2Operations, EncompassBox) {
     EXPECT_EQ(b.ll(), c.ll);
     EXPECT_EQ(b.ur(), c.ur);
   }
+}
+
+// Encompass gives the same box and the same return value as
+// boost::polygon::encompass, which it replaced, for random points and boxes.
+TEST(Box2OperationsTypeSpecific, EncompassMatchesBoostPolygon) {
+  std::mt19937 rng(11);
+  std::uniform_int_distribution<int> v(-20, 20);
+  for (int i = 0; i < 2000; ++i) {
+    const Box2_i start(v(rng), v(rng), v(rng), v(rng));
+    const Point2_i p(v(rng), v(rng));
+    const Box2_i other(v(rng), v(rng), v(rng), v(rng));
+    Box2_i ours = start;
+    Box2_i boost = start;
+    EXPECT_EQ(ours.Encompass(p), gtl::encompass(boost, p));
+    EXPECT_EQ(ours, boost);
+    EXPECT_EQ(ours.Encompass(other), gtl::encompass(boost, other));
+    EXPECT_EQ(ours, boost);
+  }
+}
+
+constexpr Box2<int> EncompassedAtCompileTime() {
+  Box2<int> b(0, 0, 1, 1);
+  b.Encompass(Point2<int>(-2, 3));
+  b.Encompass(Box2<int>(4, -1, 5, 0));
+  return b;
+}
+
+TEST(Box2OperationsConstexpr, EncompassAndBoundingBoxRunAtCompileTime) {
+  static_assert(EncompassedAtCompileTime() == Box2<int>(-2, -1, 5, 3));
+  static_assert(*Box2<int>::BoundingBox({Point2<int>(3, 1), Point2<int>(-1, 4),
+                                         Point2<int>(2, -5)}) ==
+                Box2<int>(-1, -5, 3, 4));
+  static_assert(!Box2<int>::BoundingBox({}).has_value());
 }
 
 // The collapse point lo + (hi - lo) / 2 rounds toward lo for integers.
